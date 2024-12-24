@@ -3,7 +3,7 @@
 
 
 import os
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple, TypedDict
 
 from dotenv import load_dotenv
 
@@ -13,6 +13,8 @@ from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+
+from langgraph.graph import START, StateGraph
 from langchain import hub
 from athenah_ai.client.vector_store import VectorStore
 from athenah_ai.logger import logger
@@ -22,6 +24,9 @@ from langchain.agents import (
     initialize_agent,
 )
 from langchain.chains import RetrievalQA
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from langchain_core.documents import Document
 
 load_dotenv()
 
@@ -44,6 +49,26 @@ def get_token_total(prompt: str) -> int:
     openai_model = OPENAI_API_MODEL
     encoding = tiktoken.encoding_for_model(openai_model)
     return len(encoding.encode(prompt))
+
+
+# Define state for application
+class State(TypedDict):
+    question: str
+    context: List[Document]
+    answer: str
+
+
+# Define application steps
+def retrieve(store: FAISS, state: State):
+    retrieved_docs = store.similarity_search(state["question"])
+    return {"context": retrieved_docs}
+
+
+def generate(state: State):
+    docs_content = "\n\n".join(doc.page_content for doc in state["context"])
+    messages = prompt.invoke({"question": state["question"], "context": docs_content})
+    response = llm.invoke(messages)
+    return {"answer": response.content}
 
 
 class AthenahClient(VectorStore):
@@ -84,7 +109,8 @@ class AthenahClient(VectorStore):
     stop: List[str] = []
 
     has_history: bool = False
-    chat_history: List[str] = []
+    chat_history: List[Tuple[str, str]] = []
+    memory: ConversationBufferMemory = None
     db: FAISS = None
 
     def __init__(
@@ -134,6 +160,10 @@ class AthenahClient(VectorStore):
         cls.presence_penalty = presence_penalty
         cls.stop = stop
 
+        cls.memory = ConversationBufferMemory(
+            memory_key="chat_history", return_messages=True
+        )
+
         super().__init__(storage_type="local" if model_group == "dist" else "gcs")
 
         if cls.model_group and cls.custom_model:
@@ -141,7 +171,52 @@ class AthenahClient(VectorStore):
 
         pass
 
-    def prompt(cls, prompt: str) -> str:
+    def conversation(cls, prompt: str) -> str:
+        """
+        Generates a response to the given prompt, using conversational memory.
+
+        Args:
+            prompt (str): The prompt to generate a response to.
+
+        Returns:
+            str: The generated response.
+        """
+
+        # Adjust the model if necessary based on token limits
+        if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+            cls.model_name = "gpt-4o"
+
+        # Initialize the OpenAI LLM with the adjusted parameters
+        cls.openai = ChatOpenAI(
+            openai_api_key=OPENAI_API_KEY,
+            model_name=cls.model_name,
+            temperature=cls.temperature,
+            max_tokens=MAX_TOKENS + get_token_total(prompt),
+            n=cls.best_of,
+            # You can include other model kwargs if necessary
+        )
+
+        retriever = cls.db.as_retriever()
+
+        # Create a ConversationalRetrievalChain that uses the memory
+        chain = ConversationalRetrievalChain.from_llm(
+            llm=cls.openai,
+            retriever=retriever,
+            memory=cls.memory,
+            verbose=True,  # Set to False if you don't want verbose output
+        )
+
+        # Generate the response using the chain
+        response = chain({"question": prompt})
+        assistant_reply = response["answer"]
+
+        # Append the user prompt and assistant's reply to the chat history
+        cls.chat_history.append((prompt, assistant_reply))
+
+        # The memory is automatically updated within the chain
+        return assistant_reply
+
+    def promptv1(cls, prompt: str) -> str:
         """
         Generates a response to the given prompt.
 
@@ -153,7 +228,7 @@ class AthenahClient(VectorStore):
         """
 
         if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            cls.model_name = "gpt-4o-mini"
+            cls.model_name = "gpt-4o"
 
         cls.openai = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
@@ -171,8 +246,6 @@ class AthenahClient(VectorStore):
         num_indexs = cls.db.index_to_docstore_id
         logger.info(f"DB INDEXS: {len(num_indexs)}")
         retriever = cls.db.as_retriever()
-        # similar_docs = cls.db.similarity_search_with_relevance_scores("ripple", k=3)
-        # print(similar_docs)
 
         retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
         question_answer_chain = create_stuff_documents_chain(
@@ -180,6 +253,61 @@ class AthenahClient(VectorStore):
         )
         rag_chain = create_retrieval_chain(retriever, question_answer_chain)
         response = rag_chain.invoke({"input": prompt})
+        return response["answer"]
+
+    def prompt(cls, prompt: str) -> str:
+        """
+        Generates a response to the given prompt.
+
+        Args:
+            prompt (str): The prompt to generate a response to.
+
+        Returns:
+            str: The generated response.
+        """
+
+        if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+            cls.model_name = "gpt-4o"
+
+        cls.openai = ChatOpenAI(
+            openai_api_key=OPENAI_API_KEY,
+            model_name=cls.model_name,
+            temperature=cls.temperature,
+            max_tokens=MAX_TOKENS + get_token_total(prompt),
+            n=cls.best_of,
+            # model_kwargs={
+            #     "top_p": cls.top_p,
+            #     "frequency_penalty": cls.frequency_penalty,
+            #     "presence_penalty": cls.presence_penalty,
+            # },
+        )
+
+        num_indexs = cls.db.index_to_docstore_id
+        logger.info(f"DB INDEXS: {len(num_indexs)}")
+        retriever = cls.db.as_retriever()
+
+        # similar_docs = cls.db.similarity_search_with_relevance_scores(
+        #     "invoke_calculateBaseFee", k=3
+        # )
+        # print(similar_docs)
+        rag_prompt = hub.pull("rlm/rag-prompt")
+
+        def retrieve(state: State):
+            retrieved_docs = cls.db.similarity_search(state["question"])
+            return {"context": retrieved_docs}
+
+        def generate(state: State):
+            docs_content = "\n\n".join(doc.page_content for doc in state["context"])
+            messages = rag_prompt.invoke(
+                {"question": state["question"], "context": docs_content}
+            )
+            response = cls.openai.invoke(messages)
+            return {"answer": response.content}
+
+        graph_builder = StateGraph(State).add_sequence([retrieve, generate])
+        graph_builder.add_edge(START, "retrieve")
+        graph = graph_builder.compile()
+        response = graph.invoke({"question": prompt})
         return response["answer"]
 
     def base_prompt(cls, system: str = None, prompt: str = None) -> str:

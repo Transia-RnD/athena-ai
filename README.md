@@ -101,3 +101,9 @@ If you want to contact me you can reach me at `<your_email@domain.com>`.
 ## License
 
 This project uses the following license: `<license_name>`.
+
+<!-- langchain = "^0.2.6"
+langchain-experimental = "^0.0.62"
+langchain-text-splitters = "^0.2.2"
+langchain-openai = "^0.1.14"
+langchainhub = "^0.1.20" -->

@@ -1,0 +1,30 @@
+{
+    "ai_type": "github_repo",
+    "name": "rippled",
+    "version": "v1",
+    "description": "",
+    "language": "cpp",
+    "prebuild": [
+        "git submodule update --init --recursive"
+    ],
+    "build": {
+        "type": "cmake",
+        "source": "rippled",
+        "build": "build",
+        "install": "install"
+    },
+    "run": {
+        "command": "rippled",
+        "args": [
+            "--conf",
+            "rippled.cfg"
+        ]
+    },
+    "test": {
+        "command": "rippled",
+        "args": [
+            "--unittest",
+            "--quiet"
+        ]
+    }
+}

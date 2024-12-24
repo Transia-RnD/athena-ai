@@ -10,7 +10,9 @@ from basedir import basedir
 
 from langchain_community.vectorstores import FAISS
 
+from athenah_ai.indexer.cleaner import AthenahCleaner
 from athenah_ai.indexer.base_index_client import BaseIndexClient
+from athenah_ai.logger import logger
 
 
 class IndexClient(BaseIndexClient):
@@ -66,19 +68,59 @@ class IndexClient(BaseIndexClient):
             file_name: str = source.split("/")[-1]
             shutil.copyfile(source, f"{dest}/{file_name}")
 
-    def build(
-        cls, name: str, folders: Union[List[str], str] = None, full: bool = False
-    ):
-        if type(folders) is list:
-            build_paths: List[str] = [f"{cls.name_path}/{name}/{f}" for f in folders]
-            store: FAISS = cls.build_batch(build_paths, full)
-            cls.save(store)
-            return store
-        elif type(folders) is str or not folders:
-            cls.clean(cls.name_path)
-            cls.prepare(cls.name_path, full)
-            store: FAISS = cls.build_one()
-            cls.save(store)
-            return store
+    # def build_from_ignore(
+    #     cls,
+    #     name: str,
+    #     ignore: Union[List[str], str] = None,
+    # ):
+    #     raise ValueError("unimplemented")
+    #     _docs, _metadata = cls.build_from_dirs(ignore)
+    #     store: FAISS = cls.store_from_docs(_docs, _metadata)
+    #     cls.save(store)
+    #     return store
 
-        raise ValueError(f"unimplemented: {len(folders)}")
+    def prepare_whitelist(cls, source: str, dest_filepath: str):
+        logger.info(f"DEST PATH: {dest_filepath}")
+        cls.remove(dest_filepath, True)
+        cls.copy(source, dest_filepath, True)
+
+    def build_whitlist_from_dir(
+        cls,
+        source: str,
+    ):
+        source_name: str = f"{cls.name}-source"
+        dest_filepath: str = os.path.join(cls.name_path, source_name)
+        cls.prepare_whitelist(
+            source,
+            dest_filepath,
+        )
+        build_paths: List[str] = [f"{cls.name_path}/{source_name}"]
+        [AthenahCleaner().clean_directory(filepath) for filepath in build_paths]
+        _docs, _metadata = cls.build_from_dirs(build_paths)
+        store: FAISS = cls.store_from_docs(_docs, _metadata)
+        cls.save(store)
+        return store
+
+    def build_whitlist_from_dirs(
+        cls,
+        source: str,
+        folders: Union[List[str], str] = None,
+    ):
+        source_name: str = f"{cls.name}-source"
+        dest_filepath: str = os.path.join(cls.name_path, source_name)
+        cls.prepare_whitelist(
+            source,
+            dest_filepath,
+        )
+        build_paths: List[str] = [f"{cls.name_path}/{source_name}/{f}" for f in folders]
+        [AthenahCleaner().clean_directory(filepath) for filepath in build_paths]
+        _docs, _metadata = cls.build_from_dirs(build_paths)
+        store: FAISS = cls.store_from_docs(_docs, _metadata)
+        cls.save(store)
+        return store
+
+    def build_from_file(cls, name: str, file_path: str):
+        _docs, _metadata = cls.build_from_file(file_path)
+        store: FAISS = cls.store_from_docs(_docs, _metadata)
+        cls.save(store)
+        return store

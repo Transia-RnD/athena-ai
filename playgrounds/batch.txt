@@ -1,0 +1,87 @@
+To implement the changes you described, you would need to create a class hierarchy for `ApplyContext` with two derived classes: `ApplyContextOpenView` and `ApplyContextSandbox`. Here's a basic outline of how you might implement this:
+
+1. **Abstract Base Class `ApplyContext`:**
+
+```cpp
+class ApplyContext {
+public:
+    ApplyContext(Application& app, STTx const& tx, TER preclaimResult, XRPAmount baseFee, ApplyFlags flags, beast::Journal journal)
+        : app(app), tx(tx), preclaimResult(preclaimResult), baseFee(baseFee), journal(journal), flags_(flags) {}
+
+    virtual void apply(TER ter) = 0;
+    virtual void discard() = 0;
+
+protected:
+    Application& app;
+    STTx const& tx;
+    TER preclaimResult;
+    XRPAmount baseFee;
+    beast::Journal journal;
+    ApplyFlags flags_;
+};
+```
+
+2. **Derived Class `ApplyContextOpenView`:**
+
+```cpp
+class ApplyContextOpenView : public ApplyContext {
+public:
+    ApplyContextOpenView(Application& app, OpenView& base, STTx const& tx, TER preclaimResult, XRPAmount baseFee, ApplyFlags flags, beast::Journal journal)
+        : ApplyContext(app, tx, preclaimResult, baseFee, flags, journal), base_(base) {
+        view_.emplace(&base_, flags_);
+    }
+
+    void apply(TER ter) override {
+        view_->apply(base_, tx, ter, journal);
+    }
+
+    void discard() override {
+        view_.emplace(&base_, flags_);
+    }
+
+private:
+    OpenView& base_;
+    std::optional<ApplyView> view_;
+};
+```
+
+3. **Derived Class `ApplyContextSandbox`:**
+
+```cpp
+class ApplyContextSandbox : public ApplyContext {
+public:
+    ApplyContextSandbox(Application& app, Sandbox& base, STTx const& tx, TER preclaimResult, XRPAmount baseFee, ApplyFlags flags, beast::Journal journal)
+        : ApplyContext(app, tx, preclaimResult, baseFee, flags, journal), base_(base) {
+        view_.emplace(&base_, flags_);
+    }
+
+    void apply(TER ter) override {
+        view_->apply(base_, tx, ter, journal);
+    }
+
+    void discard() override {
+        view_.emplace(&base_, flags_);
+    }
+
+private:
+    Sandbox& base_;
+    std::optional<ApplyView> view_;
+};
+```
+
+4. **Override `ripple::apply` Function:**
+
+You would need to create a new override of the `ripple::apply` function that takes a `Sandbox` and uses `ApplyContextSandbox`.
+
+```cpp
+void ripple::apply(Application& app, Sandbox& sandbox, STTx const& tx, TER preclaimResult, XRPAmount baseFee, ApplyFlags flags, beast::Journal journal) {
+    ApplyContextSandbox context(app, sandbox, tx, preclaimResult, baseFee, flags, journal);
+    // Perform the necessary operations using context
+}
+```
+
+5. **Update Instantiation Points:**
+
+Ensure that all instantiation points in the code use `ApplyContextOpenView` except for the new override of `ripple::apply`, which should use `ApplyContextSandbox`.
+
+This structure allows you to handle both `OpenView` and `Sandbox` in a polymorphic manner, leveraging the power of inheritance and virtual functions to manage different types of views.

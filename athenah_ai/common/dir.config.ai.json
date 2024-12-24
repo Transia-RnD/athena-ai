@@ -1,0 +1,163 @@
+{
+    "directories": [
+        {
+            "name": "src/ripple/app",
+            "description": "Contains core application logic for the Ripple server, including ledger management and transaction processing.",
+            "classes": [
+                {
+                    "name": "Application",
+                    "description": "Main application class that coordinates the server components.",
+                    "methods": [
+                        {
+                            "name": "void setupServer()",
+                            "snippet": "void Application::setupServer() {\n    // Initialize server components\n}",
+                            "description": "Initializes and configures the server components."
+                        },
+                        {
+                            "name": "void start()",
+                            "snippet": "void Application::start() {\n    // Start the application loop\n}",
+                            "description": "Starts the main application loop."
+                        }
+                    ]
+                },
+                {
+                    "name": "Ledger",
+                    "description": "Represents the ledger data structure and provides methods for ledger manipulation.",
+                    "methods": [
+                        {
+                            "name": "void applyTransaction(const Transaction& tx)",
+                            "snippet": "void Ledger::applyTransaction(const Transaction& tx) {\n    // Apply transaction to ledger\n}",
+                            "description": "Applies a transaction to the ledger."
+                        },
+                        {
+                            "name": "bool save(const std::string& filename)",
+                            "snippet": "bool Ledger::save(const std::string& filename) {\n    // Save ledger to file\n    return true;\n}",
+                            "description": "Saves the ledger to a file."
+                        }
+                    ]
+                }
+            ],
+            "files": [
+                {
+                    "name": "Main.cpp",
+                    "description": "Entry point for the Ripple application.",
+                    "functions": [
+                        {
+                            "name": "int main(int argc, char** argv)",
+                            "snippet": "int main(int argc, char** argv) {\n    Application app;\n    app.setupServer();\n    app.start();\n    return 0;\n}",
+                            "description": "Initializes the application and starts the server."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "src/ripple/consensus",
+            "description": "Handles consensus algorithm implementation for transaction validation.",
+            "classes": [
+                {
+                    "name": "Consensus",
+                    "description": "Implements the consensus mechanism among network peers.",
+                    "methods": [
+                        {
+                            "name": "void startRound()",
+                            "snippet": "void Consensus::startRound() {\n    // Begin a new consensus round\n}",
+                            "description": "Starts a new consensus round."
+                        },
+                        {
+                            "name": "bool validateProposal(const Proposal& proposal)",
+                            "snippet": "bool Consensus::validateProposal(const Proposal& proposal) {\n    // Validate incoming proposal\n    return true;\n}",
+                            "description": "Validates a consensus proposal from a peer."
+                        }
+                    ]
+                }
+            ],
+            "files": [
+                {
+                    "name": "Consensus.cpp",
+                    "description": "Defines the consensus process for validating transactions.",
+                    "functions": [
+                        {
+                            "name": "void onReceiveProposal(const Proposal& proposal)",
+                            "snippet": "void onReceiveProposal(const Proposal& proposal) {\n    // Handle received proposal\n}",
+                            "description": "Processes a received consensus proposal."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "src/ripple/net",
+            "description": "Manages networking and peer-to-peer communication between Ripple nodes.",
+            "classes": [
+                {
+                    "name": "Overlay",
+                    "description": "Handles the overlay network connections between peers.",
+                    "methods": [
+                        {
+                            "name": "void connectToPeer(const Peer& peer)",
+                            "snippet": "void Overlay::connectToPeer(const Peer& peer) {\n    // Establish connection to peer\n}",
+                            "description": "Establishes a connection to a specified peer."
+                        },
+                        {
+                            "name": "void broadcastMessage(const Message& msg)",
+                            "snippet": "void Overlay::broadcastMessage(const Message& msg) {\n    // Broadcast message to all peers\n}",
+                            "description": "Sends a message to all connected peers."
+                        }
+                    ]
+                }
+            ],
+            "files": [
+                {
+                    "name": "Overlay.cpp",
+                    "description": "Implements network communication functions and peer management.",
+                    "functions": [
+                        {
+                            "name": "void onPeerConnect(const Peer& peer)",
+                            "snippet": "void onPeerConnect(const Peer& peer) {\n    // Handle new peer connection\n}",
+                            "description": "Called when a new peer connects."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "tests",
+            "description": "Contains unit and integration tests for the Ripple server components.",
+            "files": [
+                {
+                    "name": "LedgerTest.cpp",
+                    "description": "Unit tests for ledger operations, ensuring correctness and reliability.",
+                    "functions": [
+                        {
+                            "name": "void testApplyTransaction()",
+                            "snippet": "void testApplyTransaction() {\n    // Test applying a transaction to the ledger\n}",
+                            "description": "Tests the application of a transaction to the ledger."
+                        },
+                        {
+                            "name": "void testLedgerSaveLoad()",
+                            "snippet": "void testLedgerSaveLoad() {\n    // Test saving and loading the ledger\n}",
+                            "description": "Ensures the ledger can be saved to and loaded from a file correctly."
+                        }
+                    ]
+                },
+                {
+                    "name": "ConsensusTest.cpp",
+                    "description": "Tests the consensus algorithm implementations for accuracy and robustness.",
+                    "functions": [
+                        {
+                            "name": "void testConsensusRound()",
+                            "snippet": "void testConsensusRound() {\n    // Test starting a consensus round\n}",
+                            "description": "Verifies that a consensus round starts and proceeds correctly."
+                        },
+                        {
+                            "name": "void testProposalValidation()",
+                            "snippet": "void testProposalValidation() {\n    // Test proposal validation logic\n}",
+                            "description": "Checks that consensus proposals are validated properly."
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

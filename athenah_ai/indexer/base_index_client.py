@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import os
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 import shutil
 import faiss
 import pickle
@@ -62,6 +62,140 @@ def summarize_file(content: str):
 #         return response
 
 
+def prepare_dir(root: str, save_path: str = None) -> Tuple[List[str], List[str]]:
+    splited_docs: List[str] = []
+    splited_metadatas: List[str] = []
+
+    logger.info(f"PREPARE DIR: {root}")
+    loader = DirectoryLoader(root, silent_errors=True, recursive=True)
+    docs = loader.load()
+    for doc in docs:
+        doc.metadata["source"] = doc.metadata["source"].strip(".txt")
+
+    logger.debug(f"DOCS #: {len(docs)}")
+    for doc in docs:
+        language = None
+        file_summary = None
+        functions = None
+        file_name: str = doc.metadata["source"]
+        logger.debug(file_name)
+
+        if ".cpp" in file_name or ".h" in file_name:
+            file_type = "cpp"
+            language = Language.CPP
+        elif ".js" in file_name:
+            file_type = "js"
+            language = Language.JS
+        elif ".ts" in file_name:
+            file_type = "ts"
+            language = Language.TS
+        elif ".py" in file_name:
+            file_type = "py"
+            language = Language.PYTHON
+        else:
+            file_type = "text"
+
+        if language:
+            splitter: RecursiveCharacterTextSplitter = code_splitter(
+                language,
+                chunk_size=CHUNK_SIZE,
+                chunk_overlap=chunk_overlap,
+            )
+        else:
+            splitter: RecursiveCharacterTextSplitter = text_splitter(
+                chunk_size=CHUNK_SIZE,
+                chunk_overlap=chunk_overlap,
+            )
+
+        splits = splitter.split_text(doc.page_content)
+        for index, split in enumerate(splits):
+            if split.strip():
+                chunk_metadata = {
+                    "source": file_name.split("/")[-1],
+                    "file_type": file_type,
+                    "chunk_index": index,
+                    "total_chunks": len(splits),
+                }
+                if file_summary:
+                    chunk_metadata["file_summary"] = file_summary
+                if functions:
+                    chunk_metadata["functions"] = functions
+
+                splited_docs.append(split)
+                splited_metadatas.append(chunk_metadata)
+                # Save split to file: cls.name_version_path
+                if save_path:
+                    split_file_path = os.path.join(save_path, f"split_{index}.txt")
+                    with open(split_file_path, "w") as split_file:
+                        split_file.write(split)
+
+    return splited_docs, splited_metadatas
+
+
+def prepare_file(file: str, save_path: str = None) -> Dict[str, Any]:
+    logger.info(f"PREPARE FILE: {file}")
+    language = None
+    file_summary = None
+    functions = None
+    file_name: str = file.split("/")[-1]
+    logger.info(file_name)
+
+    if ".cpp" in file_name or ".h" in file_name:
+        file_type = "cpp"
+        language = Language.CPP
+    elif ".js" in file_name:
+        file_type = "js"
+        language = Language.JS
+    elif ".ts" in file_name:
+        file_type = "ts"
+        language = Language.TS
+    elif ".py" in file_name:
+        file_type = "py"
+        language = Language.PYTHON
+    else:
+        file_type = "text"
+
+    if language:
+        splitter: RecursiveCharacterTextSplitter = code_splitter(
+            language,
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=chunk_overlap,
+        )
+    else:
+        splitter: RecursiveCharacterTextSplitter = text_splitter(
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=chunk_overlap,
+        )
+
+    with open(file, "r") as f:
+        content = f.read()
+    splits = splitter.split_text(content)
+    splited_docs: List[str] = []
+    splited_metadatas: List[str] = []
+    for index, split in enumerate(splits):
+        if split.strip():
+            chunk_metadata = {
+                "source": file_name,
+                "file_type": file_type,
+                "chunk_index": index,
+                "total_chunks": len(splits),
+            }
+            if file_summary:
+                chunk_metadata["file_summary"] = file_summary
+            if functions:
+                chunk_metadata["functions"] = functions
+
+            splited_docs.append(split)
+            splited_metadatas.append(chunk_metadata)
+            # Save split to file: cls.name_version_path
+            if save_path:
+                split_file_path = os.path.join(save_path, f"split_{index}.txt")
+                with open(split_file_path, "w") as split_file:
+                    split_file.write(split)
+
+    return splited_docs, splited_metadatas
+
+
 class BaseIndexClient(object):
     storage_type: str = "local"  # local or gcs
     id: str = ""
@@ -80,6 +214,7 @@ class BaseIndexClient(object):
         cls.version = version
         cls.base_path: str = os.path.join(basedir, dir)
         cls.name_path: str = os.path.join(cls.base_path, cls.name)
+        cls.name_source_path: str = os.path.join(cls.name_path, f"{cls.name}-source")
         cls.name_version_path: str = os.path.join(
             cls.base_path, f"{cls.name}-{cls.version}"
         )
@@ -97,147 +232,50 @@ class BaseIndexClient(object):
         else:
             shutil.copyfile(source, destination)
 
-    def clean(cls, root: str) -> Dict[str, Any]:
-        logger.info(f"CLEAN: {root}")
-        all_files = []
-        ignore_folders = [".git"]
-        logger.info("Finding all files in the root folder...")
-        for path, subdirs, files in os.walk(root):
-            for name in files:
-                folder_path = os.path.join(path, name)
-                flag = 0
-                for folder in ignore_folders:
-                    if folder in folder_path:
-                        flag = 1
-                        break
-                if flag != 1:
-                    all_files.append(os.path.join(path, name))
+    # def build_one(cls):
+    #     embedder = OpenAIEmbeddings(
+    #         openai_api_key=OPENAI_API_KEY,
+    #         model=EMBEDDING_MODEL,
+    #         chunk_size=CHUNK_SIZE,
+    #     )
 
-        logger.info("Finding unknown file types...")
-        unknown_files = []
-        for file in all_files:
-            if detect_filetype(file).value == 0:
-                unknown_files.append(file)
+    #     return FAISS.from_texts(
+    #         cls.splited_docs, embedding=embedder, metadatas=cls.splited_metadatas
+    #     )
 
-        logger.info("Renaming unknown file types to .txt...")
-        for file in unknown_files:
-            new_name = file + ".txt"
-            os.rename(file, new_name)
+    def build_from_dirs(cls, dirs: List[str]) -> Tuple[List[str], List[str]]:
+        _splitted_docs: List[str] = []
+        _splited_metadatas: List[str] = []
+        for dir in dirs:
+            splited_docs, splited_metadatas = prepare_dir(dir, cls.name_version_path)
+            logger.debug(f"Adding Splitted Docs #: {len(splited_docs)}")
+            logger.debug(f"Adding Splitted Metadatas #: {len(splited_metadatas)}")
+            _splitted_docs.extend(splited_docs)
+            _splited_metadatas.extend(splited_metadatas)
+            logger.debug(f"Total Splitted Docs #: {len(_splitted_docs)}")
+            logger.debug(f"Total Splitted Metadatas #: {len(_splited_metadatas)}")
+        return _splitted_docs, _splited_metadatas
 
-        logger.info("Finding all json files...")
-        json_files = []
-        for file in all_files:
-            if detect_filetype(file).value == FileType.JSON.value:
-                json_files.append(file)
-
-        logger.info("Renaming json files to .txt...")
-        for file in json_files:
-            new_name = file + ".txt"
-            os.rename(file, new_name)
-
-        logger.info("Creating dictionary mapping file names to file paths...")
-
-    def prepare(cls, root: str, full: bool = False):
-        logger.info(f"PREPARE: {root}")
-        loader = DirectoryLoader(root, silent_errors=False, recursive=True)
-        docs = loader.load()
-        for doc in docs:
-            doc.metadata["source"] = doc.metadata["source"].strip(".txt")
-
-        logger.info(f"DOCS: {len(docs)}")
-        for doc in docs:
-            language = None
-            file_summary = None
-            functions = None
-            file_name: str = doc.metadata["source"]
-            logger.info(file_name)
-
-            if ".cpp" in file_name or ".h" in file_name:
-                file_type = "cpp"
-                language = Language.CPP
-            elif ".js" in file_name:
-                file_type = "js"
-                language = Language.JS
-            elif ".ts" in file_name:
-                file_type = "ts"
-                language = Language.TS
-            elif ".py" in file_name:
-                file_type = "py"
-                language = Language.PYTHON
-            else:
-                file_type = "text"
-
-            if language:
-                splitter: RecursiveCharacterTextSplitter = code_splitter(
-                    language,
-                    chunk_size=CHUNK_SIZE,
-                    chunk_overlap=chunk_overlap,
-                )
-            else:
-                splitter: RecursiveCharacterTextSplitter = text_splitter(
-                    chunk_size=CHUNK_SIZE,
-                    chunk_overlap=chunk_overlap,
-                )
-
-            splits = splitter.split_text(doc.page_content)
-            for index, split in enumerate(splits):
-                if split.strip():
-                    chunk_metadata = {
-                        "source": file_name.split("/")[-1],
-                        "file_type": file_type,
-                        "chunk_index": index,
-                        "total_chunks": len(splits),
-                    }
-                    if file_summary:
-                        chunk_metadata["file_summary"] = file_summary
-                    if functions:
-                        chunk_metadata["functions"] = functions
-
-                    cls.splited_docs.append(split)
-                    cls.splited_metadatas.append(chunk_metadata)
-                    # Save split to file
-                    split_file_path = os.path.join(
-                        cls.name_version_path, f"split_{index}.txt"
-                    )
-                    with open(split_file_path, "w") as split_file:
-                        split_file.write(split)
-
-    def build_one(cls):
+    def store_from_docs(cls, splited_docs: List[str], splited_metadatas: List[str]):
         embedder = OpenAIEmbeddings(
             openai_api_key=OPENAI_API_KEY,
             model=EMBEDDING_MODEL,
             chunk_size=CHUNK_SIZE,
         )
-
+        logger.info(f"Splitted Docs #: {len(splited_docs)}")
+        logger.info(f"Splitted Metadatas #: {len(splited_metadatas)}")
         return FAISS.from_texts(
-            cls.splited_docs, embedding=embedder, metadatas=cls.splited_metadatas
-        )
-
-    def build_batch(cls, paths: List[str], full: bool = False):
-        for path in paths:
-            cls.clean(path)
-            cls.prepare(path, full)
-
-        embedder = OpenAIEmbeddings(
-            openai_api_key=OPENAI_API_KEY,
-            model=EMBEDDING_MODEL,
-            chunk_size=CHUNK_SIZE,
-        )
-        logger.info(len(cls.splited_docs))
-        logger.info(len(cls.splited_metadatas))
-        logger.debug(cls.splited_docs)
-        return FAISS.from_texts(
-            cls.splited_docs, embedding=embedder, metadatas=cls.splited_metadatas
+            splited_docs, embedding=embedder, metadatas=splited_metadatas
         )
 
     def save(
         cls,
         store: FAISS = None,
-    ):
+    ) -> bool:
         if cls.storage_type == "local":
             logger.info("SAVING LOCAL FAISS")
             store.save_local(cls.name_version_path)
-            return
+            return True
 
         if cls.storage_type == "gcs":
             logger.info("SAVING GCS FAISS")
@@ -248,4 +286,4 @@ class BaseIndexClient(object):
             faiss.write_index(store.index, temp_file_name)
             blob: Blob = cls.bucket.blob(f"{cls.name}/{cls.version}/index.faiss")
             blob.upload_from_filename(temp_file_name)
-            return
+            return True

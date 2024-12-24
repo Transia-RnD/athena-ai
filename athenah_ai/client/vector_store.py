@@ -35,30 +35,36 @@ class VectorStore(object):
         cls.storage_type = storage_type
         pass
 
+    def add(cls, splited_docs: list, splited_metadatas: list) -> None:
+        cls.store.add_texts(splited_docs, metadatas=splited_metadatas)
+
     def load(cls, name: str, dir: str = "dist", version: str = "v1") -> FAISS:
         if cls.storage_type == "local":
             logger.info("LOADING LOCAL FAISS")
-            return cls.load_local(
+            cls.store: FAISS = cls.load_local(
                 dir,
                 name,
                 version,
             )
+            return cls.store
 
         if cls.storage_type == "gcs":
             logger.info("LOADING GCS FAISS")
             try:
-                return cls.load_local(
+                cls.store: FAISS = cls.load_local(
                     dir,
                     name,
                     version,
                 )
+                return cls.store
             except Exception:
                 cls.storage_client: GCPStorageClient = GCPStorageClient().add_client()
                 cls.bucket: Bucket = cls.storage_client.init_bucket(GCP_INDEX_BUCKET)
-                return cls.load_gcs(
+                cls.store: FAISS = cls.load_gcs(
                     name,
                     version,
                 )
+                return cls.store
 
     def load_local(cls, dir: str, name: str, version: str) -> FAISS:
         embedder = OpenAIEmbeddings(
@@ -69,9 +75,10 @@ class VectorStore(object):
         cls.base_path: str = os.path.join(basedir, dir)
         cls.name_path: str = os.path.join(cls.base_path, name)
         cls.name_version_path: str = os.path.join(cls.base_path, f"{name}-{version}")
-        return FAISS.load_local(
+        cls.store: FAISS = FAISS.load_local(
             f"{cls.name_version_path}", embedder, allow_dangerous_deserialization=True
         )
+        return cls.store
 
     @cached(cache)
     def load_gcs(cls, name: str, version: str) -> FAISS:
@@ -87,8 +94,8 @@ class VectorStore(object):
         blob = cls.bucket.blob(f"{name}/{version}/index.faiss")
         blob.download_to_filename("/tmp/index.faiss")
         index = faiss.read_index("/tmp/index.faiss")
-        store = FAISS(embedder, index, docstore, index_to_docstore_id)
+        cls.store: FAISS = FAISS(embedder, index, docstore, index_to_docstore_id)
         cls.base_path: str = os.path.join(basedir, "dist")
         cls.name_version_path: str = os.path.join(cls.base_path, f"{name}-{version}")
-        store.save_local(cls.name_version_path)
-        return store
+        cls.store.save_local(cls.name_version_path)
+        return cls.store
