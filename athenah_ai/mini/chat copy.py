@@ -231,14 +231,48 @@ def chatbot_interaction(chatbot: ChatAI):
 def main():
     # Example dataset: list of question-answer pairs
     qa_pairs = [
+        {"question": "Hi there", "answer": "Hello! How can I assist you today?"},
+        {"question": "Hello", "answer": "Hello! How can I assist you today?"},
+        {"question": "Goodbye", "answer": "Goodbye! Have a great day!"},
+        {"question": "See you later", "answer": "Goodbye! Have a great day!"},
+        {"question": "What is your name?", "answer": "I am ChatAI, your assistant."},
         {
-            "question": "What files should I ignore for rippled?",
-            "answer": "[.vscode, .idea, build, dist, node_modules, .git, .DS_Store]",
+            "question": "How are you?",
+            "answer": "I'm just a bunch of code, but I'm functioning as expected!",
         },
         {
-            "question": "For rippled what files should I ignore?",
-            "answer": "[.vscode, .idea, build, dist, node_modules, .git, .DS_Store]",
+            "question": "Tell me a joke",
+            "answer": "Why did the computer show up at work late? It had a hard drive!",
         },
+        {"question": "Thank you", "answer": "You're welcome! Happy to help!"},
+        {"question": "Thanks", "answer": "You're welcome! Happy to help!"},
+        {"question": "Bye", "answer": "Goodbye! Have a great day!"},
+        {"question": "Hey", "answer": "Hello! How can I assist you today?"},
+        {"question": "Who are you?", "answer": "I am ChatAI, your assistant."},
+        {
+            "question": "What's up?",
+            "answer": "I'm here to help you with any questions or information you need.",
+        },
+        {
+            "question": "Can you help me?",
+            "answer": "Sure, I'm here to help! What do you need assistance with?",
+        },
+        {
+            "question": "I need assistance",
+            "answer": "Sure, I'm here to help! What do you need assistance with?",
+        },
+        {"question": "Farewell", "answer": "Goodbye! Have a great day!"},
+        {"question": "Appreciate it", "answer": "You're welcome! Happy to help!"},
+        {"question": "Later", "answer": "Goodbye! Have a great day!"},
+        {
+            "question": "What can you do?",
+            "answer": "I can assist you with information, tell jokes, and answer your questions.",
+        },
+        {
+            "question": "Assist me",
+            "answer": "Sure, I'm here to help! What do you need assistance with?",
+        },
+        # Add more question-answer pairs as needed
     ]
 
     # Create a DataFrame from the dataset

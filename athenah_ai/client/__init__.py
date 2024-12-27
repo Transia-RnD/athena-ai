@@ -58,19 +58,6 @@ class State(TypedDict):
     answer: str
 
 
-# Define application steps
-def retrieve(store: FAISS, state: State):
-    retrieved_docs = store.similarity_search(state["question"])
-    return {"context": retrieved_docs}
-
-
-def generate(state: State):
-    docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-    messages = prompt.invoke({"question": state["question"], "context": docs_content})
-    response = llm.invoke(messages)
-    return {"answer": response.content}
-
-
 class AthenahClient(VectorStore):
     """
     A client for interacting with the Athenah AI chat model.
@@ -284,7 +271,7 @@ class AthenahClient(VectorStore):
 
         num_indexs = cls.db.index_to_docstore_id
         logger.info(f"DB INDEXS: {len(num_indexs)}")
-        retriever = cls.db.as_retriever()
+        # retriever = cls.db.as_retriever()
 
         # similar_docs = cls.db.similarity_search_with_relevance_scores(
         #     "invoke_calculateBaseFee", k=3
@@ -371,3 +358,117 @@ class AthenahClient(VectorStore):
             handle_parsing_errors=True,
         )
         return agent.run(prompt)
+
+    def promptv3(system_prompt, user_prompt, *args):
+        messages = []
+        messages.append({"role": "system", "content": system_prompt})
+        get_token_total(system_prompt)
+        messages.append({"role": "user", "content": user_prompt})
+        get_token_total(user_prompt)
+        # loop thru each arg and add it to messages alternating role between "assistant" and "user"
+        # role = "assistant"
+        # {"role": role, "content": value}
+        # role = "user" if role == "assistant" else "assistant"
+        for value in args:
+            messages.append(value)
+            get_token_total(value["content"])
+
+        params = {
+            "model": OPENAI_API_MODEL,
+            "messages": messages,
+            "max_tokens": MAX_TOKENS,
+            "temperature": 0,
+        }
+
+        # Send the API request
+        keep_trying = True
+        while keep_trying:
+            try:
+                response = openai.ChatCompletion.create(**params)
+                keep_trying = False
+            except Exception as e:
+                # e.g. when the API is too busy, we don't want to fail everything
+                print("Failed to generate response. Error: ", e)
+                import time
+
+                time.sleep(30)
+                print("Retrying...")
+
+        # Get the reply from the API response
+        reply = response.choices[0]["message"]["content"]
+        return reply
+
+    def rag_prompt_v2(cls, system_prompt, user_prompt, *args):
+        messages = []
+        messages.append({"role": "system", "content": system_prompt})
+        get_token_total(system_prompt)
+        messages.append({"role": "user", "content": user_prompt})
+        get_token_total(user_prompt)
+        # loop thru each arg and add it to messages alternating role between "assistant" and "user"
+        # role = "assistant"
+        # {"role": role, "content": value}
+        # role = "user" if role == "assistant" else "assistant"
+        for value in args:
+            messages.append(value)
+            get_token_total(value["content"])
+
+        question_w_system: str = " ".join([msg["content"] for msg in messages])
+        total_tokens: int = get_token_total(question_w_system)
+        if MAX_TOKENS + total_tokens > MODEL_MAP[cls.model_name]:
+            cls.model_name = "gpt-4o"
+
+        cls.openai = ChatOpenAI(
+            openai_api_key=OPENAI_API_KEY,
+            model_name=cls.model_name,
+            temperature=cls.temperature,
+            max_tokens=MAX_TOKENS + total_tokens,
+            n=cls.best_of,
+            # model_kwargs={
+            #     "top_p": cls.top_p,
+            #     "frequency_penalty": cls.frequency_penalty,
+            #     "presence_penalty": cls.presence_penalty,
+            # },
+        )
+
+        # Send the API request
+        keep_trying = True
+        retry_count = 0
+        retry_limit = 10
+        while keep_trying:
+            try:
+                rag_prompt = hub.pull("rlm/rag-prompt")
+
+                def retrieve(state: State):
+                    retrieved_docs = cls.db.similarity_search(state["question"])
+                    return {"context": retrieved_docs}
+
+                def generate(state: State):
+                    docs_content = "\n\n".join(
+                        doc.page_content for doc in state["context"]
+                    )
+                    messages = rag_prompt.invoke(
+                        {"question": state["question"], "context": docs_content}
+                    )
+                    response = cls.openai.invoke(messages)
+                    return {"answer": response.content}
+
+                graph_builder = StateGraph(State).add_sequence([retrieve, generate])
+                graph_builder.add_edge(START, "retrieve")
+                graph = graph_builder.compile()
+                response = graph.invoke({"question": question_w_system})
+                keep_trying = False
+            except Exception as e:
+                # e.g. when the API is too busy, we don't want to fail everything
+                print("Failed to generate response. Error: ", e)
+
+                if retry_count > retry_limit:
+                    raise ValueError("Failed to generate response after 10 retries.")
+
+                import time
+
+                time.sleep(30)
+                print("Retrying...")
+
+        # Get the reply from the API response
+        reply = response["answer"]
+        return reply

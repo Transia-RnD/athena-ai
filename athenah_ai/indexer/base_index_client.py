@@ -138,9 +138,12 @@ def prepare_file(file: str, save_path: str = None) -> Dict[str, Any]:
     file_summary = None
     functions = None
     file_name: str = file.split("/")[-1]
-    logger.info(file_name)
+    # logger.info(file_name)
 
-    if ".cpp" in file_name or ".h" in file_name:
+    if ".h" in file_name:
+        file_type = "h"
+        language = Language.CPP
+    if ".cpp" in file_name:
         file_type = "cpp"
         language = Language.CPP
     elif ".js" in file_name:
@@ -175,7 +178,8 @@ def prepare_file(file: str, save_path: str = None) -> Dict[str, Any]:
     for index, split in enumerate(splits):
         if split.strip():
             chunk_metadata = {
-                "source": file_name,
+                "file_name": file_name,
+                "file_path": file,
                 "file_type": file_type,
                 "chunk_index": index,
                 "total_chunks": len(splits),
