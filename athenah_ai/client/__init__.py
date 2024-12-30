@@ -99,6 +99,7 @@ class AthenahClient(VectorStore):
     chat_history: List[Tuple[str, str]] = []
     memory: ConversationBufferMemory = None
     db: FAISS = None
+    llm: ChatOpenAI = None
 
     def __init__(
         cls,
@@ -158,6 +159,17 @@ class AthenahClient(VectorStore):
 
         pass
 
+    def init_llm(cls):
+        # Initialize the OpenAI LLM with the adjusted parameters
+        cls.llm = ChatOpenAI(
+            openai_api_key=OPENAI_API_KEY,
+            model_name=cls.model_name,
+            temperature=cls.temperature,
+            max_tokens=MAX_TOKENS,
+            n=cls.best_of,
+            # You can include other model kwargs if necessary
+        )
+
     def conversation(cls, prompt: str) -> str:
         """
         Generates a response to the given prompt, using conversational memory.
@@ -174,7 +186,7 @@ class AthenahClient(VectorStore):
             cls.model_name = "gpt-4o"
 
         # Initialize the OpenAI LLM with the adjusted parameters
-        cls.openai = ChatOpenAI(
+        cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
@@ -187,7 +199,7 @@ class AthenahClient(VectorStore):
 
         # Create a ConversationalRetrievalChain that uses the memory
         chain = ConversationalRetrievalChain.from_llm(
-            llm=cls.openai,
+            llm=cls.llm,
             retriever=retriever,
             memory=cls.memory,
             verbose=True,  # Set to False if you don't want verbose output
@@ -217,7 +229,7 @@ class AthenahClient(VectorStore):
         if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
-        cls.openai = ChatOpenAI(
+        cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
@@ -236,7 +248,7 @@ class AthenahClient(VectorStore):
 
         retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
         question_answer_chain = create_stuff_documents_chain(
-            cls.openai, retrieval_qa_chat_prompt
+            cls.llm, retrieval_qa_chat_prompt
         )
         rag_chain = create_retrieval_chain(retriever, question_answer_chain)
         response = rag_chain.invoke({"input": prompt})
@@ -256,7 +268,7 @@ class AthenahClient(VectorStore):
         if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
-        cls.openai = ChatOpenAI(
+        cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
@@ -288,7 +300,7 @@ class AthenahClient(VectorStore):
             messages = rag_prompt.invoke(
                 {"question": state["question"], "context": docs_content}
             )
-            response = cls.openai.invoke(messages)
+            response = cls.llm.invoke(messages)
             return {"answer": response.content}
 
         graph_builder = StateGraph(State).add_sequence([retrieve, generate])
@@ -297,7 +309,7 @@ class AthenahClient(VectorStore):
         response = graph.invoke({"question": prompt})
         return response["answer"]
 
-    def base_prompt(cls, system: str = None, prompt: str = None) -> str:
+    def base_prompt(cls, system: str = None, prompt: str = None, *args) -> str:
         """
         Generates a response to the given system and prompt.
 
@@ -315,6 +327,37 @@ class AthenahClient(VectorStore):
             if isinstance(prompt, str) and prompt != "":
                 messages.append({"role": "user", "content": prompt})
 
+            for arg in args:
+                if isinstance(arg, dict):
+                    messages.append(arg)
+
+            response = openai.chat.completions.create(
+                model=cls.model_name,
+                messages=messages,
+                temperature=cls.temperature,
+                max_tokens=cls.max_tokens,
+                top_p=cls.top_p,
+                n=cls.best_of,
+                frequency_penalty=cls.frequency_penalty,
+                presence_penalty=cls.presence_penalty,
+            )
+            assistant_reply = response.choices[0].message.content
+            return assistant_reply
+        except Exception as e:
+            raise ValueError(f"failed to generate a prompt completion: {str(e)}")
+
+    def _base_prompt(cls, messages) -> str:
+        """
+        Generates a response to the given system and prompt.
+
+        Args:
+            system (str): The system message.
+            prompt (str): The user prompt.
+
+        Returns:
+            str: The generated response.
+        """
+        try:
             response = openai.chat.completions.create(
                 model=cls.model_name,
                 messages=messages,
@@ -332,7 +375,7 @@ class AthenahClient(VectorStore):
 
     def agent_prompt(cls, name: str, description: str, prompt: str):
         tools = []
-        cls.openai = ChatOpenAI(
+        cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
@@ -340,7 +383,7 @@ class AthenahClient(VectorStore):
             n=cls.best_of,
         )
         chain = RetrievalQA.from_llm(
-            llm=cls.openai,
+            llm=cls.llm,
             retriever=cls.db.as_retriever(),
         )
         tools.append(
@@ -352,7 +395,7 @@ class AthenahClient(VectorStore):
         )
         agent = initialize_agent(
             tools,
-            cls.openai,
+            cls.llm,
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
             handle_parsing_errors=True,
@@ -417,7 +460,7 @@ class AthenahClient(VectorStore):
         if MAX_TOKENS + total_tokens > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
-        cls.openai = ChatOpenAI(
+        cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
@@ -449,7 +492,7 @@ class AthenahClient(VectorStore):
                     messages = rag_prompt.invoke(
                         {"question": state["question"], "context": docs_content}
                     )
-                    response = cls.openai.invoke(messages)
+                    response = cls.llm.invoke(messages)
                     return {"answer": response.content}
 
                 graph_builder = StateGraph(State).add_sequence([retrieve, generate])

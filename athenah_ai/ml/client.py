@@ -31,7 +31,7 @@ def nginx_log_df_parser(request_string):
     return request_dict
 
 
-class MiniAI(object):
+class MLClient(object):
 
     model: RandomForestRegressor
     features: RandomForestRegressor
@@ -62,8 +62,8 @@ class MiniAI(object):
         cls.name_path: str = os.path.join(cls.base_path, f"{cls.name}-ml")
         os.makedirs(cls.base_path, exist_ok=True)
         os.makedirs(cls.name_path, exist_ok=True)
-        with open(os.path.join(cls.name_path, "data.json"), "w") as f:
-            f.write("[]")
+        # with open(os.path.join(cls.name_path, "data.json"), "w") as f:
+        #     f.write("[]")
         pass
 
     def load_data(cls):

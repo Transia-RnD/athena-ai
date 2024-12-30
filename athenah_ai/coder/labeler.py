@@ -11,7 +11,7 @@ from basedir import basedir
 logger = logging.getLogger("app")
 
 
-class AthenahPreparer:
+class AICodeLabeler:
     storage_type: str = "local"
     id: str = ""
     dir: str = ""
