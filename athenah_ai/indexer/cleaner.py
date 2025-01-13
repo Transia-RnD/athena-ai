@@ -69,7 +69,7 @@ class AthenahCleaner:
     }
 
     def postclean_directory(self, root: str) -> None:
-        logger.info(f"POST-CLEAN DIR: {root}")
+        logger.debug(f"POST-CLEAN DIR: {root}")
 
         # First, remove any .png and .pdf files
         self.remove_binary_files(root)
@@ -143,11 +143,11 @@ class AthenahCleaner:
         _, ext = os.path.splitext(filepath)
         language = self.language_extensions.get(ext.lower(), None)
         if not language:
-            logger.info(f"Unsupported file: {filepath} type: {ext}")
+            logger.debug(f"Unsupported file: {filepath} type: {ext}")
             return
         try:
             if self.is_binary_file(filepath):
-                logger.info(f"Skipping binary file: {filepath}")
+                logger.debug(f"Skipping binary file: {filepath}")
                 return
             with open(filepath, "r", encoding="utf-8") as file:
                 code = file.read()

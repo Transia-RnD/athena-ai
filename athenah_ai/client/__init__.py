@@ -243,7 +243,7 @@ class AthenahClient(VectorStore):
         )
 
         num_indexs = cls.db.index_to_docstore_id
-        logger.info(f"DB INDEXS: {len(num_indexs)}")
+        logger.debug(f"DB INDEXS: {len(num_indexs)}")
         retriever = cls.db.as_retriever()
 
         retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
@@ -282,7 +282,7 @@ class AthenahClient(VectorStore):
         )
 
         num_indexs = cls.db.index_to_docstore_id
-        logger.info(f"DB INDEXS: {len(num_indexs)}")
+        logger.debug(f"DB INDEXS: {len(num_indexs)}")
         # retriever = cls.db.as_retriever()
 
         # similar_docs = cls.db.similarity_search_with_relevance_scores(

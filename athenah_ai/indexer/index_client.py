@@ -80,7 +80,7 @@ class IndexClient(BaseIndexClient):
     #     return store
 
     def prepare_whitelist(cls, source: str, dest_filepath: str):
-        logger.info(f"DEST PATH: {dest_filepath}")
+        logger.debug(f"DEST PATH: {dest_filepath}")
         cls.remove(dest_filepath, True)
         cls.copy(source, dest_filepath, True)
 

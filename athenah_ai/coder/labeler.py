@@ -256,7 +256,7 @@ class AICodeLabeler:
         _file_ext = ".".join([s for s in file_ext.split(".") if s != "txt"])
         _file_ext = _file_ext.split(".")[-1]
         language = self.language_extensions.get(f".{_file_ext}")
-        logger.info("file: {} language: {}".format(file_name, language))
+        logger.debug("file: {} language: {}".format(file_name, language))
         if language:
             with open(file_path, "r", encoding="utf-8") as f:
                 source_code = f.read()

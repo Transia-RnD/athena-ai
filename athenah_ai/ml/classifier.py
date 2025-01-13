@@ -55,7 +55,7 @@ class MLClassifier:
         cls.name = name
         cls.version = version
         cls.dist_path: str = os.path.join(basedir, "dist")
-        cls.base_path: str = os.path.join(basedir, dir)
+        cls.base_path: str = os.path.join(cls.dist_path, dir)
         cls.name_path: str = os.path.join(cls.base_path, f"{cls.name}-ml")
         os.makedirs(cls.base_path, exist_ok=True)
         os.makedirs(cls.name_path, exist_ok=True)
@@ -170,13 +170,7 @@ class MLClassifier:
         - data_df (pd.DataFrame): DataFrame containing 'question' and 'answer' columns.
         """
         try:
-            print("build")
-            if cls.df.empty:
-                cls.load_data()
-
-            print(cls.df)
             df = cls.prepare_training(cls.df)
-            print(df)
             logger.debug(f'Data prepared for training: {df["label"].nunique()} classes')
 
             # Initialize and fit the CountVectorizer (or TfidfVectorizer)

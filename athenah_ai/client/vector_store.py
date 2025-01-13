@@ -40,7 +40,7 @@ class VectorStore(object):
 
     def load(cls, name: str, dir: str = "dist", version: str = "v1") -> FAISS:
         if cls.storage_type == "local":
-            logger.info("LOADING LOCAL FAISS")
+            logger.debug("LOADING LOCAL FAISS")
             cls.store: FAISS = cls.load_local(
                 dir,
                 name,
@@ -49,7 +49,7 @@ class VectorStore(object):
             return cls.store
 
         if cls.storage_type == "gcs":
-            logger.info("LOADING GCS FAISS")
+            logger.debug("LOADING GCS FAISS")
             try:
                 cls.store: FAISS = cls.load_local(
                     dir,

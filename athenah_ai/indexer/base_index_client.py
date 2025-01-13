@@ -66,7 +66,7 @@ def prepare_dir(root: str, save_path: str = None) -> Tuple[List[str], List[str]]
     splited_docs: List[str] = []
     splited_metadatas: List[str] = []
 
-    logger.info(f"PREPARE DIR: {root}")
+    logger.debug(f"PREPARE DIR: {root}")
     loader = DirectoryLoader(root, silent_errors=True, recursive=True)
     docs = loader.load()
     for doc in docs:
@@ -133,12 +133,11 @@ def prepare_dir(root: str, save_path: str = None) -> Tuple[List[str], List[str]]
 
 
 def prepare_file(file: str, save_path: str = None) -> Dict[str, Any]:
-    logger.info(f"PREPARE FILE: {file}")
+    logger.debug(f"PREPARE FILE: {file}")
     language = None
     file_summary = None
     functions = None
     file_name: str = file.split("/")[-1]
-    # logger.info(file_name)
 
     if ".h" in file_name:
         file_type = "h"
@@ -266,8 +265,8 @@ class BaseIndexClient(object):
             model=EMBEDDING_MODEL,
             chunk_size=CHUNK_SIZE,
         )
-        logger.info(f"Splitted Docs #: {len(splited_docs)}")
-        logger.info(f"Splitted Metadatas #: {len(splited_metadatas)}")
+        logger.debug(f"Splitted Docs #: {len(splited_docs)}")
+        logger.debug(f"Splitted Metadatas #: {len(splited_metadatas)}")
         return FAISS.from_texts(
             splited_docs, embedding=embedder, metadatas=splited_metadatas
         )
@@ -277,12 +276,12 @@ class BaseIndexClient(object):
         store: FAISS = None,
     ) -> bool:
         if cls.storage_type == "local":
-            logger.info("SAVING LOCAL FAISS")
+            logger.debug("SAVING LOCAL FAISS")
             store.save_local(cls.name_version_path)
             return True
 
         if cls.storage_type == "gcs":
-            logger.info("SAVING GCS FAISS")
+            logger.debug("SAVING GCS FAISS")
             data_byte_array = pickle.dumps((store.docstore, store.index_to_docstore_id))
             blob: Blob = cls.bucket.blob(f"{cls.name}/{cls.version}/index.pkl")
             blob.upload_from_string(data_byte_array)
