@@ -38,28 +38,31 @@ class AthenahIndexer(IndexClient):
         super().__init__(cls.storage_type, cls.id, cls.dir, cls.name, cls.version)
         pass
 
-    def index_file(cls, file_path: str, name: str, full: bool = False):
-        source_name: str = f"{name}-source"
-        dest_filepath: str = os.path.join(basedir, f"dist/{name}/{source_name}")
-        logger.debug(f"STORAGE: {cls.storage_type}")
-        logger.debug(f"NAME: {name}")
-        logger.debug(f"FILE PATH: {file_path}")
-        logger.debug(f"DEST PATH: {dest_filepath}")
-        cls.remove(dest_filepath, True)
-        cls.copy(file_path, dest_filepath, False)
-        cls.build(source_name, dest_filepath, full)
-
-    def index_whitelist(
+    def index_dir(
         cls,
         source: str,
         dirs: List[str],
-        name: str,
+        include_root: bool = False,
     ):
-        logger.debug(f"STORAGE: {cls.storage_type}")
-        logger.debug(f"NAME: {name}")
-        logger.debug(f"SOURCE: {source}")
+        cls.build_from_dir(source, dirs, include_root)
+
+    def index_dirs(
+        cls,
+        source: str,
+        dirs: List[str],
+        include_root: bool = False,
+    ):
         if dirs == ["."]:
-            cls.build_whitlist_from_dir(source, dirs)
+            cls.build_from_dir(source, dirs, include_root)
             return
 
-        cls.build_whitlist_from_dirs(source, dirs)
+        cls.build_from_dirs(source, dirs, include_root)
+
+    def index_files(
+        cls,
+        file_paths: List[str],
+    ):
+        cls.build_from_files(file_paths)
+
+    def index_file(cls, file_path: str):
+        cls.build_from_file(file_path)

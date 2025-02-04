@@ -13,41 +13,37 @@ from athenah_ai.indexer import AthenahIndexer
 
 from athenah_ai.client import AthenahClient
 
-system_prompt: str = """
-```
-const STVector256&
-STTx::getBatchTransactionIDs() const
-{
-    static STVector256 transactionIDs;
-    transactionIDs.clear();
-    for (STObject const& rb : getFieldArray(sfRawTransactions))
-    {
-        transactionIDs.push_back(STTx{rb}.getTransactionID());
-    }
-    return transactionIDs;
-}
-```
-"""
-
 prompt: str = """
 
 ```
-const STVector256&
-STTx::getBatchTransactionIDs() const
+Expected<void, std::string>
+STTx::checkMultiSign(
+    RequireFullyCanonicalSig requireCanonicalSig,
+    Rules const& rules) const
 {
-    static STVector256 transactionIDs;
-    transactionIDs.clear();
-    for (STObject rb : getFieldArray(sfRawTransactions))
-    {
-        transactionIDs.push_back(STTx{std::move(rb)}.getTransactionID());
-    }
-    return transactionIDs;
+    bool const fullyCanonical = (getFlags() & tfFullyCanonicalSig) ||
+        (requireCanonicalSig == RequireFullyCanonicalSig::yes);
+
+    // We can ease the computational load inside the loop a bit by
+    // pre-constructing part of the data that we hash.  Fill a Serializer
+    // with the stuff that stays constant from signature to signature.
+    Serializer dataStart = startMultiSigningData(*this);
+    return multiSignHelper(
+        *this,
+        fullyCanonical,
+        [&dataStart](
+            AccountID const& accountID) mutable -> std::vector<uint8_t> {
+            Serializer s = dataStart;
+            finishMultiSigningData(accountID, s);
+            return s.getData();
+        },
+        rules);
 }
 ```
 
-What does std::move do in the code above? Is it necessary? Is it safe to remove it?
+Should this use a shared_ptr?
 
 """
 client = AthenahClient("id", "dist", "rippled")
-response = client.prompt(prompt)
+response = client.promptv1(prompt)
 print(response)

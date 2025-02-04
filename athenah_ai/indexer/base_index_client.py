@@ -62,12 +62,20 @@ def summarize_file(content: str):
 #         return response
 
 
-def prepare_dir(root: str, save_path: str = None) -> Tuple[List[str], List[str]]:
+def prepare_dir(
+    root: str, save_path: str = None, recursive: bool = False
+) -> Tuple[List[str], List[str]]:
     splited_docs: List[str] = []
     splited_metadatas: List[str] = []
 
-    logger.debug(f"PREPARE DIR: {root}")
-    loader = DirectoryLoader(root, silent_errors=True, recursive=True)
+    logger.error(f"PREPARE DIR: {root}")
+    logger.error(f"PREPARE DIR: {recursive}")
+    loader = DirectoryLoader(
+        root,
+        silent_errors=True,
+        recursive=recursive,
+        exclude=["**/node_modules/**"],
+    )
     docs = loader.load()
     for doc in docs:
         doc.metadata["source"] = doc.metadata["source"].strip(".txt")
@@ -246,17 +254,42 @@ class BaseIndexClient(object):
     #         cls.splited_docs, embedding=embedder, metadatas=cls.splited_metadatas
     #     )
 
-    def build_from_dirs(cls, dirs: List[str]) -> Tuple[List[str], List[str]]:
+    def _build_from_dirs(
+        cls, source: str, dirs: List[str], include_root: bool
+    ) -> Tuple[List[str], List[str]]:
         _splitted_docs: List[str] = []
         _splited_metadatas: List[str] = []
         for dir in dirs:
-            splited_docs, splited_metadatas = prepare_dir(dir, cls.name_version_path)
+            splited_docs, splited_metadatas = prepare_dir(
+                dir, cls.name_version_path, True
+            )
             logger.debug(f"Adding Splitted Docs #: {len(splited_docs)}")
             logger.debug(f"Adding Splitted Metadatas #: {len(splited_metadatas)}")
             _splitted_docs.extend(splited_docs)
             _splited_metadatas.extend(splited_metadatas)
             logger.debug(f"Total Splitted Docs #: {len(_splitted_docs)}")
             logger.debug(f"Total Splitted Metadatas #: {len(_splited_metadatas)}")
+        # if include_root:
+        #     splited_docs, splited_metadatas = prepare_dir(
+        #         source, cls.name_version_path, False
+        #     )
+
+        return _splitted_docs, _splited_metadatas
+
+    def _build_from_files(cls, file_paths: List[str]) -> Tuple[List[str], List[str]]:
+        _splitted_docs: List[str] = []
+        _splited_metadatas: List[str] = []
+        for file_path in file_paths:
+            splited_docs, splited_metadatas = prepare_file(
+                file_path, cls.name_version_path
+            )
+            logger.debug(f"Adding Splitted Docs #: {len(splited_docs)}")
+            logger.debug(f"Adding Splitted Metadatas #: {len(splited_metadatas)}")
+            _splitted_docs.extend(splited_docs)
+            _splited_metadatas.extend(splited_metadatas)
+            logger.debug(f"Total Splitted Docs #: {len(_splitted_docs)}")
+            logger.debug(f"Total Splitted Metadatas #: {len(_splited_metadatas)}")
+
         return _splitted_docs, _splited_metadatas
 
     def store_from_docs(cls, splited_docs: List[str], splited_metadatas: List[str]):

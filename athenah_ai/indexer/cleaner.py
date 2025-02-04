@@ -2,7 +2,7 @@ import os
 import re
 import ast
 import logging
-from typing import Set
+from typing import Set, List
 
 logger = logging.getLogger("app")
 
@@ -68,21 +68,34 @@ class AthenahCleaner:
         ".txt": "text",
     }
 
-    def postclean_directory(self, root: str) -> None:
+    def postclean_directory(self, root: str, recursive: bool = False) -> None:
+        """
+        Post-process the directory after cleaning.
+        If recursive is True, it will process subdirectories as well.
+        """
         logger.debug(f"POST-CLEAN DIR: {root}")
 
         # First, remove any .png and .pdf files
-        self.remove_binary_files(root)
+        self.remove_binary_files(root, recursive=recursive)
 
         all_files = []
         ignore_folders = {".git"}
         logger.debug("Finding all files in the root folder...")
-        for path, subdirs, files in os.walk(root):
-            # Ignore directories in ignore_folders
-            subdirs[:] = [d for d in subdirs if d not in ignore_folders]
-            for name in files:
-                folder_path = os.path.join(path, name)
-                all_files.append(folder_path)
+
+        if recursive:
+            # Walk through all subdirectories
+            for path, subdirs, files in os.walk(root):
+                # Ignore directories in ignore_folders
+                subdirs[:] = [d for d in subdirs if d not in ignore_folders]
+                for name in files:
+                    folder_path = os.path.join(path, name)
+                    all_files.append(folder_path)
+        else:
+            # Only list files in the top-level directory
+            for name in os.listdir(root):
+                folder_path = os.path.join(root, name)
+                if os.path.isfile(folder_path):
+                    all_files.append(folder_path)
 
         logger.debug("Finding unknown file types...")
         unknown_files = []
@@ -110,15 +123,40 @@ class AthenahCleaner:
 
         logger.debug("Post-cleaning complete for directory.")
 
-    def remove_binary_files(self, root: str) -> None:
+    def postclean_files(self, file_paths: List[str]) -> None:
         """
-        Removes any .png and .pdf files in the given directory and its subdirectories.
+        Post-process the directory after cleaning.
+        If recursive is True, it will process subdirectories as well.
+        """
+        for file_path in file_paths:
+            self.postclean_file(file_path)
+
+    def remove_binary_files(self, root: str, recursive: bool = False) -> None:
+        """
+        Removes any .png, .pdf, and other binary files in the given directory.
+        If recursive is True, it will process subdirectories as well.
         """
         logger.debug("Removing .png and .pdf files...")
-        for path, subdirs, files in os.walk(root):
-            for name in files:
-                if name.lower().endswith((".png", ".pdf", ".jpg", ".jpeg", ".ico")):
-                    file_path = os.path.join(path, name)
+
+        binary_extensions = (".png", ".pdf", ".jpg", ".jpeg", ".ico")
+        if recursive:
+            # Walk through all subdirectories
+            for path, subdirs, files in os.walk(root):
+                for name in files:
+                    if name.lower().endswith(binary_extensions):
+                        file_path = os.path.join(path, name)
+                        try:
+                            os.remove(file_path)
+                            logger.debug(f"Removed file: {file_path}")
+                        except Exception as e:
+                            logger.error(f"Error removing file {file_path}: {e}")
+        else:
+            # Only list files in the top-level directory
+            for name in os.listdir(root):
+                file_path = os.path.join(root, name)
+                if os.path.isfile(file_path) and name.lower().endswith(
+                    binary_extensions
+                ):
                     try:
                         os.remove(file_path)
                         logger.debug(f"Removed file: {file_path}")
@@ -126,6 +164,9 @@ class AthenahCleaner:
                         logger.error(f"Error removing file {file_path}: {e}")
 
     def postclean_file(self, file: str) -> None:
+        """
+        Post-process a single file after cleaning.
+        """
         logger.debug(f"POST-CLEAN FILE: {file}")
         filetype = detect_filetype(file)
         if filetype == FileType.UNKNOWN or filetype == FileType.JSON:
@@ -311,15 +352,33 @@ class AthenahCleaner:
         # Similar to C/C++ cleaner
         return self.clean_c_cpp_code(code)
 
-    def clean_directory(self, directory: str) -> None:
+    def clean_dir(self, directory: str, recursive: bool = False) -> None:
         """
-        Recursively cleans all files in the given directory.
+        Cleans all files in the given directory.
+        If recursive is True, it will clean files in subdirectories as well.
         """
         # Now proceed to clean the files
-        for root, _, files in os.walk(directory):
-            for filename in files:
-                filepath = os.path.join(root, filename)
-                self.clean_file(filepath)
+        if recursive:
+            # Walk through all subdirectories
+            for root, _, files in os.walk(directory):
+                for filename in files:
+                    filepath = os.path.join(root, filename)
+                    logger.debug(f"Cleaning file `{filepath}`")
+                    self.clean_file(filepath)
+        else:
+            # Only list files in the top-level directory
+            for filename in os.listdir(directory):
+                filepath = os.path.join(directory, filename)
+                if os.path.isfile(filepath):
+                    logger.debug(f"Cleaning file `{filepath}`")
+                    self.clean_file(filepath)
 
         # Post-clean the directory
-        self.postclean_directory(directory)
+        self.postclean_directory(directory, recursive=recursive)
+
+    def clean_files(self, file_paths: List[str]) -> None:
+        for file_path in file_paths:
+            self.clean_file(file_path)
+
+        # Post-clean the file_paths
+        self.postclean_files(file_paths)

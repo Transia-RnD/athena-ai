@@ -44,83 +44,104 @@ class IndexClient(BaseIndexClient):
         if is_dir:
             shutil.rmtree(dest, ignore_errors=True)
         else:
-            os.remove(dest)
+            shutil.rmtree(dest, ignore_errors=True)
 
-    def copy(cls, source: str, dest: str, is_dir: bool = False):
-        if is_dir:
-            shutil.copytree(
-                source,
-                dest,
-                dirs_exist_ok=True,
-                ignore=ignore_patterns(
-                    "node_modules*",
-                    "dist*",
-                    "build*",
-                    ".git*",
-                    ".venv*",
-                    ".vscode*",
-                    "__pycache__*",
-                    "poetry.lock",
-                ),
-            )
-        else:
-            os.makedirs(dest, exist_ok=True)
-            file_name: str = source.split("/")[-1]
-            shutil.copyfile(source, f"{dest}/{file_name}")
+    def copy_dir(cls, source: str, dest: str):
+        shutil.copytree(
+            source,
+            dest,
+            dirs_exist_ok=True,
+            ignore=ignore_patterns(
+                "node_modules*",
+                "dist*",
+                "build*",
+                ".git*",
+                ".venv*",
+                ".vscode*",
+                "__pycache__*",
+                "poetry.lock",
+            ),
+        )
 
-    # def build_from_ignore(
-    #     cls,
-    #     name: str,
-    #     ignore: Union[List[str], str] = None,
-    # ):
-    #     raise ValueError("unimplemented")
-    #     _docs, _metadata = cls.build_from_dirs(ignore)
-    #     store: FAISS = cls.store_from_docs(_docs, _metadata)
-    #     cls.save(store)
-    #     return store
+    def copy_file(cls, source: str, dest: str):
+        shutil.copyfile(source, dest)
 
-    def prepare_whitelist(cls, source: str, dest_filepath: str):
+    def prepare_dir(cls, source: str, dest_filepath: str):
         logger.debug(f"DEST PATH: {dest_filepath}")
         cls.remove(dest_filepath, True)
-        cls.copy(source, dest_filepath, True)
+        cls.copy_dir(source, dest_filepath)
 
-    def build_whitlist_from_dir(
+    def prepare_file(cls, source: str, dest_filepath: str):
+        logger.debug(f"DEST PATH: {dest_filepath}")
+        cls.remove(dest_filepath, False)
+        cls.copy_file(source, dest_filepath)
+
+    def build_from_dir(
         cls,
         source: str,
     ):
         source_name: str = f"{cls.name}-source"
         dest_filepath: str = os.path.join(cls.name_path, source_name)
-        cls.prepare_whitelist(
+        cls.prepare_dir(
             source,
             dest_filepath,
         )
         build_paths: List[str] = [f"{cls.name_path}/{source_name}"]
-        [AthenahCleaner().clean_directory(filepath) for filepath in build_paths]
-        _docs, _metadata = cls.build_from_dirs(build_paths)
+        [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
+        _docs, _metadata = cls._build_from_dirs(source, build_paths, False)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
         return store
 
-    def build_whitlist_from_dirs(
+    def build_from_dirs(
         cls,
         source: str,
         folders: Union[List[str], str] = None,
+        include_root: bool = False,
     ):
         source_name: str = f"{cls.name}-source"
         dest_filepath: str = os.path.join(cls.name_path, source_name)
-        cls.prepare_whitelist(
+        cls.prepare_dir(
             source,
             dest_filepath,
         )
         build_paths: List[str] = [f"{cls.name_path}/{source_name}/{f}" for f in folders]
-        [AthenahCleaner().clean_directory(filepath) for filepath in build_paths]
-        _docs, _metadata = cls.build_from_dirs(build_paths)
+        [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
+        if include_root:
+            AthenahCleaner().clean_dir(f"{cls.name_path}/{source_name}", False)
+        _docs, _metadata = cls._build_from_dirs(source, build_paths, include_root)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
         return store
 
-    def build_from_file(cls, name: str, file_path: str):
-        _docs, _metadata = cls.build_from_file(file_path)
+    def build_from_files(cls, file_paths: List[str]):
+        source_name: str = f"{cls.name}-source"
+        dest_source: str = os.path.join(cls.name_path, source_name)
+        shutil.rmtree(dest_source, ignore_errors=True)
+        os.makedirs(dest_source, exist_ok=True)
+        for file_path in file_paths:
+            cls.prepare_file(
+                file_path,
+                os.path.join(dest_source, file_path.split("/")[-1]),
+            )
+
+        AthenahCleaner().clean_dir(dest_source, True)
+        _docs, _metadata = cls._build_from_dirs(dest_source, [dest_source], True)
+        store: FAISS = cls.store_from_docs(_docs, _metadata)
+        cls.save(store)
+        return store
+
+    def build_from_file(cls, file_path: str):
+        source_name: str = f"{cls.name}-source"
+        dest_source: str = os.path.join(cls.name_path, source_name)
+        shutil.rmtree(dest_source, ignore_errors=True)
+        os.makedirs(dest_source, exist_ok=True)
+        cls.prepare_file(
+            file_path,
+            os.path.join(dest_source, file_path.split("/")[-1]),
+        )
+        AthenahCleaner().clean_dir(dest_source, True)
+        _docs, _metadata = cls._build_from_dirs(dest_source, [dest_source], True)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
         return store

@@ -9,13 +9,13 @@ namespace ripple {
 
 namespace BuildInfo {
 
-//--------------------------------------------------------------------------
-//  The build version number. You must edit this for each release
-//  and follow the format described at http://semver.org/
-//------------------------------------------------------------------------------
-// clang-format off
+
+
+
+
+
 char const* const versionString = "2.3.0-b1"
-// clang-format on
+
 
 #if defined(DEBUG) || defined(SANITIZER)
     "+"
@@ -35,12 +35,12 @@ char const* const versionString = "2.3.0-b1"
 #endif
 #endif
 
-    //--------------------------------------------------------------------------
+    
     ;
 
-//
-// Don't touch anything below this line
-//
+
+
+
 
 std::string const&
 getVersionString()
@@ -154,6 +154,6 @@ isNewerVersion(std::uint64_t version)
     return false;
 }
 
-}  // namespace BuildInfo
+}  
 
-}  // namespace ripple
+}  
