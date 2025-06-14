@@ -32,3 +32,17 @@ def write_file(path: str, data: Any) -> str:
     """
     with open(path, "w") as f:
         return f.write(data)
+
+
+def read_json(path: str) -> Dict[str, object]:
+    """Read Json
+
+     # noqa: E501
+
+    :param path: Path to json
+    :type path: str
+
+    :rtype: Dict[str, object]
+    """
+    with open(path) as json_file:
+        return json.load(json_file)

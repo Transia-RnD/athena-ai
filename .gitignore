@@ -13,5 +13,5 @@ credentials.production.json
 
 credentials.json
 chatbot_data
+tool_data
 tmp
-/playgrounds

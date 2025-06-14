@@ -387,8 +387,7 @@ class AthenahClient(VectorStore):
         except Exception as e:
             raise ValueError(f"failed to generate a prompt completion: {str(e)}")
 
-    def agent_prompt(cls, name: str, description: str, prompt: str):
-        tools = []
+    def agent_prompt(cls, name: str, description: str, prompt: str) -> str:
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
@@ -400,13 +399,35 @@ class AthenahClient(VectorStore):
             llm=cls.llm,
             retriever=cls.db.as_retriever(),
         )
-        tools.append(
+
+        def read_file(path: str) -> str:
+            """Read File
+
+            # noqa: E501
+
+            :param path: Path to file
+            :type path: str
+
+            :rtype: str
+            """
+            try:
+                with open(path, "r") as f:
+                    return f.read()
+            except Exception as e:
+                return ""
+
+        tools = [
+            Tool(
+                name="Read a file",
+                func=read_file,
+                description=f"Read a file from a path. Include the full path to the file.",
+            ),
             Tool(
                 name=name,
                 func=chain.run,
                 description=description,
-            )
-        )
+            ),
+        ]
         agent = initialize_agent(
             tools,
             cls.llm,
