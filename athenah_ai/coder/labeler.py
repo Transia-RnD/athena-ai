@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Set
 
 from athenah_ai.client import AthenahClient
 from athenah_ai.utils.tokens import get_token_total
@@ -12,13 +12,6 @@ logger = logging.getLogger("app")
 
 
 class AICodeLabeler:
-    storage_type: str = "local"
-    id: str = ""
-    dir: str = ""
-    name: str = ""
-    version: str = ""
-
-    # Mapping of file extensions to languages
     language_extensions = {
         ".py": "python",
         ".cpp": "cpp",
@@ -42,43 +35,26 @@ class AICodeLabeler:
         self.dir = dir
         self.name = name
         self.version = version
-        self.base_path: str = os.path.join(basedir, dir)
-        self.name_path: str = os.path.join(self.base_path, name)
-        self.source_path: str = os.path.join(self.name_path, f"{name}-source")
+        self.base_path = os.path.join(basedir, dir)
+        self.name_path = os.path.join(self.base_path, name)
+        self.source_path = os.path.join(self.name_path, f"{name}-source")
         self.client = AthenahClient(self.id, self.dir)
 
-    def prepare_source_code(self, allowed_dirs: List[Any]) -> List[Dict[str, Any]]:
-        """
-        Prepare Source code by extracting functions and function calls from files in specified directories.
-        """
-        for dir_path in allowed_dirs:
-            dir_full_path = os.path.join(self.source_path, dir_path)
-            self.get_details_in_dir(dir_full_path)
+    def process_directories(self, directories: List[str], max_retries: int = 3) -> None:
+        processed_files: Set[str] = set()
+        failed_files: Set[str] = set()
+        for rel_dir in directories:
+            abs_dir = os.path.join(self.source_path, rel_dir)
+            self._process_directory(abs_dir, processed_files, failed_files, max_retries)
 
-    def get_total_lines_of_file(self, file_path: str) -> int:
+    def _count_lines(self, file_path: str) -> int:
         with open(file_path, "r", encoding="utf-8") as f:
             return sum(1 for _ in f)
 
-    def write_function_source(
-        self, function_name: str, function_source: str, output_dir: str
-    ):
-        output_file = os.path.join(output_dir, f"{function_name}.ai")
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(function_source)
-
-    def write_function_call_list(
-        self, function_name: str, function_calls: List[Dict[str, Any]], output_dir: str
-    ):
-        output_file = os.path.join(output_dir, f"{function_name}.list.json.ai")
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(function_calls, f, indent=4)
-
-    def get_description_of_file(
+    def _summarize_file(
         self, file_name: str, content: str, classes: dict, functions: dict, args: dict
-    ) -> List[Dict[str, Any]]:
-        response_template: str = """
-        { "description": "file_description" }
-        """
+    ) -> str:
+        response_template = '{ "description": "file_description" }'
         prompt = f"""
         Summarize the {file_name} file:
         ```code
@@ -100,17 +76,15 @@ class AICodeLabeler:
         - Return valid json
         """
         ai_response = self.client.base_prompt(None, prompt)
-        # print(f"Description: {ai_response}")
         try:
             json_data = json.loads(ai_response)
         except json.JSONDecodeError as e:
-            logger.error(f"Error: `get_description_of_file`: {e}")
+            logger.error(f"Error: `_summarize_file`: {e}")
             json_data = {"description": ""}
-            # raise ValueError(f"Failed to parse AI response: {e}")
-        return json_data
+        return json_data.get("description", "")
 
-    def list_functions_in_file(self, content: str) -> List[Dict[str, Any]]:
-        response_template: str = """
+    def _extract_functions(self, content: str) -> List[Dict[str, Any]]:
+        response_template = """
         [{
             "name": "function_name",
             "args": ["list of arguments"],
@@ -133,17 +107,15 @@ class AICodeLabeler:
         - If the list of functions is empty return []
         """
         ai_response = self.client.base_prompt(None, prompt)
-        # print(f"Function: {ai_response}")
         try:
             json_data = json.loads(ai_response)
         except json.JSONDecodeError as e:
-            logger.error(f"Error: `list_functions_in_file`: {e}")
+            logger.error(f"Error: `_extract_functions`: {e}")
             json_data = []
-            # raise ValueError(f"Failed to parse AI response: {e}")
         return json_data
 
-    def list_namespaces_in_file(self, content: str) -> List[Dict[str, Any]]:
-        response_template: str = """
+    def _extract_namespaces(self, content: str) -> List[Dict[str, Any]]:
+        response_template = """
         [{
             "name": "namespace_name",
         }]
@@ -164,17 +136,15 @@ class AICodeLabeler:
         - If the list of namespaces is empty return []
         """
         ai_response = self.client.base_prompt(None, prompt)
-        # print(f"Function: {ai_response}")
         try:
             json_data = json.loads(ai_response)
         except json.JSONDecodeError as e:
-            logger.error(f"Error: `list_namespaces_in_file`: {e}")
+            logger.error(f"Error: `_extract_namespaces`: {e}")
             json_data = []
-            # raise ValueError(f"Failed to parse AI response: {e}")
         return json_data
 
-    def list_classes_in_file(self, content: str) -> List[Dict[str, Any]]:
-        response_template: str = """
+    def _extract_classes(self, content: str) -> List[Dict[str, Any]]:
+        response_template = """
         [{
             "name": "class_name",
             "constructors": "list of constructors",
@@ -197,17 +167,15 @@ class AICodeLabeler:
         - If the list of functions is empty return []
         """
         ai_response = self.client.base_prompt(None, prompt)
-        # print(f"Classes: {ai_response}")
         try:
             json_data = json.loads(ai_response)
         except json.JSONDecodeError as e:
-            logger.error(f"Error: `list_classes_in_file`: {e}")
+            logger.error(f"Error: `_extract_classes`: {e}")
             json_data = []
-            # raise ValueError(f"Failed to parse AI response: {e}")
         return json_data
 
-    def list_args_in_file(self, content: str) -> List[Dict[str, Any]]:
-        response_template: str = """
+    def _extract_args(self, content: str) -> List[Dict[str, Any]]:
+        response_template = """
         [{
             "name": "class_name",
             "lineno": starting_line_number
@@ -229,29 +197,14 @@ class AICodeLabeler:
         - If the list of args is empty return []
         """
         ai_response = self.client.base_prompt(None, prompt)
-        # print(f"Arguments: {ai_response}")
         try:
             json_data = json.loads(ai_response)
         except json.JSONDecodeError as e:
-            logger.error(f"Error: `list_args_in_file`: {e}")
+            logger.error(f"Error: `_extract_args`: {e}")
             json_data = []
-            # raise ValueError(f"Failed to parse AI response: {e}")
         return json_data
 
-    def validate_functions(self, functions: List[Dict[str, Any]], total_lines: int):
-        for func in functions:
-            lineno = func.get("lineno", None)
-            if lineno and lineno > total_lines:
-                logger.warning(
-                    f"Function {func['name']} starts at line {lineno}, which is beyond total lines {total_lines}."
-                )
-
-    def get_details_for_file(self, file_path: str, file_name: str) -> Dict[str, str]:
-        """
-        Traverse the directory and subdirectories to find all source files.
-        For each file, extract function definitions using AI assistance.
-        Build a mapping from function name to file path.
-        """
+    def _process_file(self, file_path: str, file_name: str) -> str:
         file_ext = os.path.splitext(file_name)[-2]
         _file_ext = ".".join([s for s in file_ext.split(".") if s != "txt"])
         _file_ext = _file_ext.split(".")[-1]
@@ -260,42 +213,101 @@ class AICodeLabeler:
         if language:
             with open(file_path, "r", encoding="utf-8") as f:
                 source_code = f.read()
-                classes = self.list_classes_in_file(source_code)
-                args = self.list_args_in_file(source_code)
-                functions = self.list_functions_in_file(source_code)
-                namespaces = self.list_namespaces_in_file(source_code)
-                description = self.get_description_of_file(
+                classes = self._extract_classes(source_code)
+                args = self._extract_args(source_code)
+                functions = self._extract_functions(source_code)
+                namespaces = self._extract_namespaces(source_code)
+                description = self._summarize_file(
                     file_path, source_code, classes, functions, args
                 )
-
-                config: Dict[str, Any] = {
+                config = {
                     "file_path": file_path,
-                    "description": description["description"],
+                    "description": description,
                     "namespaces": namespaces,
                     "language": language,
                     "functions": functions,
                     "args": args,
                     "classes": classes,
                 }
-                # remove the .txt extension
-                file_path = file_path.replace(".txt", "")
-                dest_file_path = f"{file_path}.ai.json"
+                file_path_no_txt = file_path.replace(".txt", "")
+                dest_file_path = f"{file_path_no_txt}.ai.json"
                 with open(dest_file_path, "w") as f:
                     json.dump(config, f, indent=2, sort_keys=True)
+                return dest_file_path
+        return ""
 
-    def get_details_in_dir(self, dir_path: str) -> Dict[str, str]:
+    def _verify_file(
+        self, file_path: str, result_path: str, max_attempts: int = 3
+    ) -> bool:
+        if not os.path.exists(file_path) or not os.path.exists(result_path):
+            logger.error(
+                f"Source or result file does not exist: {file_path}, {result_path}"
+            )
+            return False
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            source_code = f.read()
+        with open(result_path, "r", encoding="utf-8") as f:
+            result_json = json.load(f)
+
+        prompt_template = """
+        You are an expert code reviewer. Given the following source code and its AI-generated summary/result,
+        rate the accuracy of the result on a scale from 0 to 100, where 100 means perfect accuracy.
+        Provide a JSON response in the following format:
+        {{
+            "score": <integer 0-100>,
+            "reason": "<short explanation>"
+        }}
+
+        Source code:
+        ```code
+        {source}
+        ```
+
+        AI Result:
+        ```json
+        {result}
+        ```
         """
-        Traverse the directory and subdirectories to find all source files.
-        For each file, extract function definitions using AI assistance.
-        Build a mapping from function name to file path.
-        """
-        MAX_TOKENS: int = 2000
-        too_big_files: List[str] = []
+
+        for attempt in range(1, max_attempts + 1):
+            prompt = prompt_template.format(
+                source=source_code, result=json.dumps(result_json, indent=2)
+            )
+            ai_response = self.client.base_prompt(None, prompt)
+            try:
+                response_json = json.loads(ai_response)
+                score = response_json.get("score", 0)
+                reason = response_json.get("reason", "")
+            except Exception as e:
+                logger.error(f"Verification AI response error: {e}")
+                return False
+
+            logger.info(
+                f"Verification attempt {attempt}: score={score}, reason={reason}"
+            )
+
+            if score == 100:
+                return True
+
+        return False
+
+    def _process_directory(
+        self,
+        dir_path: str,
+        processed_files: Set[str],
+        failed_files: Set[str],
+        max_retries: int = 3,
+    ) -> None:
+        MAX_TOKENS = 2000
+        oversized_files: List[str] = []
         for root, _, files in os.walk(dir_path):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
-                total_lines: int = self.get_total_lines_of_file(file_path)
-                print(f"File {file_name} has: {total_lines} lines")
+                if file_path in processed_files or file_path in failed_files:
+                    continue
+                total_lines = self._count_lines(file_path)
+                logger.debug(f"File {file_name} has: {total_lines} lines")
                 with open(file_path, "r", encoding="utf-8") as f:
                     source_code = f.read()
                     total_tokens = get_token_total(source_code)
@@ -303,9 +315,25 @@ class AICodeLabeler:
                         logger.warning(
                             f"File {file_path} has {total_tokens} tokens, which exceeds the limit of {MAX_TOKENS} tokens."
                         )
-                        too_big_files.append(file_path)
+                        oversized_files.append(file_path)
                         continue
 
-                    self.get_details_for_file(file_path, file_name)
-
-        print(f"Too big files: {too_big_files}")
+                retries = 0
+                while retries < max_retries:
+                    result_path = self._process_file(file_path, file_name)
+                    if not result_path:
+                        failed_files.add(file_path)
+                        break
+                    verified = self._verify_file(file_path, result_path, max_attempts=3)
+                    if verified:
+                        processed_files.add(file_path)
+                        break
+                    else:
+                        logger.warning(
+                            f"Verification failed for {file_path}, retrying ({retries+1}/{max_retries})"
+                        )
+                        retries += 1
+                if retries == max_retries:
+                    failed_files.add(file_path)
+        if oversized_files:
+            print(f"Oversized files: {oversized_files}")

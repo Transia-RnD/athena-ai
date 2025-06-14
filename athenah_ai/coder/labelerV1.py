@@ -13,13 +13,6 @@ logger.setLevel(logging.DEBUG)
 
 
 class AICodeLabelerV1:
-    storage_type: str = "local"
-    id: str = ""
-    dir: str = ""
-    name: str = ""
-    version: str = ""
-
-    # Mapping of file extensions to languages
     language_extensions = {
         ".py": "python",
         ".cpp": "cpp",
@@ -50,24 +43,20 @@ class AICodeLabelerV1:
             self.id, self.dir, self.name, self.version, "gpt-4.1", temperature=0
         )
 
-    def prepare_source_code(self, allowed_dirs: List[Any]) -> List[Dict[str, Any]]:
+    def process_directories(self, directories: List[str]) -> None:
         """
-        Prepare Source code by extracting functions and function calls from files in specified directories.
+        Process all files in the given directories, generating AI summaries for each source file.
         """
-        for dir_path in allowed_dirs:
-            dir_full_path = os.path.join(self.source_path, dir_path)
-            self.get_details_in_dir(dir_full_path)
+        for rel_dir in directories:
+            abs_dir = os.path.join(self.source_path, rel_dir)
+            self._process_directory(abs_dir)
 
-    def get_total_lines_of_file(self, file_path: str) -> int:
+    def _count_file_lines(self, file_path: str) -> int:
         with open(file_path, "r", encoding="utf-8") as f:
             return sum(1 for _ in f)
 
-    def get_description_of_file(
-        self, file_name: str, content: str
-    ) -> List[Dict[str, Any]]:
-        response_template: str = """
-        { "description": "file_description" }
-        """
+    def _summarize_file(self, file_name: str, content: str) -> str:
+        response_template = '{ "description": "file_description" }'
         prompt = f"""
         Summarize the {file_name} file:
         ```code
@@ -86,21 +75,14 @@ class AICodeLabelerV1:
         - Return valid json
         """
         ai_response = self.client.prompt(prompt)
-        # print(f"Description: {ai_response}")
         try:
             json_data = json.loads(ai_response)
         except json.JSONDecodeError as e:
-            logger.error(f"Error: `get_description_of_file`: {e}")
+            logger.error(f"Error: `_summarize_file`: {e}")
             json_data = {"description": ""}
-            # raise ValueError(f"Failed to parse AI response: {e}")
-        return json_data
+        return json_data.get("description", "")
 
-    def get_details_for_file(self, file_path: str, file_name: str) -> Dict[str, str]:
-        """
-        Traverse the directory and subdirectories to find all source files.
-        For each file, extract function definitions using AI assistance.
-        Build a mapping from function name to file path.
-        """
+    def _process_file(self, file_path: str, file_name: str) -> None:
         file_ext = os.path.splitext(file_name)[-2]
         _file_ext = ".".join([s for s in file_ext.split(".") if s != "txt"])
         _file_ext = _file_ext.split(".")[-1]
@@ -109,51 +91,40 @@ class AICodeLabelerV1:
         if language:
             with open(file_path, "r", encoding="utf-8") as f:
                 source_code = f.read()
-                description = self.get_description_of_file(file_path, source_code)
-                config: Dict[str, Any] = {
+                description = self._summarize_file(file_name, source_code)
+                metadata = {
                     "file_path": file_path,
-                    "description": description["description"],
+                    "description": description,
                     "language": language,
                 }
-                # remove the .txt extension
-                file_path = file_path.replace(".txt", "")
-                dest_file_path = f"{file_path}.ai.v1.json"
-                with open(dest_file_path, "w") as f:
-                    json.dump(config, f, indent=2, sort_keys=True)
+                dest_file_path = f"{file_path.replace('.txt', '')}.ai.v1.json"
+                with open(dest_file_path, "w") as out_f:
+                    json.dump(metadata, out_f, indent=2, sort_keys=True)
 
-    def get_details_in_dir(self, dir_path: str) -> Dict[str, str]:
-        """
-        Traverse the directory and subdirectories to find all source files.
-        For each file, extract function definitions using AI assistance.
-        Build a mapping from function name to file path.
-        """
-        MAX_TOKENS: int = MODEL_MAP[self.client.model_name]
-        too_big_files: List[str] = []
+    def _process_directory(self, dir_path: str) -> None:
+        max_tokens = MODEL_MAP[self.client.model_name]
+        oversized_files: List[str] = []
         for root, _, files in os.walk(dir_path):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
-                total_lines: int = self.get_total_lines_of_file(file_path)
-                logger.debug(f"File {file_name} has: {total_lines} lines")
-                # Check for ai file first
                 if file_path.endswith(".ai.v1.json"):
                     logger.debug(f"Skipping AI file: {file_path}")
                     continue
-                # Check if the file has an ai.v1.json file already
                 ai_file_path = f"{file_path.replace('.txt', '')}.ai.v1.json"
                 if os.path.exists(ai_file_path):
                     logger.debug(f"Skipping existing AI file: {ai_file_path}")
                     continue
+                total_lines = self._count_file_lines(file_path)
+                logger.debug(f"File {file_name} has: {total_lines} lines")
                 with open(file_path, "r", encoding="utf-8") as f:
                     source_code = f.read()
                     total_tokens = get_token_total(source_code)
-                    print(total_tokens)
-                    if total_tokens > MAX_TOKENS:
+                    if total_tokens > max_tokens:
                         logger.warning(
-                            f"File {file_path} has {total_tokens} tokens, which exceeds the limit of {MAX_TOKENS} tokens."
+                            f"File {file_path} has {total_tokens} tokens, which exceeds the limit of {max_tokens} tokens."
                         )
-                        too_big_files.append(file_path)
+                        oversized_files.append(file_path)
                         continue
-
-                    self.get_details_for_file(file_path, file_name)
-
-        print(f"Too big files: {too_big_files}")
+                    self._process_file(file_path, file_name)
+        if oversized_files:
+            print(f"Oversized files: {oversized_files}")
