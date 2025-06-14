@@ -33,14 +33,28 @@ load_dotenv()
 OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 OPENAI_API_MODEL: str = "gpt-4o"
-MAX_TOKENS: int = 2000
 
 MODEL_MAP = {
     "gpt-4o-mini": 16383,
     "gpt-4o": 4095,
     "gpt-4-turbo": 4095,
     "gpt-4": 8191,
+    "gpt-4.1": 32768,
+    "o4-mini": 100000,
 }
+
+
+def get_max_tokens(model_name: str) -> int:
+    """
+    Get the maximum number of tokens for a given OpenAI model.
+
+    Args:
+        model_name (str): The name of the OpenAI model.
+
+    Returns:
+        int: The maximum number of tokens for the model.
+    """
+    return MODEL_MAP.get(model_name, 4096)  # Default to 4096 if model not found
 
 
 def get_token_total(prompt: str) -> int:
@@ -165,7 +179,7 @@ class AthenahClient(VectorStore):
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
-            max_tokens=MAX_TOKENS,
+            max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # You can include other model kwargs if necessary
         )
@@ -182,7 +196,7 @@ class AthenahClient(VectorStore):
         """
 
         # Adjust the model if necessary based on token limits
-        if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+        if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
         # Initialize the OpenAI LLM with the adjusted parameters
@@ -190,7 +204,7 @@ class AthenahClient(VectorStore):
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
-            max_tokens=MAX_TOKENS + get_token_total(prompt),
+            max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # You can include other model kwargs if necessary
         )
@@ -226,14 +240,14 @@ class AthenahClient(VectorStore):
             str: The generated response.
         """
 
-        if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+        if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
-            max_tokens=MAX_TOKENS + get_token_total(prompt),
+            max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
             #     "top_p": cls.top_p,
@@ -265,14 +279,14 @@ class AthenahClient(VectorStore):
             str: The generated response.
         """
 
-        if MAX_TOKENS + get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+        if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
-            max_tokens=MAX_TOKENS + get_token_total(prompt),
+            max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
             #     "top_p": cls.top_p,
@@ -379,7 +393,7 @@ class AthenahClient(VectorStore):
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
-            max_tokens=MAX_TOKENS + get_token_total(prompt),
+            max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
         )
         chain = RetrievalQA.from_llm(
@@ -419,7 +433,7 @@ class AthenahClient(VectorStore):
         params = {
             "model": OPENAI_API_MODEL,
             "messages": messages,
-            "max_tokens": MAX_TOKENS,
+            "max_tokens": get_max_tokens(OPENAI_API_MODEL),
             "temperature": 0,
         }
 
@@ -457,14 +471,14 @@ class AthenahClient(VectorStore):
 
         question_w_system: str = " ".join([msg["content"] for msg in messages])
         total_tokens: int = get_token_total(question_w_system)
-        if MAX_TOKENS + total_tokens > MODEL_MAP[cls.model_name]:
+        if total_tokens > MODEL_MAP[cls.model_name]:
             cls.model_name = "gpt-4o"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
             temperature=cls.temperature,
-            max_tokens=MAX_TOKENS + total_tokens,
+            max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
             #     "top_p": cls.top_p,
