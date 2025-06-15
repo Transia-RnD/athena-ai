@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Dict, Any, List, Set
 
-from athenah_ai.client import AthenahClient
+from athenah_ai.client import AthenahClient, MODEL_MAP
 from athenah_ai.utils.tokens import get_token_total
 
 from basedir import basedir
@@ -253,7 +253,7 @@ class AICodeLabeler:
         prompt_template = """
         You are an expert code reviewer. Given the following source code and its AI-generated summary/result,
         rate the accuracy of the result on a scale from 0 to 100, where 100 means perfect accuracy.
-        Provide a JSON response in the following format:
+        ONLY Return a JSON response in the following format:
         {{
             "score": <integer 0-100>,
             "reason": "<short explanation>"
@@ -281,13 +281,13 @@ class AICodeLabeler:
                 reason = response_json.get("reason", "")
             except Exception as e:
                 logger.error(f"Verification AI response error: {e}")
-                return False
+                raise ValueError(f"Invalid AI response format: {ai_response}")
 
-            logger.info(
-                f"Verification attempt {attempt}: score={score}, reason={reason}"
-            )
+            # logger.info(
+            #     f"Verification attempt {attempt}: score={score}, reason={reason}"
+            # )
 
-            if score == 100:
+            if score >= 80:
                 return True
 
         return False
@@ -299,13 +299,23 @@ class AICodeLabeler:
         failed_files: Set[str],
         max_retries: int = 3,
     ) -> None:
-        MAX_TOKENS = 2000
+        MAX_TOKENS = MODEL_MAP["gpt-4.1"]
         oversized_files: List[str] = []
         for root, _, files in os.walk(dir_path):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
+                if file_path.endswith(".ai.json"):
+                    logger.debug(f"Skipping AI file: {file_path}")
+                    continue
+
                 if file_path in processed_files or file_path in failed_files:
                     continue
+
+                ai_file_path = f"{file_path.replace('.txt', '')}.ai.json"
+                if os.path.exists(ai_file_path):
+                    logger.debug(f"Skipping existing AI file: {ai_file_path}")
+                    continue
+
                 total_lines = self._count_lines(file_path)
                 logger.debug(f"File {file_name} has: {total_lines} lines")
                 with open(file_path, "r", encoding="utf-8") as f:
