@@ -68,8 +68,8 @@ def prepare_dir(
     splited_docs: List[str] = []
     splited_metadatas: List[str] = []
 
-    logger.error(f"PREPARE DIR: {root}")
-    logger.error(f"PREPARE DIR: {recursive}")
+    logger.debug(f"PREPARE DIR: {root}")
+    logger.debug(f"PREPARE DIR: {recursive}")
     loader = DirectoryLoader(
         root,
         silent_errors=True,

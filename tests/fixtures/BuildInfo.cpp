@@ -4,15 +4,11 @@
 #include <xrpl/protocol/BuildInfo.h>
 #include <boost/preprocessor/stringize.hpp>
 #include <algorithm>
+#include <optional>
 
 namespace ripple {
 
 namespace BuildInfo {
-
-
-
-
-
 
 char const* const versionString = "2.3.0-b1"
 
@@ -34,13 +30,7 @@ char const* const versionString = "2.3.0-b1"
     BOOST_PP_STRINGIZE(SANITIZER)
 #endif
 #endif
-
-    
     ;
-
-
-
-
 
 std::string const&
 getVersionString()
