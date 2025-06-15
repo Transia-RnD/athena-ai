@@ -3,12 +3,35 @@ import json
 import logging
 from typing import Dict, Any, List, Set
 
-from athenah_ai.client import AthenahClient
+from athenah_ai.client import AthenahClient, MODEL_MAP
 from athenah_ai.utils.tokens import get_token_total
 
 from basedir import basedir
 
 logger = logging.getLogger("app")
+
+
+def safe_json_loads(s: str):
+    """
+    Attempts to extract and load valid JSON from a string.
+    If not possible, returns None.
+    """
+    try:
+        # Remove code block markers and language hints
+        s = s.strip()
+        if s.startswith("```"):
+            s = s.lstrip("`")
+            # Remove language hint if present
+            if s.startswith("json"):
+                s = s[4:]
+            s = s.strip()
+        # Remove trailing code block if present
+        if s.endswith("```"):
+            s = s[:-3].strip()
+        return json.loads(s)
+    except Exception as e:
+        logger.error(f"safe_json_loads error: {e} | input: {s}")
+        return None
 
 
 class AICodeLabeler:
@@ -57,9 +80,9 @@ class AICodeLabeler:
         response_template = '{ "description": "file_description" }'
         prompt = f"""
         Summarize the {file_name} file:
-        ```code
+        [CODE]
         {content}
-        ```
+        [/CODE]
 
         FileName: {file_name}
         Classes: {classes}
@@ -71,15 +94,13 @@ class AICodeLabeler:
 
         Instructions:
 
-        - Do not include code blocks
+        - Do not include code blocks or markdown
         - If the list of points is empty return []
-        - Return valid json
+        - Return valid json only, no extra text
         """
         ai_response = self.client.base_prompt(None, prompt)
-        try:
-            json_data = json.loads(ai_response)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error: `_summarize_file`: {e}")
+        json_data = safe_json_loads(ai_response)
+        if not json_data or not isinstance(json_data, dict):
             json_data = {"description": ""}
         return json_data.get("description", "")
 
@@ -94,52 +115,50 @@ class AICodeLabeler:
         prompt = f"""
         List all functions in the `source_code.txt`:
 
-        ```source_code.txt
+        [CODE]
         {content}
-        ```
+        [/CODE]
 
         Response format:
         {response_template}
 
         Instructions:
 
-        - Do not include code blocks
+        - Do not include code blocks or markdown
         - If the list of functions is empty return []
+        - Return valid json only, no extra text
         """
         ai_response = self.client.base_prompt(None, prompt)
-        try:
-            json_data = json.loads(ai_response)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error: `_extract_functions`: {e}")
+        json_data = safe_json_loads(ai_response)
+        if not json_data or not isinstance(json_data, list):
             json_data = []
         return json_data
 
     def _extract_namespaces(self, content: str) -> List[Dict[str, Any]]:
         response_template = """
         [{
-            "name": "namespace_name",
+            "name": "namespace_name"
         }]
         """
         prompt = f"""
         List all namespaces in the `source_code.txt`:
 
-        ```source_code.txt
+        [CODE]
         {content}
-        ```
+        [/CODE]
 
         Response format:
         {response_template}
 
         Instructions:
 
-        - Do not include code blocks
+        - Do not include code blocks or markdown
         - If the list of namespaces is empty return []
+        - Return valid json only, no extra text
         """
         ai_response = self.client.base_prompt(None, prompt)
-        try:
-            json_data = json.loads(ai_response)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error: `_extract_namespaces`: {e}")
+        json_data = safe_json_loads(ai_response)
+        if not json_data or not isinstance(json_data, list):
             json_data = []
         return json_data
 
@@ -154,53 +173,51 @@ class AICodeLabeler:
         prompt = f"""
         List all classes in the `source_code.txt`:
 
-        ```source_code.txt
+        [CODE]
         {content}
-        ```
+        [/CODE]
 
         Response format:
         {response_template}
 
         Instructions:
 
-        - Do not include code blocks
-        - If the list of functions is empty return []
+        - Do not include code blocks or markdown
+        - If the list of classes is empty return []
+        - Return valid json only, no extra text
         """
         ai_response = self.client.base_prompt(None, prompt)
-        try:
-            json_data = json.loads(ai_response)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error: `_extract_classes`: {e}")
+        json_data = safe_json_loads(ai_response)
+        if not json_data or not isinstance(json_data, list):
             json_data = []
         return json_data
 
     def _extract_args(self, content: str) -> List[Dict[str, Any]]:
         response_template = """
         [{
-            "name": "class_name",
+            "name": "arg_or_var_name",
             "lineno": starting_line_number
         }]
         """
         prompt = f"""
         List all arguments and variables used in the `source_code.txt`:
 
-        ```source_code.txt
+        [CODE]
         {content}
-        ```
+        [/CODE]
 
         Response format:
         {response_template}
 
         Instructions:
 
-        - Do not include code blocks
+        - Do not include code blocks or markdown
         - If the list of args is empty return []
+        - Return valid json only, no extra text
         """
         ai_response = self.client.base_prompt(None, prompt)
-        try:
-            json_data = json.loads(ai_response)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error: `_extract_args`: {e}")
+        json_data = safe_json_loads(ai_response)
+        if not json_data or not isinstance(json_data, list):
             json_data = []
         return json_data
 
@@ -253,21 +270,19 @@ class AICodeLabeler:
         prompt_template = """
         You are an expert code reviewer. Given the following source code and its AI-generated summary/result,
         rate the accuracy of the result on a scale from 0 to 100, where 100 means perfect accuracy.
-        Provide a JSON response in the following format:
+        ONLY Return a JSON response in the following format:
         {{
             "score": <integer 0-100>,
             "reason": "<short explanation>"
         }}
 
         Source code:
-        ```code
+        [CODE]
         {source}
-        ```
+        [/CODE]
 
         AI Result:
-        ```json
         {result}
-        ```
         """
 
         for attempt in range(1, max_attempts + 1):
@@ -275,19 +290,14 @@ class AICodeLabeler:
                 source=source_code, result=json.dumps(result_json, indent=2)
             )
             ai_response = self.client.base_prompt(None, prompt)
-            try:
-                response_json = json.loads(ai_response)
-                score = response_json.get("score", 0)
-                reason = response_json.get("reason", "")
-            except Exception as e:
-                logger.error(f"Verification AI response error: {e}")
+            response_json = safe_json_loads(ai_response)
+            if not response_json or not isinstance(response_json, dict):
+                logger.error(
+                    f"Verification AI response error: Invalid format | {ai_response}"
+                )
                 return False
-
-            logger.info(
-                f"Verification attempt {attempt}: score={score}, reason={reason}"
-            )
-
-            if score == 100:
+            score = response_json.get("score", 0)
+            if score >= 80:
                 return True
 
         return False
@@ -297,15 +307,25 @@ class AICodeLabeler:
         dir_path: str,
         processed_files: Set[str],
         failed_files: Set[str],
-        max_retries: int = 3,
+        max_retries: int = 1,
     ) -> None:
-        MAX_TOKENS = 2000
+        MAX_TOKENS = MODEL_MAP["gpt-4.1"]
         oversized_files: List[str] = []
         for root, _, files in os.walk(dir_path):
             for file_name in files:
                 file_path = os.path.join(root, file_name)
+                if file_path.endswith(".ai.json"):
+                    logger.debug(f"Skipping AI file: {file_path}")
+                    continue
+
                 if file_path in processed_files or file_path in failed_files:
                     continue
+
+                ai_file_path = f"{file_path.replace('.txt', '')}.ai.json"
+                if os.path.exists(ai_file_path):
+                    logger.debug(f"Skipping existing AI file: {ai_file_path}")
+                    continue
+
                 total_lines = self._count_lines(file_path)
                 logger.debug(f"File {file_name} has: {total_lines} lines")
                 with open(file_path, "r", encoding="utf-8") as f:

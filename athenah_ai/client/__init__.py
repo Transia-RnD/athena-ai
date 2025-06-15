@@ -32,7 +32,7 @@ load_dotenv()
 
 OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
-OPENAI_API_MODEL: str = "gpt-4o"
+OPENAI_API_MODEL: str = "gpt-4.1"
 
 MODEL_MAP = {
     "gpt-4o-mini": 16383,
@@ -197,7 +197,7 @@ class AthenahClient(VectorStore):
 
         # Adjust the model if necessary based on token limits
         if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            cls.model_name = "gpt-4o"
+            cls.model_name = "o4-mini"
 
         # Initialize the OpenAI LLM with the adjusted parameters
         cls.llm = ChatOpenAI(
@@ -241,7 +241,7 @@ class AthenahClient(VectorStore):
         """
 
         if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            cls.model_name = "gpt-4o"
+            cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
@@ -280,7 +280,7 @@ class AthenahClient(VectorStore):
         """
 
         if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            cls.model_name = "gpt-4o"
+            cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
@@ -493,7 +493,7 @@ class AthenahClient(VectorStore):
         question_w_system: str = " ".join([msg["content"] for msg in messages])
         total_tokens: int = get_token_total(question_w_system)
         if total_tokens > MODEL_MAP[cls.model_name]:
-            cls.model_name = "gpt-4o"
+            cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
