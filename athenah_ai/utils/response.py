@@ -33,4 +33,4 @@ def safe_json_loads(s: str):
         return json.loads(s)
     except Exception as e:
         logger.error(f"safe_json_loads error: {e} | input: {s}")
-        return None
+        return {}

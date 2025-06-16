@@ -1,0 +1,114 @@
+[
+    {
+        "path": "src/libxrpl/crypto/csprng.cpp",
+        "function": "csprng_engine::operator()"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "randomSecretKey"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "generateSecretKey"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "generateKeyPair"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "randomKeyPair"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "derivePublicKey"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "SecretKey::~SecretKey"
+    },
+    {
+        "path": "src/libxrpl/crypto/secure_erase.cpp",
+        "function": "secure_erase"
+    },
+    {
+        "path": "src/libxrpl/protocol/tokens.cpp",
+        "function": "encodeBase58Token"
+    },
+    {
+        "path": "src/libxrpl/protocol/tokens.cpp",
+        "function": "decodeBase58Token"
+    },
+    {
+        "path": "src/libxrpl/protocol/PublicKey.cpp",
+        "function": "parseBase58"
+    },
+    {
+        "path": "src/libxrpl/protocol/PublicKey.cpp",
+        "function": "toBase58"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "parseBase58"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "toBase58"
+    },
+    {
+        "path": "src/libxrpl/crypto/RFC1751.cpp",
+        "function": "RFC1751::getEnglishFromKey"
+    },
+    {
+        "path": "src/libxrpl/crypto/RFC1751.cpp",
+        "function": "RFC1751::getKeyFromEnglish"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "sign"
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp",
+        "function": "signDigest"
+    },
+    {
+        "path": "src/libxrpl/protocol/Sign.cpp",
+        "function": "verify"
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp",
+        "function": "openssl_sha256_hasher"
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp",
+        "function": "openssl_sha512_hasher"
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp",
+        "function": "openssl_ripemd160_hasher"
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp",
+        "function": "sha512_half_hasher"
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp",
+        "function": "ripesha_hasher"
+    },
+    {
+        "path": "src/libxrpl/basics/base64.cpp",
+        "function": "base64_encode"
+    },
+    {
+        "path": "src/libxrpl/basics/base64.cpp",
+        "function": "base64_decode"
+    },
+    {
+        "path": "src/libxrpl/basics/make_SSLContext.cpp",
+        "function": "make_SSLContext"
+    },
+    {
+        "path": "src/libxrpl/basics/make_SSLContext.cpp",
+        "function": "make_SSLContextAuthed"
+    }
+]

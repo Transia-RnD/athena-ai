@@ -27,64 +27,57 @@ ACCURACY_NOTICE = (
     "Do NOT invent, assume, or extrapolate beyond what is present. "
     "If you are unsure, state so clearly. "
     "Every statement must be directly supported by the input.",
-    f"Project Root: {PROJECT_ROOT} src/xrpld/file.h -> {PROJECT_ROOT}/src/xrpld/file.h",
-    "Do not return the `input` and `output` keys in your response. Only return the output"
+    f"Project Root: {PROJECT_ROOT} src/xrpld/file.h -> {PROJECT_ROOT}/src/xrpld/file.h.txt",
+    "If you have issues finding a file, append '.txt' to the file path. "
 )
 
 
 def filter_relevant_symbols(
     client: AthenahClient,
     symbol_map: Any,
-    pre_info: str,
-    lesson_info: str,
-    descriptions: List[Dict[str, Any]] = [],
+    current: str,
+    description: str,
+    file_locations: List[Dict[str, Any]] = [],
 ):
     """Use an agent to filter relevant symbol locations."""
     response_format: str = """
     [{"file_path": "path/to/file.cpp", "justification": "Why this is relevant."}]
 """
-    prompt = f"""
-You are a code documentation assistant. Your job is to identify which symbol locations are most relevant to the functionality described. 
-You must only use the symbol map, descriptions, and pre-existing information provided.
+    system = f"""
+You are a code documentation assistant. Your job is to identify which symbol locations are most relevant to the functionality described.
 
 {ACCURACY_NOTICE}
 
 Symbol Map:
 {symbol_map}
 
-Descriptions:
-{descriptions}
+Lesson Description:
+{description}
 
-Pre-existing information:
-{pre_info}
+Current Documentation:
+{current}
 
-Specific Lesson Information:
-{lesson_info}
+File LocationsL
+{file_locations}
 
 The lesson information is a summary of the functionality we are teaching. YOU MUST use this information to help you decide which symbols, and information is relevant.
 
-Only Return json of relevant file paths and a brief justification for each.
-Response Format:
+Return json in the following format:
 {response_format}
 """
-    response = client.agent_prompt(
-        "Relevance Classifier",
+    response = client.rag_prompt_v2(
+        system,
         "Classify which symbol locations are most relevant to the functionality.",
-        prompt,
     )
     if isinstance(response, str):
         # If the response is a string, attempt to parse it as JSON
         try:
-            safe_response = safe_json_loads(response) or []
-            if 'output' in safe_response:
-                return safe_json_loads(safe_response['output']) or []
+            return safe_json_loads(response)
         except json.JSONDecodeError:
-            safe_response = []
+            return []
     if isinstance(response, list):
         return response
     if isinstance(response, dict):
-        if 'output' in response:
-            return safe_json_loads(response['output']) or []
         return response
 
 
@@ -122,52 +115,55 @@ def extract_function_code(file_path: str, function_name: str) -> str:
 
 
 def parse_process_map(
-    client, relevant_info: str, question: str
+    client: AthenahClient, symbols: Any, current_md: str, functionality: str = "", ignore_info: str = "", symbol_map: List[Dict[str, str]] = []
 ) -> List[Dict[str, str]]:
     """Ask the agent to create a process map (list of steps with file and function names)."""
-    prompt = f"""
-You are a code process mapper. Your job is to create a JSON list of the process flow for the functionality described below.
-For each step, include the file path and the exact function name, in the order they are called.
-
-{ACCURACY_NOTICE}
-
-Question:
-{question}
-
-Relevant Information:
-{relevant_info}
-
-Return a JSON list like:
-[
-  {{"file": "path/to/file.cpp", "function": "FunctionName"}},
-  ...
-]
+    response_format = """
+    [{"path": "path/to/file.cpp.txt", "function": "FunctionName"}]
 """
-    response = client.agent_prompt(
-        "Process Mapper",
-        "Create a JSON process map of the code flow.",
+    system = f"""
+    Your purpose is to teach the functionality of source code to someone. You will need to teach them all the steps and processes involved in the functionality.
+    
+    Topic: {functionality}
+    Similar Names: {symbols}
+    Current Documentation: {current_md}
+
+    What is the full process or flow of the functionality described?
+
+    Create a json map of the process. Use exact function names in the exact order. 
+    For each function, step into the function and describe it in an agnostic way.
+    We want a complete and comprehensive map of the functionality we are teaching.
+
+    Ignore Subjects:
+    {ignore_info}
+
+    Relevant Files:
+    {symbol_map}
+
+    {ACCURACY_NOTICE}
+    """
+    prompt = f"""
+    - Do not return anything other than a VALID JSON array of objects.
+    - Do not include code fences.
+    - Return with the following format:
+    {response_format}
+    """
+    response = client.rag_prompt_v2(
+        system,
         prompt,
     )
-    import json
-
-    try:
-        process_map = json.loads(response)
-    except Exception:
-        process_map = []
-    return process_map
+    return safe_json_loads(response)
 
 
 def step_through_code(
-    client,
+    client: AthenahClient,
     process_map: List[Dict[str, str]],
     relevant_info: str,
-    descriptions: List[Dict[str, Any]] = [],
-    relevant_file_paths: List[str] = [],
 ) -> List[Dict[str, str]]:
     """For each function in the process map, extract its code and ask the agent to explain it."""
     explanations = []
     for step in process_map:
-        file_path = step["file"]
+        file_path = step["path"]
         function_name = step["function"]
         code = extract_function_code(file_path, function_name)
         prompt = f"""
@@ -184,9 +180,6 @@ Code:
 Relevant context:
 {relevant_info}
 
-Descriptions:
-{descriptions}
-
 Explain what this function does, step by step, in plain language. If the code is missing or incomplete, say so.
 """
         explanation = client.agent_prompt(
@@ -198,7 +191,7 @@ Explain what this function does, step by step, in plain language. If the code is
             {
                 "function": function_name,
                 "file": file_path,
-                "explanation": explanation,
+                "explanation": explanation['output'],
                 "code": code,
             }
         )
@@ -210,9 +203,7 @@ def create_lesson_plan(
     functionality,
     template,
     step_explanations,
-    relevant_info,
-    descriptions,
-    relevant_file_paths: List[str] = [],
+    symbol_map,
 ):
     """Generate lesson plan using the agent and a template, grounded in code explanations."""
     steps_md = ""
@@ -236,20 +227,23 @@ Code Explanations:
 {steps_md}
 
 Relevant Information:
-{relevant_info}
-Relevant File Paths:
-{relevant_file_paths}
-
-Descriptions:
-{descriptions}
+{symbol_map}
 
 The user should come away with a complete understanding of the functionality, how it works, and how the components interact.
+
+- Do not summarize or simplify the information. Be as detailed as possible.
+- Include links to source code and source code snippets where relevant.
+- Only return markdown formatted text.
+- Do not include code fences.
+- Do not include any additional text or explanations outside of the markdown.
 """
-    return client.agent_prompt(
+    response = client.agent_prompt(
         "Source Code Teacher",
         "Teach the functionality of the XRPL source code in a structured way, using the provided template. The goal is to break down the functionality into its components and describe how they work together.",
         prompt,
     )
+    return response['output'].strip()
+
 import json
 
 def update_lesson_plan(
@@ -276,11 +270,12 @@ Lesson Metadata: {lesson}
 User Input: {user_input}
 
 """
-    return client.agent_prompt(
+    response =  client.agent_prompt(
         "Source Code Content Creator",
         "Update the lesson plan with new information and explanations.",
         prompt,
     )
+    return response['output'].strip()
 
 def revision_loop(client, initial_doc, relevant_info, descriptions, template, rounds=3):
     """Iteratively ask the agent to check for missing information and revise the documentation."""
@@ -319,7 +314,7 @@ Here is the current documentation draft:
 
 Here is the feedback on what is missing or unclear:
 
-{missing_response}
+{missing_response['output']}
 
 Please revise and update the documentation using the template below, making sure to address the feedback:
 
@@ -336,7 +331,7 @@ Do not make up any information not present in the documentation. The documentati
             "Revise and update the documentation based on feedback.",
             revise_prompt,
         )
-    return doc
+    return doc['output'].strip()
 
 
 def get_symbol_names(
@@ -471,50 +466,31 @@ def create_extra_info(
         extra_info['symbol_map'][i]['ai'] = ai_help
     
     write_json(f'{functionality}_symbol_map2.json', extra_info['symbol_map'])
-    pre_info: str = ""
+    current_md: str = ""
     try:
-        pre_info = read_file(RESULTS_DIR + "/" + functionality + ".md")
+        current_md = read_file(RESULTS_DIR + "/" + functionality + ".md")
     except FileNotFoundError:
         print(
             f"Pre-existing information file not found at {RESULTS_DIR}. Using empty string."
         )
 
-    relevant_response = filter_relevant_symbols(
-        ai_source, symbol_map, all_relevant_file_names, pre_info, description
-    )
-    extra_info['relevant_response'] = relevant_response
-    write_json(f'{functionality}_relevant_response.json', relevant_response)
+    # relevant_response = filter_relevant_symbols(
+    #     ai_source, symbol_map, current_md, all_relevant_file_names, description
+    # )
+    # extra_info['relevant_response'] = relevant_response
+    # write_json(f'{functionality}_relevant_response.json', relevant_response)
 
-    question = f"""
-    Your purpose is to teach the functionality of source code to someone. You will need to teach them all the steps and processes involved in the functionality.
-    
-    Topic: {functionality}
-    Similar Names: {symbols}
-    
-    What is the full process or flow of the functionality described?
-
-    Create a json map of the process. Use exact function names in the exact order. 
-    For each function, step into the function and describe it in an agnostic way.
-    We want a complete and comprehensive map of the functionality we are teaching.
-
-    Ignore Subjects:
-    {ignore_info}
-
-    {ACCURACY_NOTICE}
-    """
-    process_map = parse_process_map(ai_source, relevant_response, question)
+    process_map = parse_process_map(ai_source, symbols, current_md, functionality, ignore_info, extra_info['symbol_map'])
     write_json(f'{functionality}_process_map.json', process_map)
+    extra_info['process_map'] = process_map
 
     step_explanations = step_through_code(
         ai_source,
         process_map,
-        relevant_response,
-        [],
-        all_relevant_file_names,
+        extra_info['symbol_map'],
     )
     extra_info['step_explanations'] = step_explanations
     write_json(f'{functionality}_step_explanations.json', step_explanations)
-
 
     template = read_file(TEMPLATE_PATH)
 
@@ -523,9 +499,7 @@ def create_extra_info(
         functionality,
         template,
         step_explanations,
-        relevant_response,
-        [],
-        all_relevant_file_names,
+        extra_info['symbol_map'],
     )
     extra_info['initial_doc'] = initial_doc
     write_json(f'{functionality}_initial_doc.json', initial_doc)
@@ -533,7 +507,7 @@ def create_extra_info(
     final_doc = revision_loop(
         ai_source,
         initial_doc,
-        relevant_response,
+        extra_info['symbol_map'],
         all_relevant_file_names,
         template,
         rounds=REVISION_ROUNDS,

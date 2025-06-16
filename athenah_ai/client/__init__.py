@@ -510,13 +510,13 @@ class AthenahClient(VectorStore):
                                 description=description,
                             )
                         )
-                        default_tools.append(
-                            Tool(
-                                name="Search",
-                                func=cls.db.similarity_search,
-                                description="Search the vector store for relevant documents.",
-                            )
-                        )
+                        # default_tools.append(
+                        #     Tool(
+                        #         name="Search",
+                        #         func=cls.db.similarity_search,
+                        #         description="Search the vector store for relevant documents.",
+                        #     )
+                        # )
                     except Exception as e:
                         logger.error(f"Error initializing RetrievalQA: {e}")
                 else:
@@ -546,7 +546,7 @@ class AthenahClient(VectorStore):
                 verbose=True,
                 handle_parsing_errors=True,
             )
-            return agent.invoke(prompt)
+            return agent.invoke({ "input": prompt })
         except Exception as e:
             logger.error(f"Error in agent_prompt: {e}")
             return f"Agent failed: {e}"
@@ -641,10 +641,8 @@ class AthenahClient(VectorStore):
     def rag_prompt_v2(cls, system_prompt, user_prompt, *args):
         messages = []
         messages.append({"role": "system", "content": system_prompt})
-        print(f"System prompt: {system_prompt}")
         get_token_total(system_prompt)
         messages.append({"role": "user", "content": user_prompt})
-        print(f"User prompt: {user_prompt}")
         get_token_total(user_prompt)
         # loop thru each arg and add it to messages alternating role between "assistant" and "user"
         # role = "assistant"
@@ -653,8 +651,6 @@ class AthenahClient(VectorStore):
         for value in args:
             messages.append(value)
             get_token_total(value["content"])
-
-        print(f"# Messages: {len(messages)}")
 
         question_w_system: str = " ".join([msg["content"] for msg in messages])
         total_tokens: int = get_token_total(question_w_system)
@@ -665,7 +661,7 @@ class AthenahClient(VectorStore):
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
-            # temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
+            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
             max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
