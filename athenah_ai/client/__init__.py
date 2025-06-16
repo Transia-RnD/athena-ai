@@ -67,6 +67,7 @@ def get_token_total(prompt: str) -> int:
 
     openai_model = "gpt-4o-mini"
     encoding = tiktoken.encoding_for_model(openai_model)
+    print(f"Total tokens for model {openai_model}: {len(encoding.encode(prompt))}")
     return len(encoding.encode(prompt))
 
 
@@ -235,7 +236,7 @@ class AthenahClient(VectorStore):
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
-            temperature=cls.temperature,
+            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
             max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # You can include other model kwargs if necessary
@@ -254,13 +255,14 @@ class AthenahClient(VectorStore):
 
         # Adjust the model if necessary based on token limits
         if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+            print('Using o4-mini model due to token limit.')
             cls.model_name = "o4-mini"
 
         # Initialize the OpenAI LLM with the adjusted parameters
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
-            temperature=cls.temperature,
+            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
             max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # You can include other model kwargs if necessary
@@ -298,12 +300,13 @@ class AthenahClient(VectorStore):
         """
 
         if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+            print('PROMPT V1: Using o4-mini model due to token limit.')
             cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
-            temperature=cls.temperature,
+            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
             max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
@@ -337,12 +340,13 @@ class AthenahClient(VectorStore):
         """
 
         if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+            print('PROMPT: Using o4-mini model due to token limit.')
             cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
-            temperature=cls.temperature,
+            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
             max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
@@ -405,12 +409,12 @@ class AthenahClient(VectorStore):
             response = openai.chat.completions.create(
                 model=cls.model_name,
                 messages=messages,
-                temperature=cls.temperature,
+                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
                 max_tokens=cls.max_tokens,
-                top_p=cls.top_p,
+                # top_p=cls.top_p,
                 n=cls.best_of,
-                frequency_penalty=cls.frequency_penalty,
-                presence_penalty=cls.presence_penalty,
+                # frequency_penalty=cls.frequency_penalty,
+                # presence_penalty=cls.presence_penalty,
             )
             assistant_reply = response.choices[0].message.content
             return assistant_reply
@@ -432,12 +436,12 @@ class AthenahClient(VectorStore):
             response = openai.chat.completions.create(
                 model=cls.model_name,
                 messages=messages,
-                temperature=cls.temperature,
+                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
                 max_tokens=cls.max_tokens,
-                top_p=cls.top_p,
+                # top_p=cls.top_p,
                 n=cls.best_of,
-                frequency_penalty=cls.frequency_penalty,
-                presence_penalty=cls.presence_penalty,
+                # frequency_penalty=cls.frequency_penalty,
+                # presence_penalty=cls.presence_penalty,
             )
             assistant_reply = response.choices[0].message.content
             return assistant_reply
@@ -469,7 +473,7 @@ class AthenahClient(VectorStore):
             cls.llm = ChatOpenAI(
                 openai_api_key=OPENAI_API_KEY,
                 model_name=cls.model_name,
-                temperature=cls.temperature,
+                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
                 max_tokens=get_max_tokens(cls.model_name),
                 n=cls.best_of,
             )
@@ -608,7 +612,7 @@ class AthenahClient(VectorStore):
             "model": OPENAI_API_MODEL,
             "messages": messages,
             "max_tokens": get_max_tokens(OPENAI_API_MODEL),
-            "temperature": 0,
+            "temperature": 1 if OPENAI_API_MODEL == 'o4-mini' else 0,
         }
 
         # Send the API request
@@ -632,8 +636,10 @@ class AthenahClient(VectorStore):
     def rag_prompt_v2(cls, system_prompt, user_prompt, *args):
         messages = []
         messages.append({"role": "system", "content": system_prompt})
+        print(f"System prompt: {system_prompt}")
         get_token_total(system_prompt)
         messages.append({"role": "user", "content": user_prompt})
+        print(f"User prompt: {user_prompt}")
         get_token_total(user_prompt)
         # loop thru each arg and add it to messages alternating role between "assistant" and "user"
         # role = "assistant"
@@ -643,15 +649,18 @@ class AthenahClient(VectorStore):
             messages.append(value)
             get_token_total(value["content"])
 
+        print(f"# Messages: {len(messages)}")
+
         question_w_system: str = " ".join([msg["content"] for msg in messages])
         total_tokens: int = get_token_total(question_w_system)
         if total_tokens > MODEL_MAP[cls.model_name]:
+            print('RAG PROMPT V2: Using o4-mini model due to token limit.')
             cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
             model_name=cls.model_name,
-            temperature=cls.temperature,
+            # temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
             max_tokens=get_max_tokens(cls.model_name),
             n=cls.best_of,
             # model_kwargs={
@@ -691,6 +700,7 @@ class AthenahClient(VectorStore):
             except Exception as e:
                 # e.g. when the API is too busy, we don't want to fail everything
                 print("Failed to generate response. Error: ", e)
+                print(OPENAI_API_MODEL)
 
                 if retry_count > retry_limit:
                     raise ValueError("Failed to generate response after 10 retries.")

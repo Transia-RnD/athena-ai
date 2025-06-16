@@ -46,3 +46,32 @@ def read_json(path: str) -> Dict[str, object]:
     """
     with open(path) as json_file:
         return json.load(json_file)
+    
+def write_json(path: str, data: Any):
+    """Write Json
+
+     # noqa: E501
+
+    :param path: Path to json
+    :type path: str
+
+    :rtype: Dict[str, object]
+    """
+    # Write the JSON data to the file
+    if not path.endswith('.json'):
+        raise ValueError("Path must end with .json extension.")
+    if not isinstance(data, (dict, list)):
+        raise ValueError("Data must be a dictionary or a list.")
+    if isinstance(data, dict):
+        # If data is a dictionary, convert it to a list of dictionaries
+        data = data
+    elif isinstance(data, list):
+        # If data is a list, ensure each item is a dictionary
+        for item in data:
+            if not isinstance(item, dict):
+                raise ValueError("Each item in the list must be a dictionary.")
+    # Write the JSON data to the file
+    if not os.path.exists(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+    with open(path, "w") as json_file:
+        return json.dump(data, json_file, indent=4)

@@ -14,6 +14,11 @@ from athenah_ai.indexer.cleaner import AthenahCleaner
 from athenah_ai.indexer.base_index_client import BaseIndexClient
 from athenah_ai.logger import logger
 
+import nltk
+
+nltk.download("punkt_tab")
+nltk.download("averaged_perceptron_tagger_eng")
+
 
 class IndexClient(BaseIndexClient):
     storage_type: str = "local"  # local or gcs
