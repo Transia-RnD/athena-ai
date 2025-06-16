@@ -1,0 +1,127 @@
+[
+    {
+        "functionality": "Protocol",
+        "description": "",
+        "detail_paths": ["include/xrpl/protocol", "src/libxrpl/protocol", "src/xrpld/app/main"],
+        "ignore_info": "",
+        "retry": false
+    },
+    {
+        "functionality": "Transactors",
+        "description": "",
+        "detail_paths": ["src/xrpld/app/tx"],
+        "ignore_info": "",
+        "retry": false
+    },
+    {
+        "functionality": "Tests",
+        "description": "",
+        "detail_paths": ["src/test"],
+        "ignore_info": "",
+        "retry": false
+    },
+    {
+        "functionality": "ShaMap",
+        "description": "In this section we will explain exactly how ripple(d) stores information by referencing code. We will explain the shamap and how the different ledger states. ShaMap, TaggedCache",
+        "detail_paths": ["src/xrpld/shamap"],
+        "ignore_info": "Ignore the NodeStore and SQLDatabase",
+        "user_input": "Focus very deep on the SHaMap and the Merkle Tree. The Merkle Tree is used to verify the integrity of the ledger. The Merkle Tree is a binary tree where each leaf node is a hash of a ledger object and each non-leaf node is a hash of its children.",
+        "retry": true
+    },
+    {
+        "functionality": "NodeStore",
+        "description": "In this section we will explain the main database known as the Nodestore. The node store holds all of the information of the ledger and all ledger objects (transactions are not stored in the node store)",
+        "detail_paths": ["src/xrpld/nodestore"],
+        "ignore_info": "Ignore the ShaMap and SQLDatabase",
+        "user_input": "PublicKey, Sign, Seed, base58",
+        "retry": false
+    },
+    {
+        "functionality": "SQLDatabase",
+        "description": "In this section we will explain the secondary database known as the sql database. This database stores the transactions, and some ledger information like the last validated ledger. This database is extremely important for the full history nodes.",
+        "detail_paths": ["src/xrpld/app/rdb"],
+        "ignore_info": "Ignore the ShaMap and NodeStore",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Cryptography",
+        "description": "In this section we will explain in the code how the cryptography is handled. Cryptography in the ripple(d) is used for signing and verifying transactions as well as signing and verifying validations. In this section we will focus on how the public key and private keys are derived. How the account address is derived. We will also focus on the mechanics of the account and how SetRegularKey works and how the Multisign works.",
+        "detail_paths": ["src/libxrpl/protocol"],
+        "ignore_info": "",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Peering",
+        "description": "In this part we will go over the peer to peer part of ripple(d). This is how the nodes and validators communicate with each other. The overlay is also part of this. The overlay is just a layer above the public and private internet (the peer to peer network)",
+        "detail_paths": ["src/xrpld/overlay", "src/xrpld/peerfinder"],
+        "ignore_info": "",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "RPC",
+        "description": "In this section we want to go over all of the rpc handlers. We will do some examples of the rpc queries and review the documentation and show in the code where these handlers are. In this section we will go over parameter processing. We will show how in some RPC methods we need access to the ledge. We could go over the simulate transaction because this gives us a good run through of the entire process.",
+        "detail_paths": ["src/xrpld/rpc", "src/xrpld/net", "src/libxrpl/resource", "src/libxrpl/server", "include/xrpl/resource", "include/xrpl/server"],
+        "ignore_info": "Ignore the RPC",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Websocket",
+        "description": "In this section we will learn about websockets. We can go over the documentation and show these websockets in action. In this section we will learn where the code is for the subscribe and unsubscribe methods. Also we will learn exactly how the websockets are registered in the ripple(d) source code.",
+        "detail_paths": ["src/xrpld/rpc", "src/xrpld/net", "src/libxrpl/resource", "src/libxrpl/server", "include/xrpl/resource", "include/xrpl/server"],
+        "ignore_info": "Ignore the Websockets",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Consensus_Validations",
+        "description": "In this section we want to focus on the validations. We will show where the validations occur, and how censorship is avoided UNL.",
+        "detail_paths": ["src/xrpld/rpc", "src/xrpld/app/consensus"],
+        "ignore_info": "Ignore Consensus: Peers, UNL, TXOrdering, Amendments",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Consensus_Peers",
+        "description": "In this section we will go over the consensus among peers. How validations are shared, how they are discarded. Peer processing, Ledger processing.",
+        "detail_paths": ["src/xrpld/consensus", "src/xrpld/app/consensus"],
+        "ignore_info": "Ignore Consensus: UNL, TXOrdering, Amendments",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Consensus_UNL",
+        "description": "In this section we want to focus on the UNL. We will deep dive into the UNL. We could review the nUNL. There is a lot to learn about the UNL. How a UNL is created. How it's signed and verified. We will cover the Amendment process, flag ledger, Forking conditions, Invariant check. We will also go over the validator token, how to create the validator token, how to revoke the validator token.",
+        "detail_paths": ["src/xrpld/consensus", "src/xrpld/app/consensus"],
+        "ignore_info": "Ignore Consensus: Peers, TXOrdering, Amendments",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Consensus_TXOrdering",
+        "description": "In this section we will go over how transactions are ordered. There are multiple steps in the consensus process. Open ledger, Closed Ledger and then the final canonical ordering of transactions. We can also cover the tx queue here. This is where the ledger gets overloaded with transactions and charges a higher fee.",
+        "detail_paths": ["src/xrpld/consensus", "src/xrpld/app/consensus"],
+        "ignore_info": "Ignore Consensus: Peers, UNL, Amendments",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Consensus_Amendments",
+        "description": "In this section we will go over the amendment process. We may cover the whole process including the XLS, how code is merged but the code portion will show how the amendment is proposed inside of ripple(d), how the validators vote on an amendment, the flag ledger activation.",
+        "detail_paths": ["src/xrpld/consensus", "src/xrpld/app/consensus"],
+        "ignore_info": "Ignore Consensus: Peers, UNL, TXOrdering",
+        "user_input": null,
+        "retry": false
+    },
+    {
+        "functionality": "Ledger",
+        "description": "",
+        "detail_paths": ["src/xrpld/ledger", "src/xrpld/core"],
+        "ignore_info": null,
+        "user_input": null,
+        "retry": false
+    }
+]
