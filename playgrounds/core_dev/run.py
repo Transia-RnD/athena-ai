@@ -383,7 +383,7 @@ def create_update_lesson(functionality: str, extra_info: Dict[str, Any] = None, 
 
     latest_topic['extra_info'] = extra_info
     latest_topic['user_input'] = user_input
-    current_json[functionality][f'{time.time()}'] = latest_topic
+    # current_json[functionality][f'{time.time()}'] = latest_topic
     write_json(
         f"{ATHENAH_ROOT}/playgrounds/core_dev/lesson.json",
         current_json)
