@@ -28,6 +28,7 @@ ACCURACY_NOTICE = (
     "If you are unsure, state so clearly. "
     "Every statement must be directly supported by the input.",
     f"Project Root: {PROJECT_ROOT} src/xrpld/file.h -> {PROJECT_ROOT}/src/xrpld/file.h",
+    "Do not return the `input` and `output` keys in your response. Only return the output"
 )
 
 
@@ -71,7 +72,20 @@ Response Format:
         "Classify which symbol locations are most relevant to the functionality.",
         prompt,
     )
-    return safe_json_loads(response) or []
+    if isinstance(response, str):
+        # If the response is a string, attempt to parse it as JSON
+        try:
+            safe_response = safe_json_loads(response) or []
+            if 'output' in safe_response:
+                return safe_json_loads(safe_response['output']) or []
+        except json.JSONDecodeError:
+            safe_response = []
+    if isinstance(response, list):
+        return response
+    if isinstance(response, dict):
+        if 'output' in response:
+            return safe_json_loads(response['output']) or []
+        return response
 
 
 def extract_function_code(file_path: str, function_name: str) -> str:
@@ -418,7 +432,7 @@ def create_extra_info(
         print(f"Percent difference: {percent_difference:.2f}%")
     
     extra_info['all_relevant_file_names'] = all_relevant_file_names
-    write_json('all_relevant_file_names.json', all_relevant_file_names)
+    write_json(f'{functionality}_all_relevant_file_names.json', all_relevant_file_names)
 
     relevant_files_str = "\n".join([f"Relevant File: {path}" for path in detail_paths])
     _extra_info = f"""
@@ -431,18 +445,19 @@ def create_extra_info(
         ai_source, functionality, _extra_info
     )
     # print(f"Symbols found: {len(symbols)}")
-    write_json('symbols.json', {"symbols": symbols})
+    write_json(f'{functionality}_symbols.json', {"symbols": symbols})
     extra_info['symbols'] = symbols
 
-    symbol_map: List[Dict[str, Any]] = []
-    for symbol in symbols:
-        result = symbol_to_source_occurances(symbol, PROJECT_ROOT)
-        if result is None:
-            print(f"Symbol {symbol} not found in {PROJECT_ROOT}.")
-            continue
-        symbol_map.extend(result)
+    symbol_map: List[Dict[str, Any]] = all_relevant_file_names
+    # symbol_map: List[Dict[str, Any]] = []
+    # for symbol in symbols:
+    #     result = symbol_to_source_occurances(symbol, PROJECT_ROOT)
+    #     if result is None:
+    #         print(f"Symbol {symbol} not found in {PROJECT_ROOT}.")
+    #         continue
+    #     symbol_map.extend(result)
     extra_info['symbol_map'] = symbol_map
-    write_json('symbol_map1.json', extra_info['symbol_map'])
+    write_json(f'{functionality}_symbol_map1.json', extra_info['symbol_map'])
     for i in range(len(symbol_map)):
         symbol = symbol_map[i]
         ai_help = get_ai_v1_json(symbol["file_path"])
@@ -451,7 +466,7 @@ def create_extra_info(
             ai_help = None
         extra_info['symbol_map'][i]['ai'] = ai_help
     
-    write_json('symbol_map2.json', extra_info['symbol_map'])
+    write_json(f'{functionality}_symbol_map2.json', extra_info['symbol_map'])
     pre_info: str = ""
     try:
         pre_info = read_file(RESULTS_DIR + "/" + functionality + ".md")
@@ -464,7 +479,7 @@ def create_extra_info(
         ai_source, symbol_map, all_relevant_file_names, pre_info, description
     )
     extra_info['relevant_response'] = relevant_response
-    write_json('relevant_response.json', relevant_response)
+    write_json(f'{functionality}_relevant_response.json', relevant_response)
 
     question = f"""
     Your purpose is to teach the functionality of source code to someone. You will need to teach them all the steps and processes involved in the functionality.
@@ -484,6 +499,7 @@ def create_extra_info(
     {ACCURACY_NOTICE}
     """
     process_map = parse_process_map(ai_source, relevant_response, question)
+    write_json(f'{functionality}_process_map.json', process_map)
 
     step_explanations = step_through_code(
         ai_source,
@@ -493,7 +509,7 @@ def create_extra_info(
         all_relevant_file_names,
     )
     extra_info['step_explanations'] = step_explanations
-    write_json('step_explanations.json', step_explanations)
+    write_json(f'{functionality}_step_explanations.json', step_explanations)
 
 
     template = read_file(TEMPLATE_PATH)
@@ -508,7 +524,7 @@ def create_extra_info(
         all_relevant_file_names,
     )
     extra_info['initial_doc'] = initial_doc
-    write_json('initial_doc.json', initial_doc)
+    write_json(f'{functionality}_initial_doc.json', initial_doc)
 
     final_doc = revision_loop(
         ai_source,
@@ -519,7 +535,7 @@ def create_extra_info(
         rounds=REVISION_ROUNDS,
     )
     extra_info['final_doc'] = final_doc
-    write_json('final_doc.json', final_doc)
+    write_json(f'{functionality}_final_doc.json', final_doc)
     return extra_info
 
 def create_lesson(
