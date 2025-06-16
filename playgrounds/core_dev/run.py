@@ -6,10 +6,11 @@ from typing import Any, List, Dict
 from athenah_ai.client import AthenahClient
 from playgrounds.core_dev.utils import get_ai_v1_json
 from athenah_ai.utils.fs import read_file, write_file, read_json, write_json
+from athenah_ai.utils.response import safe_json_loads
 from playgrounds.core_dev.tools import symbol_to_source_occurances
 
 # === CONFIGURATION ===
-ATHENAH_ROOT = "/root/athena-ai"
+ATHENAH_ROOT = "/Users/darkmatter/projects/transia/athena-ai"
 PROJECT_ROOT = f"{ATHENAH_ROOT}/dist/rippled-ai-core/rippled-ai-core-source"
 TEMPLATE_PATH = (
     f"{ATHENAH_ROOT}/playgrounds/core_dev/template.md"
@@ -38,6 +39,9 @@ def filter_relevant_symbols(
     descriptions: List[Dict[str, Any]] = [],
 ):
     """Use an agent to filter relevant symbol locations."""
+    response_format: str = """
+    [{"file_path": "path/to/file.cpp", "justification": "Why this is relevant."}]
+"""
     prompt = f"""
 You are a code documentation assistant. Your job is to identify which symbol locations are most relevant to the functionality described. 
 You must only use the symbol map, descriptions, and pre-existing information provided.
@@ -58,14 +62,16 @@ Specific Lesson Information:
 
 The lesson information is a summary of the functionality we are teaching. YOU MUST use this information to help you decide which symbols, and information is relevant.
 
-Return a list of relevant file paths and a brief justification for each.
+Only Return json of relevant file paths and a brief justification for each.
+Response Format:
+{response_format}
 """
     response = client.agent_prompt(
         "Relevance Classifier",
         "Classify which symbol locations are most relevant to the functionality.",
         prompt,
     )
-    return response
+    return safe_json_loads(response) or []
 
 
 def extract_function_code(file_path: str, function_name: str) -> str:
@@ -412,6 +418,7 @@ def create_extra_info(
         print(f"Percent difference: {percent_difference:.2f}%")
     
     extra_info['all_relevant_file_names'] = all_relevant_file_names
+    write_json('all_relevant_file_names.json', all_relevant_file_names)
 
     relevant_files_str = "\n".join([f"Relevant File: {path}" for path in detail_paths])
     _extra_info = f"""
@@ -424,6 +431,7 @@ def create_extra_info(
         ai_source, functionality, _extra_info
     )
     # print(f"Symbols found: {len(symbols)}")
+    write_json('symbols.json', {"symbols": symbols})
     extra_info['symbols'] = symbols
 
     symbol_map: List[Dict[str, Any]] = []
@@ -433,14 +441,17 @@ def create_extra_info(
             print(f"Symbol {symbol} not found in {PROJECT_ROOT}.")
             continue
         symbol_map.extend(result)
-
-    for symbol in symbol_map:
+    extra_info['symbol_map'] = symbol_map
+    write_json('symbol_map1.json', extra_info['symbol_map'])
+    for i in range(len(symbol_map)):
+        symbol = symbol_map[i]
         ai_help = get_ai_v1_json(symbol["file_path"])
         if "error" in ai_help:
             print(f"Error getting AI v1 JSON for {symbol['file_path']}: {ai_help['error']}")
-            continue
-        extra_info['symbol_map'][symbol]['ai'] = ai_help
+            ai_help = None
+        extra_info['symbol_map'][i]['ai'] = ai_help
     
+    write_json('symbol_map2.json', extra_info['symbol_map'])
     pre_info: str = ""
     try:
         pre_info = read_file(RESULTS_DIR + "/" + functionality + ".md")
@@ -453,9 +464,11 @@ def create_extra_info(
         ai_source, symbol_map, all_relevant_file_names, pre_info, description
     )
     extra_info['relevant_response'] = relevant_response
+    write_json('relevant_response.json', relevant_response)
 
     question = f"""
-    You are teaching code to someone:
+    Your purpose is to teach the functionality of source code to someone. You will need to teach them all the steps and processes involved in the functionality.
+    
     Topic: {functionality}
     Similar Names: {symbols}
     
@@ -463,7 +476,6 @@ def create_extra_info(
 
     Create a json map of the process. Use exact function names in the exact order. 
     For each function, step into the function and describe it in an agnostic way.
-
     We want a complete and comprehensive map of the functionality we are teaching.
 
     Ignore Subjects:
@@ -481,6 +493,9 @@ def create_extra_info(
         all_relevant_file_names,
     )
     extra_info['step_explanations'] = step_explanations
+    write_json('step_explanations.json', step_explanations)
+
+
     template = read_file(TEMPLATE_PATH)
 
     initial_doc = create_lesson_plan(
@@ -493,6 +508,7 @@ def create_extra_info(
         all_relevant_file_names,
     )
     extra_info['initial_doc'] = initial_doc
+    write_json('initial_doc.json', initial_doc)
 
     final_doc = revision_loop(
         ai_source,
@@ -503,6 +519,7 @@ def create_extra_info(
         rounds=REVISION_ROUNDS,
     )
     extra_info['final_doc'] = final_doc
+    write_json('final_doc.json', final_doc)
     return extra_info
 
 def create_lesson(

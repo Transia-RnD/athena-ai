@@ -71,7 +71,7 @@ def write_json(path: str, data: Any):
             if not isinstance(item, dict):
                 raise ValueError("Each item in the list must be a dictionary.")
     # Write the JSON data to the file
-    if not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path))
+    # if not os.path.exists(os.path.dirname(path)):
+    #     os.makedirs(os.path.dirname(path))
     with open(path, "w") as json_file:
         return json.dump(data, json_file, indent=4)
