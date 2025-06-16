@@ -74,9 +74,33 @@ def prepare_dir(
         root,
         silent_errors=True,
         recursive=recursive,
-        exclude=["**/node_modules/**"],
+        exclude=["**/node_modules/**", "**/*.ai.json"],
     )
     docs = loader.load()
+
+    def load_ai_json_metadata(root):
+        ai_metadata = {}
+        for dirpath, _, filenames in os.walk(root):
+            for filename in filenames:
+                if filename.endswith(".ai.json"):
+                    path = os.path.join(dirpath, filename)
+                    with open(path, "r") as f:
+                        import json
+                        data = json.load(f)
+                    # The real file this metadata describes
+                    real_file = data.get("file_path")
+                    if real_file:
+                        ai_metadata[os.path.abspath(real_file)] = data
+        return ai_metadata
+
+    ai_metadata = load_ai_json_metadata(root)
+
+    for doc in docs:
+        real_path = os.path.abspath(doc.metadata.get("source", doc.metadata.get("file_path", "")))
+        if real_path in ai_metadata:
+            # Merge the ai.json metadata into the document's metadata
+            doc.metadata.update(ai_metadata[real_path])
+
     for doc in docs:
         doc.metadata["source"] = doc.metadata["source"].strip(".txt")
 
@@ -119,7 +143,8 @@ def prepare_dir(
         for index, split in enumerate(splits):
             if split.strip():
                 chunk_metadata = {
-                    "source": file_name.split("/")[-1],
+                    "file_path": file_name,
+                    "file_name": file_name.split("/")[-1],
                     "file_type": file_type,
                     "chunk_index": index,
                     "total_chunks": len(splits),

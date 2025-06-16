@@ -43,20 +43,22 @@ class AthenahIndexer(IndexClient):
         source: str,
         dirs: List[str],
         include_root: bool = False,
+        clean_dir: bool = False,
     ):
-        cls.build_from_dir(source, dirs, include_root)
+        cls.build_from_dir(source, dirs, include_root, clean_dir)
 
     def index_dirs(
         cls,
         source: str,
         dirs: List[str],
         include_root: bool = False,
+        clean_dirs: bool = False,
     ):
         if dirs == ["."]:
-            cls.build_from_dir(source, dirs, include_root)
+            cls.build_from_dir(source, dirs, include_root, clean_dirs)
             return
 
-        cls.build_from_dirs(source, dirs, include_root)
+        cls.build_from_dirs(source, dirs, include_root, clean_dirs)
 
     def index_files(
         cls,

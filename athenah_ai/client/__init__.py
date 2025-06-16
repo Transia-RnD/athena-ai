@@ -16,8 +16,6 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 
 from langgraph.graph import START, StateGraph
 from langchain import hub
-from athenah_ai.client.vector_store import VectorStore
-from athenah_ai.logger import logger
 from langchain.agents import (
     AgentType,
     Tool,
@@ -27,6 +25,13 @@ from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_core.documents import Document
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph.graph import CompiledGraph
+
+from athenah_ai.utils.agent import build_agent_tools
+from athenah_ai.client.vector_store import VectorStore
+from athenah_ai.logger import logger
 
 load_dotenv()
 
@@ -60,7 +65,7 @@ def get_max_tokens(model_name: str) -> int:
 def get_token_total(prompt: str) -> int:
     import tiktoken
 
-    openai_model = OPENAI_API_MODEL
+    openai_model = "gpt-4o-mini"
     encoding = tiktoken.encoding_for_model(openai_model)
     return len(encoding.encode(prompt))
 
@@ -172,6 +177,58 @@ class AthenahClient(VectorStore):
             cls.db = cls.load(cls.custom_model, cls.model_group, cls.version)
 
         pass
+
+    def get_relevant_file_names(
+        client: "AthenahClient", query: str, min_score: float = 0.5, max_files: int = 20
+    ) -> List[str]:
+        """
+        Returns a list of file names (paths) of the most relevant documents in the vector index for a given query.
+
+        Args:
+            client (AthenahClient): The client instance with a loaded FAISS db.
+            query (str): The search query or functionality description.
+            min_score (float): Minimum similarity score (0-1) to consider a document relevant.
+            max_files (int): Maximum number of files to return.
+
+        Returns:
+            List[str]: List of file paths for the most relevant documents.
+        """
+        try:
+            # Run similarity search with scores
+            results = client.db.similarity_search(query, k=500)
+            import json
+
+            results = json.loads(results) if isinstance(results, str) else results
+            # print(results[0])
+            # results: List[Tuple[Document, float]]
+            # Filter by min_score and sort by score descending
+            # filtered = [
+            #     (doc)
+            #     for doc in results
+            #     # if score >= min_score
+            #     and hasattr(doc.metadata, "get")
+            #     and doc.metadata.get("source")
+            # ]
+            # Sort by score descending
+            # results.sort(key=lambda x: x[1], reverse=True)
+            # Extract file paths (assuming 'source' in metadata is the file path)
+            file_paths = []
+            for doc in results:
+                # print(doc)
+                file_path = doc.metadata.get("file_path")
+                if file_path and file_path not in file_paths:
+                    file_paths.append(
+                        {
+                            "path": file_path,
+                            "content": doc.page_content,
+                        }
+                    )
+                if len(file_paths) >= max_files:
+                    break
+            return file_paths
+        except Exception as e:
+            logger.error(f"Error in get_relevant_file_names: {e}")
+            return []
 
     def init_llm(cls):
         # Initialize the OpenAI LLM with the adjusted parameters
@@ -387,55 +444,151 @@ class AthenahClient(VectorStore):
         except Exception as e:
             raise ValueError(f"failed to generate a prompt completion: {str(e)}")
 
-    def agent_prompt(cls, name: str, description: str, prompt: str) -> str:
-        cls.llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=cls.model_name,
-            temperature=cls.temperature,
-            max_tokens=get_max_tokens(cls.model_name),
-            n=cls.best_of,
-        )
-        chain = RetrievalQA.from_llm(
-            llm=cls.llm,
-            retriever=cls.db.as_retriever(),
-        )
+    def agent_prompt(
+        cls,
+        name: str,
+        description: str,
+        prompt: str,
+        tools: List[Tool] = [],
+        add_default_tools: bool = True,
+    ) -> str:
+        """
+        Runs an agent with the provided tools and prompt.
 
-        def read_file(path: str) -> str:
-            """Read File
+        Args:
+            prompt (str): The user prompt.
+            tools (List[Tool], optional): List of langchain Tool objects. If None, will use default tools.
+            name (str, optional): Name for the agent tool (if using RetrievalQA).
+            description (str, optional): Description for the agent tool.
+            add_default_tools (bool, optional): Whether to add default tools (vector search, Google, file read).
 
-            # noqa: E501
+        Returns:
+            str: The agent's response.
+        """
+        try:
+            cls.llm = ChatOpenAI(
+                openai_api_key=OPENAI_API_KEY,
+                model_name=cls.model_name,
+                temperature=cls.temperature,
+                max_tokens=get_max_tokens(cls.model_name),
+                n=cls.best_of,
+            )
 
-            :param path: Path to file
-            :type path: str
+            def read_file(path: str) -> str:
+                try:
+                    with open(path, "r") as f:
+                        return f.read()
+                except Exception as e:
+                    logger.error(f"Error reading file {path}: {e}")
+                    return ""
 
-            :rtype: str
-            """
-            try:
-                with open(path, "r") as f:
-                    return f.read()
-            except Exception as e:
-                return ""
+            default_tools = []
+            if add_default_tools:
+                if cls.custom_model:
+                    try:
+                        chain = RetrievalQA.from_llm(
+                            llm=cls.llm,
+                            retriever=cls.db.as_retriever(),
+                        )
+                        default_tools.append(
+                            Tool(
+                                name=name,
+                                func=chain.run,
+                                description=description,
+                            )
+                        )
+                        default_tools.append(
+                            Tool(
+                                name="Search",
+                                func=cls.db.similarity_search,
+                                description="Search the vector store for relevant documents.",
+                            )
+                        )
+                    except Exception as e:
+                        logger.error(f"Error initializing RetrievalQA: {e}")
+                default_tools.extend(
+                    [
+                        Tool(
+                            name="AI LLM",
+                            func=cls.base_prompt,
+                            description="Use the AI llm to generate a response based on the provided prompt.",
+                        ),
+                        Tool(
+                            name="Read a file",
+                            func=read_file,
+                            description="Read a file from a path. Include the full path to the file.",
+                        ),
+                    ]
+                )
 
-        tools = [
-            Tool(
-                name="Read a file",
-                func=read_file,
-                description=f"Read a file from a path. Include the full path to the file.",
-            ),
-            Tool(
-                name=name,
-                func=chain.run,
-                description=description,
-            ),
-        ]
-        agent = initialize_agent(
-            tools,
-            cls.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True,
-            handle_parsing_errors=True,
-        )
-        return agent.run(prompt)
+            all_tools = []
+            if tools is not None:
+                all_tools.extend(tools)
+            if add_default_tools:
+                all_tools.extend(default_tools)
+
+            if not all_tools:
+                raise ValueError("No tools provided to the agent.")
+
+            agent = initialize_agent(
+                all_tools,
+                cls.llm,
+                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+                verbose=True,
+                handle_parsing_errors=True,
+            )
+            return agent.invoke(prompt)
+        except Exception as e:
+            logger.error(f"Error in agent_prompt: {e}")
+            return f"Agent failed: {e}"
+
+    def agent_promptv2(
+        cls,
+        system: str,
+        user_input: str,
+    ) -> str:
+        try:
+            def callback(graph, data):
+                ai_response: str = data.content
+                print(f"AI Response: {ai_response}")
+
+            # jarvis_response = brain.response_classifier.invoke(user_input)
+
+            tools = build_agent_tools(["read_file"], "athenah_ai/utils")
+            graph = create_react_agent(cls.llm, tools, checkpointer=MemorySaver())
+
+            config = {"configurable": {"thread_id": "thread-1", "user_id": "1"}}
+
+            messages = [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_input},
+            ]
+
+            def from_messages_to_tuple(messages: List[Any]) -> Tuple[str, str]:
+                    return [(m['type'], m['content']) for m in messages]
+            
+            inputs = {"messages": from_messages_to_tuple(messages)}
+            print("START STREAM")
+
+            def stream(
+                graph: CompiledGraph,
+                inputs: Any,
+                config: Dict[str, Any],
+                callback: Any = None,
+            ):
+                for s in graph.stream(inputs, config, stream_mode="values"):
+                    try:
+                        callback(graph, s["messages"][-1])
+                    except Exception as e:
+                        logger.error(f"Error in do stream: {e}")
+                        pass
+            while True:
+                stream(graph, inputs, config, callback)
+                break
+            print("END STREAM")
+        except Exception as e:
+            logger.error(f"Error in agent_prompt: {e}")
+            return f"Agent failed: {e}"
 
     def promptv3(system_prompt, user_prompt, *args):
         messages = []

@@ -8,7 +8,7 @@ authors = ["Denis Angell <dangell@transia.co>"]
 python = "^3.10.6"
 unstructured = {extras = ["local-inference"], version = "^0.6.2"}
 openai = "^1.35.10"
-tiktoken = "^0.7.0"
+tiktoken = "^0.8.0"
 faiss-cpu = "^1.8.0.post1"
 tabulate = "^0.9.0"
 google-cloud-storage = "^2.18.0"

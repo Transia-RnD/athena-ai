@@ -79,15 +79,19 @@ class IndexClient(BaseIndexClient):
     def build_from_dir(
         cls,
         source: str,
+        clean_dir: bool = False,
     ):
         source_name: str = f"{cls.name}-source"
-        dest_filepath: str = os.path.join(cls.name_path, source_name)
-        cls.prepare_dir(
-            source,
-            dest_filepath,
-        )
         build_paths: List[str] = [f"{cls.name_path}/{source_name}"]
-        [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
+
+        if clean_dir:
+            dest_filepath: str = os.path.join(cls.name_path, source_name)
+            cls.prepare_dir(
+                source,
+                dest_filepath,
+            )
+            _ = [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
+        
         _docs, _metadata = cls._build_from_dirs(source, build_paths, False)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
@@ -98,17 +102,21 @@ class IndexClient(BaseIndexClient):
         source: str,
         folders: Union[List[str], str] = None,
         include_root: bool = False,
+        clean_dirs: bool = False,
     ):
         source_name: str = f"{cls.name}-source"
-        dest_filepath: str = os.path.join(cls.name_path, source_name)
-        cls.prepare_dir(
-            source,
-            dest_filepath,
-        )
         build_paths: List[str] = [f"{cls.name_path}/{source_name}/{f}" for f in folders]
-        [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
-        if include_root:
-            AthenahCleaner().clean_dir(f"{cls.name_path}/{source_name}", False)
+        if clean_dirs:
+            dest_filepath: str = os.path.join(cls.name_path, source_name)
+            cls.prepare_dir(
+                source,
+                dest_filepath,
+            )
+        
+            [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
+            if include_root:
+                AthenahCleaner().clean_dir(f"{cls.name_path}/{source_name}", False)
+        
         _docs, _metadata = cls._build_from_dirs(source, build_paths, include_root)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
