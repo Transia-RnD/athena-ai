@@ -28,7 +28,7 @@ ACCURACY_NOTICE = (
     "If you are unsure, state so clearly. "
     "Every statement must be directly supported by the input.",
     f"Project Root: {PROJECT_ROOT} src/xrpld/file.h -> {PROJECT_ROOT}/src/xrpld/file.h.txt",
-    "If you have issues finding a file, append '.txt' to the file path. "
+    "NOTE: Always append '.txt' to the file path."
 )
 
 

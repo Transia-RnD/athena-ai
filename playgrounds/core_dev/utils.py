@@ -77,7 +77,7 @@ def collect_ai_v1_descriptions(root_folder):
 
 def get_ai_v1_json(file_path: str) -> Dict[str, Any]:
     try:
-        file_path = file_path.replace(".txt", ".ai.v1.json")
+        file_path = file_path.replace(".txt", ".ai.json")
         with open(file_path, "r") as f:
             data = json.load(f)
             return data
