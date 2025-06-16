@@ -488,6 +488,15 @@ class AthenahClient(VectorStore):
 
             default_tools = []
             if add_default_tools:
+                default_tools.extend(
+                    [
+                        Tool(
+                            name="Read a file",
+                            func=read_file,
+                            description="Read a file from a path. Include the full path to the file.",
+                        ),
+                    ]
+                )
                 if cls.custom_model:
                     try:
                         chain = RetrievalQA.from_llm(
@@ -510,20 +519,16 @@ class AthenahClient(VectorStore):
                         )
                     except Exception as e:
                         logger.error(f"Error initializing RetrievalQA: {e}")
-                default_tools.extend(
-                    [
-                        Tool(
-                            name="AI LLM",
-                            func=cls.base_prompt,
-                            description="Use the AI llm to generate a response based on the provided prompt.",
-                        ),
-                        Tool(
-                            name="Read a file",
-                            func=read_file,
-                            description="Read a file from a path. Include the full path to the file.",
-                        ),
-                    ]
-                )
+                else:
+                    default_tools.extend(
+                        [
+                            Tool(
+                                name="AI LLM",
+                                func=cls.base_prompt,
+                                description="Use the AI llm to generate a response based on the provided prompt.",
+                            ),
+                        ]
+                    )
 
             all_tools = []
             if tools is not None:

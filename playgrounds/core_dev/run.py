@@ -206,7 +206,7 @@ Explain what this function does, step by step, in plain language. If the code is
 
 
 def create_lesson_plan(
-    client,
+    client: AthenahClient,
     functionality,
     template,
     step_explanations,
@@ -371,7 +371,11 @@ def find_lesson_by_functionality(lessons: List[Dict[str, Any]], functionality: s
     return None
 
 
-def create_update_lesson(functionality: str, extra_info: Dict[str, Any] = None, user_input: List[Dict[str, Any]] = None) -> None:
+def create_update_lesson(
+    functionality: str, 
+    extra_info: Dict[str, Any] = None, 
+    user_input: List[Dict[str, Any]] = None
+) -> None:
     # functionality: str = lesson["functionality"]
     current_json: Dict[str, Any] = read_json(
         f"{ATHENAH_ROOT}/playgrounds/core_dev/lesson.json"
@@ -460,9 +464,9 @@ def create_extra_info(
     write_json(f'{functionality}_symbol_map1.json', extra_info['symbol_map'])
     for i in range(len(symbol_map)):
         symbol = symbol_map[i]
-        ai_help = get_ai_v1_json(symbol["file_path"])
+        ai_help = get_ai_v1_json(symbol["path"] + '.txt')
         if "error" in ai_help:
-            print(f"Error getting AI v1 JSON for {symbol['file_path']}: {ai_help['error']}")
+            print(f"Error getting AI v1 JSON for {symbol['path']}: {ai_help['error']}")
             ai_help = None
         extra_info['symbol_map'][i]['ai'] = ai_help
     
