@@ -119,7 +119,7 @@ def parse_process_map(
 ) -> List[Dict[str, str]]:
     """Ask the agent to create a process map (list of steps with file and function names)."""
     response_format = """
-    [{"path": "path/to/file.cpp.txt", "function": "FunctionName"}]
+    [{"path": "path/to/file.cpp.txt", "function": "FunctionName", "description": "Description of the function."}]
 """
     system = f"""
     Your purpose is to teach the functionality of source code to someone. You will need to teach them all the steps and processes involved in the functionality.
@@ -145,7 +145,7 @@ def parse_process_map(
     prompt = f"""
     - Do not return anything other than a VALID JSON array of objects.
     - Do not include code fences.
-    - Return with the following format:
+    - Return with ONLY the following format:
     {response_format}
     """
     response = client.rag_prompt_v2(
@@ -161,11 +161,12 @@ def step_through_code(
     relevant_info: str,
 ) -> List[Dict[str, str]]:
     """For each function in the process map, extract its code and ask the agent to explain it."""
+    
     explanations = []
     for step in process_map:
         file_path = step["path"]
         function_name = step["function"]
-        code = extract_function_code(file_path, function_name)
+        step_process_str = extract_function_code(file_path, function_name)
         prompt = f"""
 You are a code explainer. ONLY use the code below and the provided context.
 
@@ -174,25 +175,27 @@ You are a code explainer. ONLY use the code below and the provided context.
 Function: {function_name}
 File: {file_path}
 
-Code:
-{code}
+Step Process:
+{step_process_str}
 
 Relevant context:
 {relevant_info}
 
-Explain what this function does, step by step, in plain language. If the code is missing or incomplete, say so.
+- Do not summarize or simplify the information. Be as detailed as possible.
+- Make sure to step through the code to explain function to function how it works.
 """
         explanation = client.agent_prompt(
             "Code Explainer",
-            f"Explain {function_name} using only the code provided.",
+            f"Explain the functionality of the code in detail, step by step.",
             prompt,
         )
+        if isinstance(explanation, dict):
+            explanation = explanation.get('output', '')
         explanations.append(
             {
                 "function": function_name,
                 "file": file_path,
-                "explanation": explanation['output'],
-                "code": code,
+                "explanation": explanation,
             }
         )
     return explanations
@@ -209,7 +212,6 @@ def create_lesson_plan(
     steps_md = ""
     for step in step_explanations:
         steps_md += f"### {step['function']} ({step['file']})\n\n"
-        steps_md += f"```cpp\n{step['code']}\n```\n\n"
         steps_md += f"{step['explanation']}\n\n"
 
     prompt = f"""
@@ -242,7 +244,9 @@ The user should come away with a complete understanding of the functionality, ho
         "Teach the functionality of the XRPL source code in a structured way, using the provided template. The goal is to break down the functionality into its components and describe how they work together.",
         prompt,
     )
-    return response['output'].strip()
+    if isinstance(response, dict):
+        response = response.get('output', '')
+    return response.strip()
 
 import json
 
@@ -302,6 +306,9 @@ Is there anything missing or unclear in the above documentation? Use the followi
             "Review the documentation and identify missing or unclear parts.",
             missing_prompt,
         )
+        if isinstance(missing_response, dict):
+            missing_response = missing_response.get('output', '')
+        
         # 2. Ask to revise/update
         revise_prompt = f"""
 You are a documentation reviser. ONLY use the documentation, feedback, and information provided.
@@ -314,7 +321,7 @@ Here is the current documentation draft:
 
 Here is the feedback on what is missing or unclear:
 
-{missing_response['output']}
+{missing_response}
 
 Please revise and update the documentation using the template below, making sure to address the feedback:
 
@@ -337,21 +344,24 @@ Do not make up any information not present in the documentation. The documentati
 def get_symbol_names(
     client: AthenahClient,
     functionality: str,
-    extra_info: List[str],
+    all_relevant_file_names: List[Dict[str, Any]],
 ) -> List[str]:
     prompt: str = f"""
-Create a list of symbols (functions, classes, variables, etc.) that are relevant to the functionality described below.
+Create a full and complete list of symbols (functions, classes, variables, etc.) that are relevant to the functionality described below.
 
 {ACCURACY_NOTICE}
 
 Functionality: {functionality}
 
 Return the results using the template below:
-- Only return a python array of strings
+- Only return an exhaustive list of symbols as strings in a python array
 """
+    all_relevant_file_names_str = "\n".join(
+        [f"{file['path']}: {file['content']}" for file in all_relevant_file_names]
+    )
     return ast.literal_eval(
         client.rag_prompt_v2(
-            extra_info,
+            all_relevant_file_names_str,
             prompt,
         )
     )
@@ -431,20 +441,27 @@ def create_extra_info(
         print(f"Percent difference: {percent_difference:.2f}%")
     
     extra_info['all_relevant_file_names'] = all_relevant_file_names
-    write_json(f'{functionality}_all_relevant_file_names.json', all_relevant_file_names)
-
-    relevant_files_str = "\n".join([f"Relevant File: {path}" for path in detail_paths])
-    _extra_info = f"""
-    {relevant_files_str}
-
-    # Important Information provided as feedback for you: {extra_info}
-    # """
+    write_json(f'results/{functionality}_all_relevant_file_names.json', all_relevant_file_names)
 
     symbols: List[str] = get_symbol_names(
-        ai_source, functionality, _extra_info
+        ai_source, functionality, all_relevant_file_names
     )
+
+    # missing_symbols: List[str] = []
+    # for symbol in symbols:
+    #     if symbol not in missing_symbols:
+    #         missing_symbols.append(symbol)
+
+    #     symbols: List[str] = get_symbol_names(
+    #         ai_source, functionality, relevant_files_str
+    #     )
+    #     for symbol in symbols:
+    #         if symbol not in missing_symbols:
+    #             missing_symbols.append(symbol)
+    # write_json(f'results/{functionality}_missing_symbols.json', missing_symbols)
+
     # print(f"Symbols found: {len(symbols)}")
-    write_json(f'{functionality}_symbols.json', {"symbols": symbols})
+    write_json(f'results/{functionality}_symbols.json', {"symbols": symbols})
     extra_info['symbols'] = symbols
 
     symbol_map: List[Dict[str, Any]] = all_relevant_file_names
@@ -456,7 +473,7 @@ def create_extra_info(
     #         continue
     #     symbol_map.extend(result)
     extra_info['symbol_map'] = symbol_map
-    write_json(f'{functionality}_symbol_map1.json', extra_info['symbol_map'])
+    write_json(f'results/{functionality}_symbol_map1.json', extra_info['symbol_map'])
     for i in range(len(symbol_map)):
         symbol = symbol_map[i]
         ai_help = get_ai_v1_json(symbol["path"] + '.txt')
@@ -465,7 +482,7 @@ def create_extra_info(
             ai_help = None
         extra_info['symbol_map'][i]['ai'] = ai_help
     
-    write_json(f'{functionality}_symbol_map2.json', extra_info['symbol_map'])
+    write_json(f'results/{functionality}_symbol_map2.json', extra_info['symbol_map'])
     current_md: str = ""
     try:
         current_md = read_file(RESULTS_DIR + "/" + functionality + ".md")
@@ -481,7 +498,7 @@ def create_extra_info(
     # write_json(f'{functionality}_relevant_response.json', relevant_response)
 
     process_map = parse_process_map(ai_source, symbols, current_md, functionality, ignore_info, extra_info['symbol_map'])
-    write_json(f'{functionality}_process_map.json', process_map)
+    write_json(f'results/{functionality}_process_map.json', process_map)
     extra_info['process_map'] = process_map
 
     step_explanations = step_through_code(
@@ -490,7 +507,7 @@ def create_extra_info(
         extra_info['symbol_map'],
     )
     extra_info['step_explanations'] = step_explanations
-    write_json(f'{functionality}_step_explanations.json', step_explanations)
+    write_json(f'results/{functionality}_step_explanations.json', step_explanations)
 
     template = read_file(TEMPLATE_PATH)
 
@@ -502,7 +519,7 @@ def create_extra_info(
         extra_info['symbol_map'],
     )
     extra_info['initial_doc'] = initial_doc
-    write_json(f'{functionality}_initial_doc.json', initial_doc)
+    write_file(f'results/{functionality}_initial_doc.md', initial_doc)
 
     final_doc = revision_loop(
         ai_source,
@@ -513,7 +530,7 @@ def create_extra_info(
         rounds=REVISION_ROUNDS,
     )
     extra_info['final_doc'] = final_doc
-    write_json(f'{functionality}_final_doc.json', final_doc)
+    write_file(f'results/{functionality}_final_doc.md', final_doc)
     return extra_info
 
 def create_lesson(

@@ -29,6 +29,7 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.graph import CompiledGraph
 
+from athenah_ai.utils.fs import write_json
 from athenah_ai.utils.agent import build_agent_tools
 from athenah_ai.client.vector_store import VectorStore
 from athenah_ai.logger import logger
@@ -64,11 +65,23 @@ def get_max_tokens(model_name: str) -> int:
 
 def get_token_total(prompt: str) -> int:
     import tiktoken
+    import inspect
 
     openai_model = "gpt-4o-mini"
     encoding = tiktoken.encoding_for_model(openai_model)
-    print(f"Total tokens for model {openai_model}: {len(encoding.encode(prompt))}")
-    return len(encoding.encode(prompt))
+    # Get the name of the calling function
+    caller = inspect.stack()[1].function
+    print(f"[get_token_total] Called by: {caller} | Total tokens for model {openai_model}: {len(encoding.encode(prompt))}")
+    max_tokens = MODEL_MAP.get(openai_model, 4096)
+    total_tokens = len(encoding.encode(prompt))
+    if total_tokens > max_tokens:
+        write_json(f'athenah_ai/client/{caller}_token_limit_exceeded.json', {
+            "prompt": prompt,
+            "total_tokens": total_tokens,
+            "max_tokens": max_tokens,
+            "model": openai_model,
+        })
+    return total_tokens
 
 
 # Define state for application
@@ -472,8 +485,8 @@ class AthenahClient(VectorStore):
         try:
             cls.llm = ChatOpenAI(
                 openai_api_key=OPENAI_API_KEY,
-                model_name=cls.model_name,
-                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
+                model_name='o4-mini',
+                # temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
                 max_tokens=get_max_tokens(cls.model_name),
                 n=cls.best_of,
             )
@@ -485,6 +498,32 @@ class AthenahClient(VectorStore):
                 except Exception as e:
                     logger.error(f"Error reading file {path}: {e}")
                     return ""
+                
+            def format_athenah_file_path(file_path: str) -> str:
+                print(cls.name_path)
+                """Format the file path to the correct full path on this system."""
+                if file_path.startswith('/src') or file_path.startswith('src'):
+                    file_path = f"{cls.name_path}/{file_path}"
+                if file_path.endswith('.txt'):
+                    file_path = file_path
+                if file_path.endswith('.ai.json'):
+                    return
+                if not file_path.endswith('.txt'):
+                    file_path += '.txt'
+                return file_path
+            
+            def find(file_path: str) -> str:
+                print(cls.name_path)
+                """Format the file path to the correct full path on this system."""
+                if file_path.startswith('/src') or file_path.startswith('src'):
+                    file_path = f"{cls.name_path}/{file_path}"
+                if file_path.endswith('.txt'):
+                    file_path = file_path
+                if file_path.endswith('.ai.json'):
+                    return
+                if not file_path.endswith('.txt'):
+                    file_path += '.txt'
+                return file_path
 
             default_tools = []
             if add_default_tools:
@@ -494,6 +533,11 @@ class AthenahClient(VectorStore):
                             name="Read a file",
                             func=read_file,
                             description="Read a file from a path. Include the full path to the file.",
+                        ),
+                        Tool(
+                            name="Format filepath",
+                            func=format_athenah_file_path,
+                            description="str: Format all file paths to the correct full path on this system.",
                         ),
                     ]
                 )
@@ -510,13 +554,13 @@ class AthenahClient(VectorStore):
                                 description=description,
                             )
                         )
-                        # default_tools.append(
-                        #     Tool(
-                        #         name="Search",
-                        #         func=cls.db.similarity_search,
-                        #         description="Search the vector store for relevant documents.",
-                        #     )
-                        # )
+                        default_tools.append(
+                            Tool(
+                                name="Search",
+                                func=cls.db.similarity_search,
+                                description="Search the vector store for relevant documents.",
+                            )
+                        )
                     except Exception as e:
                         logger.error(f"Error initializing RetrievalQA: {e}")
                 else:
@@ -674,7 +718,7 @@ class AthenahClient(VectorStore):
         # Send the API request
         keep_trying = True
         retry_count = 0
-        retry_limit = 10
+        retry_limit = 2
         while keep_trying:
             try:
                 rag_prompt = hub.pull("rlm/rag-prompt")
@@ -706,9 +750,9 @@ class AthenahClient(VectorStore):
                 if retry_count > retry_limit:
                     raise ValueError("Failed to generate response after 10 retries.")
 
-                import time
+                # import time
 
-                time.sleep(30)
+                # time.sleep(1)
                 print("Retrying...")
 
         # Get the reply from the API response
