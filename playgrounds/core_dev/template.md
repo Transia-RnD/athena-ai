@@ -1,163 +1,344 @@
-```markdown
-# XRPL Protocol Feature and Object Management
+# SHAMap Functionality and Architecture: Comprehensive Lesson Plan
 
-This document provides a comprehensive overview of how the XRPL (XRP Ledger) source code manages protocol features (amendments), transaction types, ledger entries, and serialized fields using a macro-driven system. The approach ensures consistency, maintainability, and ease of protocol evolution by centralizing definitions and automating code generation for serialization, validation, and key computation.
+This document provides a detailed, code-based breakdown of the SHAMap data structure in the XRPL (XRP Ledger) source code. It covers every aspect of SHAMap, including its architecture, node types, traversal (including parallel and iterator-based traversal), synchronization, proof generation, state management, serialization formats, thread safety, and interactions with caches and storage. All explanations are strictly grounded in the provided source code and documentation.
 
 ---
 
 ## Table of Contents
 
-- [Feature Management](#feature-management)
-- [Transaction Type Definitions](#transaction-type-definitions)
-- [Ledger Entry Definitions](#ledger-entry-definitions)
-- [Serialized Field Definitions](#serialized-field-definitions)
-- [How These Components Work Together](#how-these-components-work-together)
-- [Serialization and Data Structures](#how-these-components-work-together)
+- [SHAMap Overview](#shamap-overview)
+- [Node Types and Structure](#node-types-and-structure)
+  - [SHAMapTreeNode (Base Class)](#shamaptreenode-base-class)
+  - [SHAMapInnerNode](#shamapinnernode)
+  - [SHAMapLeafNode and Subclasses](#shamapleafnode-and-subclasses)
+  - [SHAMapItem](#shamapitem)
+- [SHAMap Construction, Mutability, and Snapshots](#shamap-construction-mutability-and-snapshots)
+- [Copy-on-Write and Node Sharing](#copy-on-write-and-node-sharing)
+- [Node Identification and Navigation](#node-identification-and-navigation)
+- [Traversal and Iteration](#traversal-and-iteration)
+  - [visitLeaves](#visitleaves)
+  - [visitNodes](#visitnodes)
+  - [walkMap and walkMapParallel](#walkmap-and-walkmapparallel)
+  - [const_iterator](#const_iterator)
+- [Synchronization and Missing Node Detection](#synchronization-and-missing-node-detection)
+  - [getMissingNodes](#getmissingnodes)
+  - [gmn_ProcessNodes](#gmn_processnodes)
+  - [gmn_ProcessDeferredReads](#gmn_processdeferredreads)
+- [Node Addition and Canonicalization](#node-addition-and-canonicalization)
+  - [addRootNode](#addrootnode)
+  - [addKnownNode](#addknownnode)
+- [Serialization and Proofs](#serialization-and-proofs)
+  - [serializeRoot](#serializeroot)
+  - [getNodeFat](#getnodefat)
+  - [getProofPath](#getproofpath)
+  - [verifyProofPath](#verifyproofpath)
+  - [Inner Node Serialization: Compressed vs. Full Formats](#inner-node-serialization-compressed-vs-full-formats)
+- [State Management](#state-management)
+  - [setImmutable](#setimmutable)
+  - [isSynching, setSynching, clearSynching, isValid](#issynching-setsynching-clearsynching-isvalid)
+- [Caching and Storage](#caching-and-storage)
+- [Thread Safety](#thread-safety)
+- [Supporting Classes and Utilities](#supporting-classes-and-utilities)
+- [References to Source Code](#references-to-source-code)
 
 ---
 
-## Feature Management
+## SHAMap Overview
 
-XRPL protocol features and amendments are defined and managed using macros in `features.macro`. The key macros are:
-
-- `XRPL_FEATURE(name, supported, vote)`: Registers a new protocol feature.
-- `XRPL_FIX(name, supported, vote)`: Registers a protocol fix (for bug fixes).
-- `XRPL_RETIRE(name)`: Marks an amendment as retired.
-
-These macros expand to code that registers, tracks, and enforces amendments across the network. All amendments are listed in `xrpl/protocol/detail/features.macro`, and the total number is tracked in `Feature.h`. The macro system ensures that new amendments are added in a consistent and centralized manner, with compile-time checks for undefined macros.
+- SHAMap is a Merkle tree and a radix trie of radix 16 ([README](src/xrpld/shamap/README.md)).
+- It enables O(1) comparison of subtrees or entire trees by comparing hashes.
+- Used for storing transactions (with or without metadata) or account state; all leaves in a SHAMap are of a uniform type.
+- The root node is always a SHAMapInnerNode.
 
 ---
 
-## Transaction Type Definitions
+## Node Types and Structure
 
-Transaction types are defined in `transactions.macro` using the `TRANSACTION` macro. Each transaction specifies a tag, numeric value, class name, delegation status, and a list of required/optional fields.
+### SHAMapTreeNode (Base Class)
 
-**Example:**
-```cpp
-TRANSACTION(ttPAYMENT, 0, Payment, Delegation::delegatable, ({
-    {sfDestination, soeREQUIRED},
-    {sfAmount, soeREQUIRED, soeMPTSupported},
-    {sfSendMax, soeOPTIONAL, soeMPTSupported},
-    {sfPaths, soeDEFAULT},
-    {sfInvoiceID, soeOPTIONAL},
-    {sfDestinationTag, soeOPTIONAL},
-    {sfDeliverMin, soeOPTIONAL, soeMPTSupported},
-    {sfCredentialIDs, soeOPTIONAL},
-}))
-```
-This macro expands to generate code for transaction processing, validation, and serialization, making it easy to add or modify transaction types in a single location.
+- Abstract base class for all SHAMap nodes ([SHAMapTreeNode.h](src/xrpld/shamap/SHAMapTreeNode.h)).
+- Holds:
+  - `SHAMapHash hash_`: the node's hash.
+  - `std::uint32_t cowid_`: copy-on-write identifier.
+- Pure virtual methods for:
+  - Cloning (`clone`)
+  - Hash updating (`updateHash`)
+  - Serialization (`serializeForWire`, `serializeWithPrefix`)
+  - Type identification (`getType`, `isLeaf`, `isInner`)
+  - Invariant checking (`invariants`)
+- Static factory methods for deserialization (`makeFromWire`, etc.).
 
----
+### SHAMapInnerNode
 
-## Ledger Entry Definitions
+- Inherits from SHAMapTreeNode ([SHAMapInnerNode.h](src/xrpld/shamap/SHAMapInnerNode.h)).
+- Holds:
+  - Up to 16 child nodes (shared_ptrs).
+  - Hash for each child.
+  - Bitset indicating which children exist.
+  - `fullBelowGen_`: generation marker for "full below" optimization.
+- Methods for:
+  - Child management (`setChild`, `shareChild`, `getChildPointer`, `getChild`, `canonicalizeChild`)
+  - Branch state (`isEmpty`, `isEmptyBranch`, `getBranchCount`)
+  - Hashing (`updateHash`, `updateHashDeep`)
+  - Serialization (compressed and full formats; see [Inner Node Serialization](#inner-node-serialization-compressed-vs-full-formats))
+  - Invariant checking
 
-Ledger object types are defined in `ledger_entries.macro` using the `LEDGER_ENTRY` macro. Each entry has a type code, numeric ID, class name, and a list of fields.
+### SHAMapLeafNode and Subclasses
 
-**Example:**
-```cpp
-LEDGER_ENTRY(ltOFFER, 0x006f, Offer, offer, ({
-    {sfAccount,              soeREQUIRED},
-    {sfSequence,             soeREQUIRED},
-    {sfTakerPays,            soeREQUIRED},
-    {sfTakerGets,            soeREQUIRED},
-    {sfBookDirectory,        soeREQUIRED},
-    {sfBookNode,             soeREQUIRED},
-    {sfOwnerNode,            soeREQUIRED},
-    {sfPreviousTxnID,        soeREQUIRED},
-    {sfPreviousTxnLgrSeq,    soeREQUIRED},
-    {sfExpiration,           soeOPTIONAL},
-}))
-```
-Macros generate code for ledger serialization, deserialization, and validation. These definitions are also used in files like `Indexes.cpp` to compute unique keys for ledger objects.
+- Abstract class for leaves ([SHAMapLeafNode.h](src/xrpld/shamap/SHAMapLeafNode.h)).
+- Holds:
+  - `boost::intrusive_ptr<SHAMapItem const> item_`: the data item.
+- Subclasses:
+  - **SHAMapAccountStateLeafNode** ([SHAMapAccountStateLeafNode.h](src/xrpld/shamap/SHAMapAccountStateLeafNode.h)): for account state entries.
+  - **SHAMapTxLeafNode** ([SHAMapTxLeafNode.h](src/xrpld/shamap/SHAMapTxLeafNode.h)): for transactions.
+  - **SHAMapTxPlusMetaLeafNode** ([SHAMapTxPlusMetaLeafNode.h](src/xrpld/shamap/SHAMapTxPlusMetaLeafNode.h)): for transactions with metadata.
+- Each subclass implements:
+  - Hash calculation (using appropriate prefix and data)
+  - Serialization for wire and with prefix
 
----
+### SHAMapItem
 
-## Serialized Field Definitions
-
-All possible fields (SFields) that can appear in transactions and ledger entries are defined in `sfields.macro`, mapping each to a type and unique code. Types correspond to C++ classes (e.g., `STAmount`, `STAccount`).
-
-**Example:**
-```cpp
-TYPED_SFIELD(sfAmount, AMOUNT, 1)
-TYPED_SFIELD(sfAccount, ACCOUNT, 1)
-TYPED_SFIELD(sfSequence, UINT32, 4)
-TYPED_SFIELD(sfTakerPays, AMOUNT, 4)
-TYPED_SFIELD(sfTakerGets, AMOUNT, 5)
-```
-Macro expansions generate SField objects used for serialization, deserialization, and validation, ensuring each field knows its type, code, and processing logic.
+- Represents the data stored in a leaf ([SHAMapItem.h](src/xrpld/shamap/SHAMapItem.h)).
+- Holds:
+  - `uint256 tag_`: unique key.
+  - `std::uint32_t size_`: data size.
+  - Data payload (transactions, account info).
+- Uses intrusive reference counting and custom slab allocator.
 
 ---
 
-## How These Components Work Together
+## SHAMap Construction, Mutability, and Snapshots
 
-- **Transactions:** Transaction types and required fields are determined from `transactions.macro`, with field types and codes from `sfields.macro`.
-- **Ledger Entries:** Ledger objects are defined in `ledger_entries.macro`, referencing SFields for their structure. These definitions are used for serialization and key computation.
-- **SFields and Types:** SFields are mapped to C++ types, ensuring correct serialization and validation of protocol objects.
+- SHAMap can be constructed as mutable or immutable ([README](src/xrpld/shamap/README.md), [SHAMap.h](src/xrpld/shamap/SHAMap.h)).
+- **Mutable SHAMap**: Nodes can be modified; all nodes have the same non-zero cowid as the map.
+- **Immutable SHAMap**: Nodes are immutable and persist for the map's lifetime; cowid is 0.
+- Snapshots are created with `snapShot(bool isMutable)`, which returns a new SHAMap sharing nodes if possible.
+- **Important:** Immutable SHAMaps cannot be trimmed. Once a node has been brought into an immutable SHAMap, it remains in memory for the life of the SHAMap. There is no mechanism to remove unnecessary nodes from an immutable SHAMap ([README](src/xrpld/shamap/README.md)).
 
 ---
 
-## Serialization and Data Structures
+## Copy-on-Write and Node Sharing
 
-### Serializer.cpp
+- Nodes are shared between SHAMaps using shared_ptrs.
+- When a mutable SHAMap needs to modify a node, it clones the node and sets its cowid to the map's cowid ([README](src/xrpld/shamap/README.md)).
+- When a node is safe to share, its cowid is set to 0.
+- The `unshareNode` utility automates this process.
 
-Implements the `Serializer` and `SerialIter` classes. `Serializer` manages serialization of various data types and internal byte buffers, while `SerialIter` allows safe iteration and extraction of serialized data, supporting multiple integer sizes and variable-length fields.
+---
 
-### STObject.cpp
+## Node Identification and Navigation
 
-Implements the `STObject` class, a core data structure for representing and manipulating serialized objects with various field types. Provides constructors, field accessors, mutators, serialization/deserialization, template application, comparison, and JSON conversion, ensuring field ordering and type safety.
+- **SHAMapNodeID** ([SHAMapNodeID.h](src/xrpld/shamap/SHAMapNodeID.h), [SHAMapNodeID.cpp](src/xrpld/shamap/detail/SHAMapNodeID.cpp)):
+  - Identifies a node by its path from the root and depth.
+  - Path is a sequence of 4-bit branch indices packed into a uint256.
+  - Methods:
+    - `getChildNodeID(int m)`: computes child node ID.
+    - `selectBranch(SHAMapNodeID, key)`: selects branch for a key at a given depth.
+    - `createID(int depth, uint256 key)`: creates a node ID at a specific depth.
 
-### STArray.cpp
+---
 
-Implements the `STArray` class, representing an array of `STObject` elements. Supports construction, move semantics, serialization/deserialization, JSON/text conversion, sorting, and comparison, ensuring only valid objects are added.
+## Traversal and Iteration
 
-### STBase.cpp
+### visitLeaves
 
-Implements the `STBase` class, a foundational class for serialized types. Provides basic construction, assignment, comparison, and field name management, serving as a base for more specific data structures.
+- Traverses all leaf nodes and applies a user function ([SHAMap::visitLeaves](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Implementation:
+  - Calls `visitNodes` with a lambda that filters for leaf nodes and calls the user function with the leaf's item.
+  - Only leaf nodes are processed; inner nodes are ignored.
 
-### STVar.cpp
+### visitNodes
 
-Implements the `STVar` class, a type-erased wrapper for various serialized types. Manages construction, destruction, copying, and moving of protocol objects, supporting stack and heap allocation, and enforces maximum nesting depth.
+- Depth-first traversal of all nodes (inner and leaf) ([SHAMap::visitNodes](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Uses a stack to manage traversal state.
+- For each node:
+  - Applies the user function.
+  - If the node is an inner node, iterates over all 16 branches, descending into non-empty children.
 
-### SOTemplate.cpp
+### walkMap and walkMapParallel
 
-Implements the `SOTemplate` class, managing a template of fields for protocol objects. Constructs a list of unique and common fields, checks for valid and non-duplicate field indices, and provides efficient field lookup.
+- **walkMap**: Traverses the SHAMap to find missing nodes, storing them in a list ([SHAMap::walkMap](src/xrpld/shamap/detail/SHAMapDelta.cpp.txt)).
+- **walkMapParallel**: Performs a parallelized version of walkMap using multiple threads for efficiency ([SHAMap::walkMapParallel](src/xrpld/shamap/detail/SHAMapDelta.cpp.txt)). This allows for concurrent traversal of the SHAMap to identify missing nodes, improving performance in multi-threaded environments.
 
-### STLedgerEntry.cpp
+### const_iterator
 
-Implements the `STLedgerEntry` class, representing a ledger entry. Provides constructors, serialization, JSON conversion, text representation, and logic for handling ledger entry types and transaction threading.
+- SHAMap provides a `const_iterator` class for traversing SHAMap items ([SHAMap.h](src/xrpld/shamap/SHAMap.h.txt)).
+- Iteration is performed in key order, and supports `begin()`, `end()`, `upper_bound()`, and `lower_bound()` methods.
+- Example usage:
+  ```cpp
+  for (auto it = map.begin(); it != map.end(); ++it) {
+      // Access *it
+  }
+  ```
 
-### STAccount.cpp
+---
 
-Implements the `STAccount` class, representing an account field in serialized objects. Provides constructors, serialization logic, equivalence checks, and string conversion, managing account data and ensuring correct serialization.
+## Synchronization and Missing Node Detection
 
-### STAmount.cpp
+### getMissingNodes
 
-Implements the `STAmount` class, representing and manipulating amounts of native XRP, IOUs, and MPT tokens. Provides arithmetic operations, serialization/deserialization, JSON conversion, and canonicalization logic, ensuring type safety and correct formatting.
+- Finds up to `max` missing nodes required for a complete map ([SHAMap::getMissingNodes](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Uses a `MissingNodes` helper to track state.
+- Traverses the tree, using a stack and deferred reads for async fetching.
+- For each inner node:
+  - Checks each child branch.
+  - If a child is missing or not in the "full below" cache, attempts to fetch or records as missing.
+  - Deferred reads are processed as they complete.
+- Returns a vector of missing node IDs and hashes.
 
-### STNumber.cpp
+### gmn_ProcessNodes
 
-Implements the `STNumber` class, representing a serialized numeric value with mantissa and exponent. Provides construction, serialization, deserialization, comparison, and conversion from JSON and string representations, with parsing logic for numbers.
+- Helper for `getMissingNodes` ([SHAMap::gmn_ProcessNodes](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Iterates over all 16 branches of an inner node.
+- For each child:
+  - If missing, records as missing.
+  - If fetch is pending, increments deferred count.
+  - If child is an inner node and not "full below", descends into it.
+- Marks node as "full below" if all children are present.
 
-### STBlob.cpp
+### gmn_ProcessDeferredReads
 
-Implements the `STBlob` class, representing a variable-length binary field. Provides methods for copying, moving, serializing, comparing blob data, and converting to hexadecimal, supporting default value checks.
+- Processes all deferred async reads ([SHAMap::gmn_ProcessDeferredReads](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- For each completed read:
+  - If node found, canonicalizes and records for resumption.
+  - If not found, records as missing.
+- Resets deferred state.
 
-### STVector256.cpp
+---
 
-Implements the `STVector256` class, representing a vector of 256-bit values. Provides serialization/deserialization, JSON conversion, comparison, and manipulation of vector contents, ensuring correct handling of binary data.
+## Node Addition and Canonicalization
 
-### STIssue.cpp
+### addRootNode
 
-Implements the `STIssue` class, representing an issued asset or currency. Handles serialization, deserialization, JSON conversion, and equivalence checks for different issue types, ensuring consistency and correct construction.
+- Adds or sets the root node from serialized data ([SHAMap::addRootNode](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- If root already exists and matches hash, returns "duplicate".
+- If input is invalid, returns "invalid".
+- Otherwise:
+  - Deserializes node.
+  - Canonicalizes if backed.
+  - Sets as root.
+  - Notifies filter if provided.
+  - Returns "useful".
 
-### STCurrency.cpp
+### addKnownNode
 
-Implements the `STCurrency` class, representing a currency type in serialized objects. Provides constructors, serialization, JSON conversion, comparison, and utility methods for handling currency values, including validation from JSON.
+- Adds a known (non-root) node during sync ([SHAMap::addKnownNode](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Traverses tree toward target node.
+- If branch is empty or hash mismatch, returns "invalid".
+- If node is added, canonicalizes and notifies filter.
+- Returns "useful" or "duplicate" as appropriate.
 
-### STPathSet.cpp
+---
 
-Implements the `STPathSet` and related classes, handling sets of payment paths for pathfinding and transaction routing. Provides serialization/deserialization, path equivalence checks, path addition, JSON conversion, and hashing for path elements.
+## Serialization and Proofs
 
-### STParsedJSON.cpp
+### serializeRoot
 
-Implements parsing of JSON objects and arrays into protocol-specific data structures. Provides error handling for type mismatches, unknown fields, invalid data, and nesting depth, converting JSON input into strongly-typed protocol objects.
+- Serializes the root node into a Serializer ([SHAMap::serializeRoot](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Calls `serializeForWire` on the root node.
+- For inner nodes, uses compressed or full format depending on branch count (see below).
+
+### getNodeFat
+
+- Retrieves a node and optionally its sub-nodes, serializing them for transmission ([SHAMap::getNodeFat](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Descends to requested node.
+- Serializes node and, depending on `depth` and `fatLeaves`, may serialize children.
+- Returns true if successful.
+
+### getProofPath
+
+- Generates a proof path (Merkle proof) for a key ([SHAMap::getProofPath](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Walks from root to leaf for the key, pushing nodes onto a stack.
+- Serializes each node along the path into a vector of Blobs.
+- Returns the path as an optional vector.
+
+### verifyProofPath
+
+- Verifies a proof path for a key and root hash ([SHAMap::verifyProofPath](src/xrpld/shamap/detail/SHAMapSync.cpp.txt)).
+- Walks the path from leaf to root, deserializing each node and checking hashes.
+- For inner nodes, updates expected hash using the key.
+- For leaf, checks position in path.
+- Returns true if valid, false otherwise.
+
+### Inner Node Serialization: Compressed vs. Full Formats
+
+- **Full Format:** Serializes all 16 branches of an inner node, including empty branches. Used when the node is "full" or has many children.
+- **Compressed Format:** Serializes only the non-empty branches of an inner node, omitting empty branches to save space. Used when the node has few children.
+- The choice of format is determined by the branch count and is handled automatically in `serializeForWire` ([SHAMapInnerNode.h/cpp](src/xrpld/shamap/SHAMapInnerNode.h), [detail/SHAMapInnerNode.cpp](src/xrpld/shamap/detail/SHAMapInnerNode.cpp.txt)).
+
+---
+
+## State Management
+
+### setImmutable
+
+- Sets the SHAMap state to Immutable ([SHAMap::setImmutable](src/xrpld/shamap/SHAMap.h.txt)).
+- Asserts current state is not Invalid.
+- After this, nodes are considered unchangeable for the map's lifetime.
+
+### isSynching, setSynching, clearSynching, isValid
+
+- **isSynching**: Returns true if state is Synching ([SHAMap::isSynching](src/xrpld/shamap/SHAMap.h.txt)).
+- **setSynching**: Sets state to Synching ([SHAMap::setSynching](src/xrpld/shamap/SHAMap.h.txt)).
+- **clearSynching**: Sets state to Modifying ([SHAMap::clearSynching](src/xrpld/shamap/SHAMap.h.txt)).
+- **isValid**: Returns true if state is not Invalid ([SHAMap::isValid](src/xrpld/shamap/SHAMap.h.txt)).
+
+---
+
+## Caching and Storage
+
+- **TreeNodeCache**: Shared cache of immutable SHAMapTreeNodes, keyed by hash ([README](src/xrpld/shamap/README.md), [TreeNodeCache.h](src/xrpld/shamap/TreeNodeCache.h.txt)).
+- **FullBelowCache**: Tracks which subtrees are fully synchronized.
+- **Family**: Abstract interface for managing SHAMap-related resources, including caches and database ([Family.h](src/xrpld/shamap/Family.h.txt)).
+- **NodeFamily**: Concrete implementation for managing node resources ([NodeFamily.h](src/xrpld/shamap/NodeFamily.h.txt)).
+- **SHAMapStoreImp**: Manages storage, rotation, and deletion of SHAMap data ([SHAMapStoreImp.cpp](src/xrpld/app/misc/SHAMapStoreImp.cpp.txt), [SHAMapStoreImp.h](src/xrpld/app/misc/SHAMapStoreImp.h.txt)).
+
+---
+
+## Thread Safety
+
+- SHAMap and its supporting classes employ several mechanisms for thread safety:
+  - **canonicalize**: Ensures that only one instance of a node with a given hash is inserted into the cache, preventing races between threads ([README](src/xrpld/shamap/README.md), [SHAMap.cpp](src/xrpld/shamap/detail/SHAMap.cpp.txt)).
+  - **SHAMapInnerNode**: Uses atomic operations and locking (e.g., `std::atomic<std::uint16_t> lock_`) to protect concurrent access to child pointers and hashes ([SHAMapInnerNode.h](src/xrpld/shamap/SHAMapInnerNode.h)).
+  - **Caches**: TreeNodeCache and FullBelowCache are designed for concurrent access and use appropriate synchronization primitives.
+- These mechanisms ensure that SHAMap can be safely used in multi-threaded environments, especially during synchronization, traversal, and node insertion.
+
+---
+
+## Supporting Classes and Utilities
+
+- **SHAMapAddNode**: Tracks results of adding nodes (good, bad, duplicate) ([SHAMapAddNode.h](src/xrpld/shamap/SHAMapAddNode.h.txt)).
+- **SHAMapMissingNode**: Exception for missing nodes ([SHAMapMissingNode.h](src/xrpld/shamap/SHAMapMissingNode.h.txt)).
+- **TaggedPointer**: Efficient storage for child pointers and hashes in inner nodes ([TaggedPointer.h](src/xrpld/shamap/detail/TaggedPointer.h.txt), [TaggedPointer.ipp](src/xrpld/shamap/detail/TaggedPointer.ipp)).
+- **Serializer**: Utility for serializing nodes ([Serializer.h], used throughout node serialization code).
+
+---
+
+## References to Source Code
+
+- [SHAMap.h](src/xrpld/shamap/SHAMap.h)
+- [SHAMapTreeNode.h](src/xrpld/shamap/SHAMapTreeNode.h)
+- [SHAMapInnerNode.h](src/xrpld/shamap/SHAMapInnerNode.h)
+- [SHAMapLeafNode.h](src/xrpld/shamap/SHAMapLeafNode.h)
+- [SHAMapAccountStateLeafNode.h](src/xrpld/shamap/SHAMapAccountStateLeafNode.h)
+- [SHAMapTxLeafNode.h](src/xrpld/shamap/SHAMapTxLeafNode.h)
+- [SHAMapTxPlusMetaLeafNode.h](src/xrpld/shamap/SHAMapTxPlusMetaLeafNode.h)
+- [SHAMapItem.h](src/xrpld/shamap/SHAMapItem.h)
+- [SHAMapNodeID.h](src/xrpld/shamap/SHAMapNodeID.h)
+- [SHAMapAddNode.h](src/xrpld/shamap/SHAMapAddNode.h)
+- [SHAMapMissingNode.h](src/xrpld/shamap/SHAMapMissingNode.h)
+- [TreeNodeCache.h](src/xrpld/shamap/TreeNodeCache.h)
+- [Family.h](src/xrpld/shamap/Family.h)
+- [NodeFamily.h](src/xrpld/shamap/NodeFamily.h)
+- [SHAMapStoreImp.cpp](src/xrpld/app/misc/SHAMapStoreImp.cpp)
+- [SHAMapStoreImp.h](src/xrpld/app/misc/SHAMapStoreImp.h)
+- [detail/SHAMap.cpp](src/xrpld/shamap/detail/SHAMap.cpp)
+- [detail/SHAMapSync.cpp](src/xrpld/shamap/detail/SHAMapSync.cpp)
+- [detail/SHAMapDelta.cpp](src/xrpld/shamap/detail/SHAMapDelta.cpp)
+- [detail/SHAMapInnerNode.cpp](src/xrpld/shamap/detail/SHAMapInnerNode.cpp)
+- [detail/SHAMapLeafNode.cpp](src/xrpld/shamap/detail/SHAMapLeafNode.cpp)
+- [detail/SHAMapTreeNode.cpp](src/xrpld/shamap/detail/SHAMapTreeNode.cpp)
+- [detail/TaggedPointer.h](src/xrpld/shamap/detail/TaggedPointer.h)
+- [detail/TaggedPointer.ipp](src/xrpld/shamap/detail/TaggedPointer.ipp)
+
+---

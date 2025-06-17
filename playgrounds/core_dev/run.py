@@ -10,7 +10,7 @@ from athenah_ai.utils.response import safe_json_loads
 from playgrounds.core_dev.tools import symbol_to_source_occurances
 
 # === CONFIGURATION ===
-ATHENAH_ROOT = "/Users/darkmatter/projects/transia/athena-ai"
+ATHENAH_ROOT = "/root/athena-ai"
 PROJECT_ROOT = f"{ATHENAH_ROOT}/dist/rippled-ai-core/rippled-ai-core-source"
 TEMPLATE_PATH = (
     f"{ATHENAH_ROOT}/playgrounds/core_dev/template.md"
@@ -345,6 +345,7 @@ def get_symbol_names(
     client: AthenahClient,
     functionality: str,
     all_relevant_file_names: List[Dict[str, Any]],
+    symbols_prev: List[str],
 ) -> List[str]:
     prompt: str = f"""
 Create a full and complete list of symbols (functions, classes, variables, etc.) that are relevant to the functionality described below.
@@ -352,6 +353,7 @@ Create a full and complete list of symbols (functions, classes, variables, etc.)
 {ACCURACY_NOTICE}
 
 Functionality: {functionality}
+Use the previous symbols to also create the list. {symbols_prev}
 
 Return the results using the template below:
 - Only return an exhaustive list of symbols as strings in a python array
@@ -401,7 +403,6 @@ def write_lesson_plan(functionality: str, data: Any) -> None:
     output_path = f"{RESULTS_DIR}/{functionality}.md"
     if isinstance(data, str):
         print("Data is a str.")
-        data = "\n".join(data)
         data = data.replace("```markdown", "````")
         data = data.replace("```", "````")
         write_file(output_path, data)
@@ -429,9 +430,10 @@ def create_extra_info(
     ai_base: AthenahClient = AthenahClient("id", "dist", model_name="gpt-4o-mini")
     ai_base.init_llm()
     ai_source: AthenahClient = AthenahClient(
-        "id", "dist", ATHENAH_CLIENT_NAME, "v1", AGENT_MODEL
+        "id", "dist", ATHENAH_CLIENT_NAME, "v1", AGENT_MODEL, best_of=3
     )
 
+    # all_relevant_file_names_prev = read_json(f'results/{functionality}_all_relevant_file_names.json')
     all_relevant_file_names = ai_source.get_relevant_file_names(functionality, 0, 100)
     if 'all_relevant_file_names' in detail:
         percent_difference = (
@@ -439,30 +441,21 @@ def create_extra_info(
         ) * 100
 
         print(f"Percent difference: {percent_difference:.2f}%")
-    
+
     extra_info['all_relevant_file_names'] = all_relevant_file_names
     write_json(f'results/{functionality}_all_relevant_file_names.json', all_relevant_file_names)
 
+    symbols_prev = {}
+    try:
+        read_json(f'results/{functionality}_symbols.json')
+    except FileNotFoundError:
+        print(f"Pre-existing symbols file not found for {functionality}. Using empty list.")
+        symbols_prev = {}
     symbols: List[str] = get_symbol_names(
-        ai_source, functionality, all_relevant_file_names
+        ai_source, functionality, all_relevant_file_names, symbols_prev
     )
-
-    # missing_symbols: List[str] = []
-    # for symbol in symbols:
-    #     if symbol not in missing_symbols:
-    #         missing_symbols.append(symbol)
-
-    #     symbols: List[str] = get_symbol_names(
-    #         ai_source, functionality, relevant_files_str
-    #     )
-    #     for symbol in symbols:
-    #         if symbol not in missing_symbols:
-    #             missing_symbols.append(symbol)
-    # write_json(f'results/{functionality}_missing_symbols.json', missing_symbols)
-
-    # print(f"Symbols found: {len(symbols)}")
-    write_json(f'results/{functionality}_symbols.json', {"symbols": symbols})
     extra_info['symbols'] = symbols
+    write_json(f'results/{functionality}_symbols.json', {"symbols": symbols})
 
     symbol_map: List[Dict[str, Any]] = all_relevant_file_names
     # symbol_map: List[Dict[str, Any]] = []
@@ -472,17 +465,17 @@ def create_extra_info(
     #         print(f"Symbol {symbol} not found in {PROJECT_ROOT}.")
     #         continue
     #     symbol_map.extend(result)
-    extra_info['symbol_map'] = symbol_map
-    write_json(f'results/{functionality}_symbol_map1.json', extra_info['symbol_map'])
+    # extra_info['symbol_map'] = symbol_map
+    write_json(f'results/{functionality}_symbol_map1.json', symbol_map)
     for i in range(len(symbol_map)):
         symbol = symbol_map[i]
         ai_help = get_ai_v1_json(symbol["path"] + '.txt')
-        if "error" in ai_help:
+        if ai_help and "error" in ai_help:
             print(f"Error getting AI v1 JSON for {symbol['path']}: {ai_help['error']}")
             ai_help = None
-        extra_info['symbol_map'][i]['ai'] = ai_help
+        symbol_map[i]['ai'] = ai_help
     
-    write_json(f'results/{functionality}_symbol_map2.json', extra_info['symbol_map'])
+    write_json(f'results/{functionality}_symbol_map2.json', symbol_map)
     current_md: str = ""
     try:
         current_md = read_file(RESULTS_DIR + "/" + functionality + ".md")
@@ -497,16 +490,16 @@ def create_extra_info(
     # extra_info['relevant_response'] = relevant_response
     # write_json(f'{functionality}_relevant_response.json', relevant_response)
 
-    process_map = parse_process_map(ai_source, symbols, current_md, functionality, ignore_info, extra_info['symbol_map'])
+    process_map = parse_process_map(ai_source, symbols, current_md, functionality, ignore_info, symbol_map)
     write_json(f'results/{functionality}_process_map.json', process_map)
-    extra_info['process_map'] = process_map
+    # extra_info['process_map'] = process_map
 
     step_explanations = step_through_code(
         ai_source,
         process_map,
-        extra_info['symbol_map'],
+        symbol_map,
     )
-    extra_info['step_explanations'] = step_explanations
+    # extra_info['step_explanations'] = step_explanations
     write_json(f'results/{functionality}_step_explanations.json', step_explanations)
 
     template = read_file(TEMPLATE_PATH)
@@ -516,27 +509,26 @@ def create_extra_info(
         functionality,
         template,
         step_explanations,
-        extra_info['symbol_map'],
+        symbol_map,
     )
-    extra_info['initial_doc'] = initial_doc
+    # extra_info['initial_doc'] = initial_doc
     write_file(f'results/{functionality}_initial_doc.md', initial_doc)
 
     final_doc = revision_loop(
         ai_source,
         initial_doc,
-        extra_info['symbol_map'],
+        symbol_map,
         all_relevant_file_names,
         template,
         rounds=REVISION_ROUNDS,
     )
-    extra_info['final_doc'] = final_doc
+    # extra_info['final_doc'] = final_doc
     write_file(f'results/{functionality}_final_doc.md', final_doc)
-    return extra_info
+    return final_doc
 
 def create_lesson(
     latest_lesson: Dict[str, Any],
 ) -> None:
-    extra_info: Dict[str, Any] = {}
 
     detail: Dict[str, Any] = latest_lesson.get("detail", {})
     if not isinstance(latest_lesson, dict):
@@ -544,13 +536,13 @@ def create_lesson(
     
     functionality = detail["functionality"]
 
-    extra_info = create_extra_info(
+    final_doc = create_extra_info(
         detail,
-        extra_info,
+        {},
     )
 
-    write_lesson_plan(functionality, extra_info['final_doc'])
-    create_update_lesson(functionality, extra_info, [])
+    write_lesson_plan(functionality, final_doc)
+    create_update_lesson(functionality, {}, [])
     
 
 def update_lesson(
@@ -562,7 +554,8 @@ def update_lesson(
     user_input_array = lesson.get('user_input').copy()
     functionality = detail["functionality"]
     all_relevant_file_names: List[Any] = extra_info.get("all_relevant_file_names", [])
-    relevant_response: List[Dict[str, Any]] = extra_info.get("relevant_response", [])
+    process_map: List[Dict[str, Any]] = extra_info.get("process_map", [])
+    step_explanations: List[Dict[str, Any]] = extra_info.get("step_explanations", [])
 
     ai_base: AthenahClient = AthenahClient("id", "dist", model_name="gpt-4o-mini")
     ai_base.init_llm()

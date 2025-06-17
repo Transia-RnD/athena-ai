@@ -77,10 +77,17 @@ def collect_ai_v1_descriptions(root_folder):
 
 def get_ai_v1_json(file_path: str) -> Dict[str, Any]:
     try:
+        if '.md' in file_path:
+            raise ValueError("File path should not contain .md, use .txt instead")
         file_path = file_path.replace(".txt", ".ai.json")
         with open(file_path, "r") as f:
             data = json.load(f)
-            return data
+            new_data = {}
+            new_data["file_path"] = data['file_path']
+            new_data["namespaces"] = data.get("namepaces", "")
+            new_data["description"] = data.get("description", "")
+            new_data["functions"] = [func['name'] for func in data.get("functions", [])]
+            return new_data
     except Exception as e:
         # print(f"Error reading {file_path}: {e}")
         return {"file_path": file_path, "content": "", "error": str(e)}

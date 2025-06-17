@@ -267,9 +267,9 @@ class AthenahClient(VectorStore):
         """
 
         # Adjust the model if necessary based on token limits
-        if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            print('Using o4-mini model due to token limit.')
-            cls.model_name = "o4-mini"
+        # if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+        #     print('Using o4-mini model due to token limit.')
+        #     cls.model_name = "o4-mini"
 
         # Initialize the OpenAI LLM with the adjusted parameters
         cls.llm = ChatOpenAI(
@@ -312,9 +312,9 @@ class AthenahClient(VectorStore):
             str: The generated response.
         """
 
-        if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            print('PROMPT V1: Using o4-mini model due to token limit.')
-            cls.model_name = "o4-mini"
+        # if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+        #     print('PROMPT V1: Using o4-mini model due to token limit.')
+        #     cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
@@ -352,9 +352,9 @@ class AthenahClient(VectorStore):
             str: The generated response.
         """
 
-        if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-            print('PROMPT: Using o4-mini model due to token limit.')
-            cls.model_name = "o4-mini"
+        # if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
+        #     print('PROMPT: Using o4-mini model due to token limit.')
+        #     cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
@@ -468,6 +468,7 @@ class AthenahClient(VectorStore):
         prompt: str,
         tools: List[Tool] = [],
         add_default_tools: bool = True,
+        no_temp: bool = False,
     ) -> str:
         """
         Runs an agent with the provided tools and prompt.
@@ -485,11 +486,17 @@ class AthenahClient(VectorStore):
         try:
             cls.llm = ChatOpenAI(
                 openai_api_key=OPENAI_API_KEY,
-                model_name='o4-mini',
-                # temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
+                model_name=cls.model_name,
+                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
                 max_tokens=get_max_tokens(cls.model_name),
                 n=cls.best_of,
             )
+            if cls.model_name == "o4-mini" or no_temp:
+                cls.llm = ChatOpenAI(
+                    openai_api_key=OPENAI_API_KEY,
+                    model_name=cls.model_name,
+                    temperature=1,
+                )
 
             def read_file(path: str) -> str:
                 try:
@@ -698,9 +705,6 @@ class AthenahClient(VectorStore):
 
         question_w_system: str = " ".join([msg["content"] for msg in messages])
         total_tokens: int = get_token_total(question_w_system)
-        if total_tokens > MODEL_MAP[cls.model_name]:
-            print('RAG PROMPT V2: Using o4-mini model due to token limit.')
-            cls.model_name = "o4-mini"
 
         cls.llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
@@ -714,6 +718,16 @@ class AthenahClient(VectorStore):
             #     "presence_penalty": cls.presence_penalty,
             # },
         )
+
+        # if total_tokens > MODEL_MAP[cls.model_name]:
+        #     print('RAG PROMPT V2: Using o4-mini model due to token limit.')
+        #     cls.model_name = "o4-mini"
+
+        #     cls.llm = ChatOpenAI(
+        #         openai_api_key=OPENAI_API_KEY,
+        #         model_name=cls.model_name,
+        #         temperature=1,
+        #     )
 
         # Send the API request
         keep_trying = True
