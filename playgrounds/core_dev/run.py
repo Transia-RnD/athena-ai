@@ -10,7 +10,7 @@ from athenah_ai.utils.response import safe_json_loads
 from playgrounds.core_dev.tools import symbol_to_source_occurances
 
 # === CONFIGURATION ===
-ATHENAH_ROOT = "/root/athena-ai"
+ATHENAH_ROOT = "/Users/darkmatter/projects/transia/athena-ai"
 PROJECT_ROOT = f"{ATHENAH_ROOT}/dist/rippled-ai-core/rippled-ai-core-source"
 TEMPLATE_PATH = (
     f"{ATHENAH_ROOT}/playgrounds/core_dev/template.md"
