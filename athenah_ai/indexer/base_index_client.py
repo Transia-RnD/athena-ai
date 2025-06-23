@@ -48,20 +48,6 @@ def summarize_file(content: str):
     return response
 
 
-# def extract_functions(content: str, file_type: str):
-#         client = AthenahClient(id='id', model_name="gpt-3.5-turbo-16k")
-#         response = client.base_prompt(
-#             f"""
-#             Describe what each function in this {file_type} code does.
-#             Be very specific.
-#             Every function must be documented.
-#             If there are no actual functions then return "None"
-#             """,
-#             content,
-#         )
-#         return response
-
-
 def prepare_dir(
     root: str, save_path: str = None, recursive: bool = False
 ) -> Tuple[List[str], List[str]]:
