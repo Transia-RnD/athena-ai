@@ -96,7 +96,7 @@ class IndexClient(BaseIndexClient):
                 dest_filepath,
             )
             _ = [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
-        
+
         _docs, _metadata = cls._build_from_dirs(source, build_paths, False)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
@@ -117,11 +117,11 @@ class IndexClient(BaseIndexClient):
                 source,
                 dest_filepath,
             )
-        
+
             [AthenahCleaner().clean_dir(filepath, True) for filepath in build_paths]
             if include_root:
                 AthenahCleaner().clean_dir(f"{cls.name_path}/{source_name}", False)
-        
+
         _docs, _metadata = cls._build_from_dirs(source, build_paths, include_root)
         store: FAISS = cls.store_from_docs(_docs, _metadata)
         cls.save(store)
@@ -132,17 +132,46 @@ class IndexClient(BaseIndexClient):
         dest_source: str = os.path.join(cls.name_path, source_name)
         shutil.rmtree(dest_source, ignore_errors=True)
         os.makedirs(dest_source, exist_ok=True)
-        for file_path in file_paths:
-            cls.prepare_file(
-                file_path,
-                os.path.join(dest_source, file_path.split("/")[-1]),
-            )
 
-        AthenahCleaner().clean_dir(dest_source, True)
-        _docs, _metadata = cls._build_from_dirs(dest_source, [dest_source], True)
-        store: FAISS = cls.store_from_docs(_docs, _metadata)
-        cls.save(store)
-        return store
+        def copy_files_preserving_structure(
+            file_paths: List[str],
+            dest_root: str,
+            root_path: str = None,
+            prepare_file_fn=None,
+        ):
+            """
+            Copies files to dest_root, preserving their relative directory structure from root_path.
+            Optionally uses a custom prepare_file_fn for copying.
+            """
+            for file_path in file_paths:
+                try:
+                    rel_path = (
+                        os.path.relpath(file_path, root_path)
+                        if root_path
+                        else os.path.basename(file_path)
+                    )
+                    dest_file_path = os.path.join(dest_root, rel_path)
+                    os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
+                    if prepare_file_fn:
+                        prepare_file_fn(file_path, dest_file_path)
+                    else:
+                        shutil.copy2(file_path, dest_file_path)
+                except Exception as e:
+                    print(f"Error copying {file_path}: {e}")
+
+        copy_files_preserving_structure(
+            file_paths, dest_source, root_path="", prepare_file_fn=cls.prepare_file
+        )
+
+        try:
+            AthenahCleaner().clean_dir(dest_source, True)
+            _docs, _metadata = cls._build_from_dirs(dest_source, [dest_source], True)
+            store: FAISS = cls.store_from_docs(_docs, _metadata)
+            cls.save(store)
+            return store
+        except Exception as e:
+            print(f"Error building index: {e}")
+            return None
 
     def build_from_file(cls, file_path: str):
         source_name: str = f"{cls.name}-source"

@@ -86,6 +86,7 @@ def prepare_dir(
                     path = os.path.join(dirpath, filename)
                     with open(path, "r") as f:
                         import json
+
                         data = json.load(f)
                     # The real file this metadata describes
                     real_file = data.get("file_path")
@@ -96,7 +97,9 @@ def prepare_dir(
     ai_metadata = load_ai_json_metadata(root)
 
     for doc in docs:
-        real_path = os.path.abspath(doc.metadata.get("source", doc.metadata.get("file_path", "")))
+        real_path = os.path.abspath(
+            doc.metadata.get("source", doc.metadata.get("file_path", ""))
+        )
         if real_path in ai_metadata:
             # Merge the ai.json metadata into the document's metadata
             doc.metadata.update(ai_metadata[real_path])
