@@ -1,56 +1,62 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-AGENT_MODEL = "gpt-4.1"
+AGENT_MODEL = "claude-4-sonnet-20250514"
 ATHENAH_CLIENT_NAME: str = "rippled-ai-core"
 
 
 def main():
+    # from athenah_ai.indexer import AthenahIndexer
+
+    # path: str = "/Users/darkmatter/projects/ledger-works/rippled"
+    # indexer = AthenahIndexer("local", "id", "dist", "rippled-ai-core", "v1")
+    # indexer.build_from_dirs(path, ["include", "src/libxrpl", "src/xrpld"], False, False)
+
     from athenah_ai.client import AthenahClient
 
     ai_source: AthenahClient = AthenahClient(
-        "id", "dist", ATHENAH_CLIENT_NAME, "v1", AGENT_MODEL, best_of=3
+        "id",
+        provider="anthropic",
+        model_group="dist",
+        custom_model=ATHENAH_CLIENT_NAME,
+        version="v1",
+        model_name=AGENT_MODEL,
+        best_of=3,
     )
     system_prompt: str = """
-void
-    testBatchCalculateBaseFee()
-    {
-        using namespace jtx;
-        Env env(*this);
-        Account const alice("alice");
-        Account const bob("bob");
-        env.fund(XRP(10000), alice, bob);
-        env.close();
+Sui's Relaying Process (Narwhal/Bullshark)
+What Gets Relayed:
 
-        auto const seq = env.seq(alice);
-        auto const batchFee = batch::calcBatchFee(env, 0, 2);
-        auto jtx = env.jt(batch::outer(alice, seq, batchFee, tfAllOrNothing),
-            batch::inner(batch::outer(alice, seq, batchFee, tfAllOrNothing), seq),
-            batch::inner(pay(alice, bob, XRP(1)), seq + 2),
-            ter(telENV_RPC_FAILED));
+Transaction data (the raw transaction)
+Cryptographic certificates (validity proofs)
+Dependency information (object references)
+Early validation results (but not full execution)
 
-        Serializer s;
-        jtx.stx->add(s);
+Early Checks During Relaying:
 
-        // Calculate expected fee
-        XRPAmount baseFee = Transactor::calculateBaseFee(*env.current(), *jtx.stx);
-        std::cout << "Base fee: " << baseFee << std::endl;
-        // XRPAmount fee1 = ripple::calculateBaseFee(*env.current(), *tx1.stx);
-        // XRPAmount fee2 = ripple::calculateBaseFee(*env.current(), *tx2.stx);
-        // XRPAmount expectedFee = env.current()->fees().base + baseFee + fee1 + fee2;
+Signature validation
+Object existence checks
+Basic format validation
+Dependency analysis (which objects are touched)
+Gas estimation
 
-        // Call calculateBaseFee and check result
-        XRPAmount actualFee = Batch::calculateBaseFee(*env.current(), *jtx.stx);
-        std::cout << "Actual fee: " << actualFee << std::endl;
-        BEAST_EXPECT(baseFee == actualFee);
-    }
+What's Deferred:
 
+Full state execution
+Complex computation
+Final state changes
+Cross-object interactions
 """
     user_input: str = """
-#19 failed: unhandled exception: Inner Batch transaction found
+I want to update the transaction relay process for the XRPL to use the sui ideas. Transaction relay happens in app.overlay().relay but is called I believe by TxQ. We want to change it from applying the transaction to only doing preflight and preclaim.
 
-Make the test verify the throw. Return the test
+- Only return the code changes.
 """
     response = ai_source.rag_prompt_v2(system_prompt, user_input)
     print(response)
+    # write to a file
+    with open("response.txt", "w") as f:
+        f.write(response)
+
+
 main()

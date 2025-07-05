@@ -1,19 +1,15 @@
 #!/usr/bin/env python
-# coding: utf-8
-
+# athenah_client.py - Main multi-LLM client implementation
 
 import os
-from typing import Dict, Any, List, Tuple, TypedDict
+from pathlib import Path
+from typing import Dict, Any, List, Tuple, TypedDict, Optional, Union
 
 from dotenv import load_dotenv
 
-import openai
-
-from langchain_openai import ChatOpenAI
 from langchain_community.vectorstores import FAISS
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-
 from langgraph.graph import START, StateGraph
 from langchain import hub
 from langchain.agents import (
@@ -23,65 +19,18 @@ from langchain.agents import (
 )
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
 from langchain_core.documents import Document
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph.graph import CompiledGraph
 
+from .llm_adapters import LLMProvider, LLMFactory, BaseLLMAdapter
+from athenah_ai.client.file_handler import FileHandler
 from athenah_ai.utils.fs import write_json
 from athenah_ai.utils.agent import build_agent_tools
 from athenah_ai.client.vector_store import VectorStore
 from athenah_ai.logger import logger
 
 load_dotenv()
-
-OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
-OPENAI_API_MODEL: str = "gpt-4.1"
-
-MODEL_MAP = {
-    "gpt-4o-mini": 16383,
-    "gpt-4o": 4095,
-    "gpt-4-turbo": 4095,
-    "gpt-4": 8191,
-    "gpt-4.1": 32768,
-    "o4-mini": 100000,
-}
-
-
-def get_max_tokens(model_name: str) -> int:
-    """
-    Get the maximum number of tokens for a given OpenAI model.
-
-    Args:
-        model_name (str): The name of the OpenAI model.
-
-    Returns:
-        int: The maximum number of tokens for the model.
-    """
-    return MODEL_MAP.get(model_name, 4096)  # Default to 4096 if model not found
-
-
-def get_token_total(prompt: str) -> int:
-    import tiktoken
-    import inspect
-
-    openai_model = "gpt-4o-mini"
-    encoding = tiktoken.encoding_for_model(openai_model)
-    # Get the name of the calling function
-    caller = inspect.stack()[1].function
-    print(f"[get_token_total] Called by: {caller} | Total tokens for model {openai_model}: {len(encoding.encode(prompt))}")
-    max_tokens = MODEL_MAP.get(openai_model, 4096)
-    total_tokens = len(encoding.encode(prompt))
-    if total_tokens > max_tokens:
-        write_json(f'athenah_ai/client/{caller}_token_limit_exceeded.json', {
-            "prompt": prompt,
-            "total_tokens": total_tokens,
-            "max_tokens": max_tokens,
-            "model": openai_model,
-        })
-    return total_tokens
 
 
 # Define state for application
@@ -93,323 +42,113 @@ class State(TypedDict):
 
 class AthenahClient(VectorStore):
     """
-    A client for interacting with the Athenah AI chat model.
+    A client for interacting with multiple LLM providers for chat and RAG functionality.
 
     Attributes:
         id (str): The ID of the client.
+        provider (LLMProvider): The LLM provider to use.
         model_group (str): The model group to use for the chat model.
         custom_model (str): The custom model to use for the chat model.
         version (str): The version of the chat model.
         model_name (str): The name of the chat model.
         temperature (float): The temperature parameter for generating responses.
         max_tokens (int): The maximum number of tokens for generating responses.
-        top_p (int): The top-p parameter for generating responses.
-        best_of (int): The best-of parameter for generating responses.
-        frequency_penalty (float): The frequency penalty parameter for generating
-        responses.
-        presence_penalty (float): The presence penalty parameter for generating
-        responses.
-        stop (List[str]): The list of stop words for generating responses.
-        has_history (bool): Whether the client has chat history.
-        chat_history (List[str]): The chat history of the client.
+        llm_adapter (BaseLLMAdapter): The LLM adapter instance.
+        memory (ConversationBufferMemory): Memory for conversation history.
         db (FAISS): The FAISS vector store for document retrieval.
     """
 
-    id: str = ""
-    model_group: str = "dist"
-    custom_model: str = ""
-    version: str = "v1"
-    model_name: str = OPENAI_API_MODEL
-    temperature: float = 0
-    max_tokens: int = 600
-    top_p: int = 1
-    best_of: int = 1
-    frequency_penalty: float = 0
-    presence_penalty: float = 0
-    stop: List[str] = []
-
-    has_history: bool = False
-    chat_history: List[Tuple[str, str]] = []
-    memory: ConversationBufferMemory = None
-    db: FAISS = None
-    llm: ChatOpenAI = None
-
     def __init__(
-        cls,
+        self,
         id: str,
+        provider: Union[LLMProvider, str] = LLMProvider.OPENAI,
         model_group: str = "dist",
         custom_model: str = "",
         version: str = "v1",
-        model_name: str = OPENAI_API_MODEL,
+        model_name: str = None,
         temperature: float = 0,
         max_tokens: int = 1200,
-        top_p: int = 1,
-        best_of: int = 3,
-        frequency_penalty: float = 0,
-        presence_penalty: float = 0,
-        stop: List[str] = [],
+        **kwargs,
     ):
         """
-        Initializes the AthenahClient.
+        Initialize the AthenahClient.
 
         Args:
             id (str): The ID of the client.
+            provider (Union[LLMProvider, str]): The LLM provider to use.
             model_group (str): The model group to use for the chat model.
             custom_model (str): The custom model to use for the chat model.
             version (str): The version of the chat model.
             model_name (str): The name of the chat model.
             temperature (float): The temperature parameter for generating responses.
             max_tokens (int): The maximum number of tokens for generating responses.
-            top_p (int): The top-p parameter for generating responses.
-            best_of (int): The best-of parameter for generating responses.
-            frequency_penalty (float): The frequency penalty parameter for generating
-            responses.
-            presence_penalty (float): The presence penalty parameter for generating
-            responses.
-            stop (List[str]): The list of stop words for generating responses.
+            **kwargs: Additional arguments.
         """
-        cls.id = id
-        cls.model_group = model_group
-        cls.custom_model = custom_model
-        cls.version = version
-        cls.model_name = model_name
-        cls.temperature = temperature
-        cls.max_tokens = max_tokens
-        cls.top_p = top_p
-        cls.best_of = best_of
-        cls.frequency_penalty = frequency_penalty
-        cls.presence_penalty = presence_penalty
-        cls.stop = stop
+        self.id = id
+        self.provider = (
+            LLMProvider(provider.lower()) if isinstance(provider, str) else provider
+        )
+        self.model_group = model_group
+        self.custom_model = custom_model
+        self.version = version
+        self.model_name = model_name
+        self.temperature = temperature
+        self.max_tokens = max_tokens
 
-        cls.memory = ConversationBufferMemory(
+        # Create LLM adapter
+        self.llm_adapter = LLMFactory.create_adapter(
+            self.provider, self.model_name, self.temperature, self.max_tokens
+        )
+
+        # Initialize memory
+        self.memory = ConversationBufferMemory(
             memory_key="chat_history", return_messages=True
         )
 
+        # Initialize parent class
         super().__init__(storage_type="local" if model_group == "dist" else "gcs")
 
-        if cls.model_group and cls.custom_model:
-            cls.db = cls.load(cls.custom_model, cls.model_group, cls.version)
+        # Load vector store if custom model is provided
+        if self.model_group and self.custom_model:
+            self.db = self.load(self.custom_model, self.model_group, self.version)
 
-        pass
+        # Initialize LangChain LLM
+        self.llm = self.llm_adapter.get_langchain_llm()
 
-    def get_relevant_file_names(
-        client: "AthenahClient", query: str, min_score: float = 0.5, max_files: int = 20
-    ) -> List[str]:
+    def get_token_count(self, text: str) -> int:
         """
-        Returns a list of file names (paths) of the most relevant documents in the vector index for a given query.
+        Get the total number of tokens for the given text.
 
         Args:
-            client (AthenahClient): The client instance with a loaded FAISS db.
-            query (str): The search query or functionality description.
-            min_score (float): Minimum similarity score (0-1) to consider a document relevant.
-            max_files (int): Maximum number of files to return.
+            text (str): The text to count tokens for.
 
         Returns:
-            List[str]: List of file paths for the most relevant documents.
+            int: The total number of tokens.
         """
-        try:
-            # Run similarity search with scores
-            results = client.db.similarity_search(query, k=500)
-            import json
+        return self.llm_adapter.count_tokens(text)
 
-            results = json.loads(results) if isinstance(results, str) else results
-            # print(results[0])
-            # results: List[Tuple[Document, float]]
-            # Filter by min_score and sort by score descending
-            # filtered = [
-            #     (doc)
-            #     for doc in results
-            #     # if score >= min_score
-            #     and hasattr(doc.metadata, "get")
-            #     and doc.metadata.get("source")
-            # ]
-            # Sort by score descending
-            # results.sort(key=lambda x: x[1], reverse=True)
-            # Extract file paths (assuming 'source' in metadata is the file path)
-            file_paths = []
-            for doc in results:
-                # print(doc)
-                file_path = doc.metadata.get("file_path")
-                if file_path and file_path not in file_paths:
-                    file_paths.append(
-                        {
-                            "path": file_path,
-                            "content": doc.page_content,
-                        }
-                    )
-                if len(file_paths) >= max_files:
-                    break
-            return file_paths
-        except Exception as e:
-            logger.error(f"Error in get_relevant_file_names: {e}")
-            return []
-
-    def init_llm(cls):
-        # Initialize the OpenAI LLM with the adjusted parameters
-        cls.llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=cls.model_name,
-            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-            max_tokens=get_max_tokens(cls.model_name),
-            n=cls.best_of,
-            # You can include other model kwargs if necessary
-        )
-
-    def conversation(cls, prompt: str) -> str:
+    def base_prompt(
+        self,
+        system: str = None,
+        prompt: str = None,
+        files: List[Union[str, Dict[str, Any]]] = None,
+        *args,
+    ) -> str:
         """
-        Generates a response to the given prompt, using conversational memory.
-
-        Args:
-            prompt (str): The prompt to generate a response to.
-
-        Returns:
-            str: The generated response.
-        """
-
-        # Adjust the model if necessary based on token limits
-        # if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-        #     print('Using o4-mini model due to token limit.')
-        #     cls.model_name = "o4-mini"
-
-        # Initialize the OpenAI LLM with the adjusted parameters
-        cls.llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=cls.model_name,
-            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-            max_tokens=get_max_tokens(cls.model_name),
-            n=cls.best_of,
-            # You can include other model kwargs if necessary
-        )
-
-        retriever = cls.db.as_retriever()
-
-        # Create a ConversationalRetrievalChain that uses the memory
-        chain = ConversationalRetrievalChain.from_llm(
-            llm=cls.llm,
-            retriever=retriever,
-            memory=cls.memory,
-            verbose=True,  # Set to False if you don't want verbose output
-        )
-
-        # Generate the response using the chain
-        response = chain({"question": prompt})
-        assistant_reply = response["answer"]
-
-        # Append the user prompt and assistant's reply to the chat history
-        cls.chat_history.append((prompt, assistant_reply))
-
-        # The memory is automatically updated within the chain
-        return assistant_reply
-
-    def promptv1(cls, prompt: str) -> str:
-        """
-        Generates a response to the given prompt.
-
-        Args:
-            prompt (str): The prompt to generate a response to.
-
-        Returns:
-            str: The generated response.
-        """
-
-        # if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-        #     print('PROMPT V1: Using o4-mini model due to token limit.')
-        #     cls.model_name = "o4-mini"
-
-        cls.llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=cls.model_name,
-            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-            max_tokens=get_max_tokens(cls.model_name),
-            n=cls.best_of,
-            # model_kwargs={
-            #     "top_p": cls.top_p,
-            #     "frequency_penalty": cls.frequency_penalty,
-            #     "presence_penalty": cls.presence_penalty,
-            # },
-        )
-
-        num_indexs = cls.db.index_to_docstore_id
-        logger.debug(f"DB INDEXS: {len(num_indexs)}")
-        retriever = cls.db.as_retriever()
-
-        retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
-        question_answer_chain = create_stuff_documents_chain(
-            cls.llm, retrieval_qa_chat_prompt
-        )
-        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-        response = rag_chain.invoke({"input": prompt})
-        return response["answer"]
-
-    def prompt(cls, prompt: str) -> str:
-        """
-        Generates a response to the given prompt.
-
-        Args:
-            prompt (str): The prompt to generate a response to.
-
-        Returns:
-            str: The generated response.
-        """
-
-        # if get_token_total(prompt) > MODEL_MAP[cls.model_name]:
-        #     print('PROMPT: Using o4-mini model due to token limit.')
-        #     cls.model_name = "o4-mini"
-
-        cls.llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=cls.model_name,
-            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-            max_tokens=get_max_tokens(cls.model_name),
-            n=cls.best_of,
-            # model_kwargs={
-            #     "top_p": cls.top_p,
-            #     "frequency_penalty": cls.frequency_penalty,
-            #     "presence_penalty": cls.presence_penalty,
-            # },
-        )
-
-        num_indexs = cls.db.index_to_docstore_id
-        logger.debug(f"DB INDEXS: {len(num_indexs)}")
-        # retriever = cls.db.as_retriever()
-
-        # similar_docs = cls.db.similarity_search_with_relevance_scores(
-        #     "invoke_calculateBaseFee", k=3
-        # )
-        # print(similar_docs)
-        rag_prompt = hub.pull("rlm/rag-prompt")
-
-        def retrieve(state: State):
-            retrieved_docs = cls.db.similarity_search(state["question"])
-            return {"context": retrieved_docs}
-
-        def generate(state: State):
-            docs_content = "\n\n".join(doc.page_content for doc in state["context"])
-            messages = rag_prompt.invoke(
-                {"question": state["question"], "context": docs_content}
-            )
-            response = cls.llm.invoke(messages)
-            return {"answer": response.content}
-
-        graph_builder = StateGraph(State).add_sequence([retrieve, generate])
-        graph_builder.add_edge(START, "retrieve")
-        graph = graph_builder.compile()
-        response = graph.invoke({"question": prompt})
-        return response["answer"]
-
-    def base_prompt(cls, system: str = None, prompt: str = None, *args) -> str:
-        """
-        Generates a response to the given system and prompt.
+        Generate a response using the base LLM without RAG, with optional file support.
 
         Args:
             system (str): The system message.
             prompt (str): The user prompt.
+            files (List[Union[str, Dict[str, Any]]]): List of file paths or file data dictionaries.
+            *args: Additional message dictionaries.
 
         Returns:
             str: The generated response.
         """
         try:
-            messages: List[Dict[str, Any]] = []
+            messages: List[Dict[str, str]] = []
+
             if isinstance(system, str) and system != "":
                 messages.append({"role": "system", "content": system})
             if isinstance(prompt, str) and prompt != "":
@@ -419,326 +158,294 @@ class AthenahClient(VectorStore):
                 if isinstance(arg, dict):
                     messages.append(arg)
 
-            response = openai.chat.completions.create(
-                model=cls.model_name,
-                messages=messages,
-                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-                max_tokens=cls.max_tokens,
-                # top_p=cls.top_p,
-                n=cls.best_of,
-                # frequency_penalty=cls.frequency_penalty,
-                # presence_penalty=cls.presence_penalty,
-            )
-            assistant_reply = response.choices[0].message.content
-            return assistant_reply
-        except Exception as e:
-            raise ValueError(f"failed to generate a prompt completion: {str(e)}")
+            # Process files if provided
+            processed_files = []
+            if files:
+                for file_item in files:
+                    if isinstance(file_item, str):
+                        # It's a file path
+                        if Path(file_item).exists():
+                            file_data = FileHandler.encode_file_for_llm(file_item)
+                            processed_files.append(file_data)
+                        else:
+                            logger.warning(f"File not found: {file_item}")
+                    elif isinstance(file_item, dict):
+                        # It's already processed file data
+                        processed_files.append(file_item)
 
-    def _base_prompt(cls, messages) -> str:
+            return self.llm_adapter.create_completion(
+                messages, processed_files if processed_files else None
+            )
+        except Exception as e:
+            raise ValueError(f"Failed to generate a prompt completion: {str(e)}")
+
+    def base_prompt_with_documents(
+        self,
+        system: str = None,
+        prompt: str = None,
+        file_paths: List[str] = None,
+        extract_text: bool = True,
+    ) -> str:
         """
-        Generates a response to the given system and prompt.
+        Generate a response using document content extracted via LangChain loaders.
 
         Args:
             system (str): The system message.
             prompt (str): The user prompt.
+            file_paths (List[str]): List of file paths to process.
+            extract_text (bool): Whether to extract text from files.
 
         Returns:
             str: The generated response.
         """
         try:
-            response = openai.chat.completions.create(
-                model=cls.model_name,
-                messages=messages,
-                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-                max_tokens=cls.max_tokens,
-                # top_p=cls.top_p,
-                n=cls.best_of,
-                # frequency_penalty=cls.frequency_penalty,
-                # presence_penalty=cls.presence_penalty,
-            )
-            assistant_reply = response.choices[0].message.content
-            return assistant_reply
-        except Exception as e:
-            raise ValueError(f"failed to generate a prompt completion: {str(e)}")
+            messages: List[Dict[str, str]] = []
 
-    def agent_prompt(
-        cls,
-        name: str,
-        description: str,
+            if isinstance(system, str) and system != "":
+                messages.append({"role": "system", "content": system})
+
+            # Process files and extract content
+            document_content = ""
+            if file_paths:
+                for file_path in file_paths:
+                    try:
+                        documents = FileHandler.process_file(file_path, extract_text)
+                        for doc in documents:
+                            document_content += (
+                                f"\n\n--- Document: {Path(file_path).name} ---\n"
+                            )
+                            document_content += doc.page_content
+                            document_content += "\n--- End Document ---\n"
+                    except Exception as e:
+                        logger.error(f"Error processing file {file_path}: {e}")
+
+            # Combine prompt with document content
+            full_prompt = prompt
+            if document_content:
+                full_prompt = f"{prompt}\n\nDocument Content:{document_content}"
+
+            if isinstance(full_prompt, str) and full_prompt != "":
+                messages.append({"role": "user", "content": full_prompt})
+
+            return self.llm_adapter.create_completion(messages)
+        except Exception as e:
+            raise ValueError(f"Failed to generate a prompt completion: {str(e)}")
+
+    def upload_file(self, file_path: str) -> Dict[str, Any]:
+        """
+        Upload a file and return its metadata.
+
+        Args:
+            file_path (str): Path to the file to upload.
+
+        Returns:
+            Dict[str, Any]: File metadata including encoded data.
+        """
+        return FileHandler.encode_file_for_llm(file_path)
+
+    def process_file_to_documents(
+        self, file_path: str, extract_text: bool = True
+    ) -> List[Document]:
+        """
+        Process a file and return LangChain documents.
+
+        Args:
+            file_path (str): Path to the file to process.
+            extract_text (bool): Whether to extract text from the file.
+
+        Returns:
+            List[Document]: List of processed documents.
+        """
+        return FileHandler.process_file(file_path, extract_text)
+
+    def chat_with_files(
+        self,
         prompt: str,
-        tools: List[Tool] = [],
-        add_default_tools: bool = True,
-        no_temp: bool = False,
+        file_paths: List[str] = None,
+        system_message: str = None,
+        use_document_extraction: bool = True,
     ) -> str:
         """
-        Runs an agent with the provided tools and prompt.
+        Chat with the LLM using files as context.
 
         Args:
             prompt (str): The user prompt.
-            tools (List[Tool], optional): List of langchain Tool objects. If None, will use default tools.
-            name (str, optional): Name for the agent tool (if using RetrievalQA).
-            description (str, optional): Description for the agent tool.
-            add_default_tools (bool, optional): Whether to add default tools (vector search, Google, file read).
+            file_paths (List[str]): List of file paths to include.
+            system_message (str): Optional system message.
+            use_document_extraction (bool): Whether to use document extraction or direct file upload.
 
         Returns:
-            str: The agent's response.
+            str: The generated response.
         """
-        try:
-            cls.llm = ChatOpenAI(
-                openai_api_key=OPENAI_API_KEY,
-                model_name=cls.model_name,
-                temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-                max_tokens=get_max_tokens(cls.model_name),
-                n=cls.best_of,
-            )
-            if cls.model_name == "o4-mini" or no_temp:
-                cls.llm = ChatOpenAI(
-                    openai_api_key=OPENAI_API_KEY,
-                    model_name=cls.model_name,
-                    temperature=1,
-                )
+        if not file_paths:
+            return self.base_prompt(system_message, prompt)
 
-            def read_file(path: str) -> str:
-                try:
-                    with open(path, "r") as f:
-                        return f.read()
-                except Exception as e:
-                    logger.error(f"Error reading file {path}: {e}")
-                    return ""
-                
-            def format_athenah_file_path(file_path: str) -> str:
-                print(cls.name_path)
-                """Format the file path to the correct full path on this system."""
-                if file_path.startswith('/src') or file_path.startswith('src'):
-                    file_path = f"{cls.name_path}/{file_path}"
-                if file_path.endswith('.txt'):
-                    file_path = file_path
-                if file_path.endswith('.ai.json'):
-                    return
-                if not file_path.endswith('.txt'):
-                    file_path += '.txt'
-                return file_path
-            
-            def find(file_path: str) -> str:
-                print(cls.name_path)
-                """Format the file path to the correct full path on this system."""
-                if file_path.startswith('/src') or file_path.startswith('src'):
-                    file_path = f"{cls.name_path}/{file_path}"
-                if file_path.endswith('.txt'):
-                    file_path = file_path
-                if file_path.endswith('.ai.json'):
-                    return
-                if not file_path.endswith('.txt'):
-                    file_path += '.txt'
-                return file_path
+        if use_document_extraction:
+            # Use LangChain document loaders to extract text
+            return self.base_prompt_with_documents(system_message, prompt, file_paths)
+        else:
+            # Use direct file upload (better for images, supports multimodal)
+            return self.base_prompt(system_message, prompt, file_paths)
 
-            default_tools = []
-            if add_default_tools:
-                default_tools.extend(
-                    [
-                        Tool(
-                            name="Read a file",
-                            func=read_file,
-                            description="Read a file from a path. Include the full path to the file.",
-                        ),
-                        Tool(
-                            name="Format filepath",
-                            func=format_athenah_file_path,
-                            description="str: Format all file paths to the correct full path on this system.",
-                        ),
-                    ]
-                )
-                if cls.custom_model:
-                    try:
-                        chain = RetrievalQA.from_llm(
-                            llm=cls.llm,
-                            retriever=cls.db.as_retriever(),
-                        )
-                        default_tools.append(
-                            Tool(
-                                name=name,
-                                func=chain.run,
-                                description=description,
-                            )
-                        )
-                        default_tools.append(
-                            Tool(
-                                name="Search",
-                                func=cls.db.similarity_search,
-                                description="Search the vector store for relevant documents.",
-                            )
-                        )
-                    except Exception as e:
-                        logger.error(f"Error initializing RetrievalQA: {e}")
-                else:
-                    default_tools.extend(
-                        [
-                            Tool(
-                                name="AI LLM",
-                                func=cls.base_prompt,
-                                description="Use the AI llm to generate a response based on the provided prompt.",
-                            ),
-                        ]
-                    )
-
-            all_tools = []
-            if tools is not None:
-                all_tools.extend(tools)
-            if add_default_tools:
-                all_tools.extend(default_tools)
-
-            if not all_tools:
-                raise ValueError("No tools provided to the agent.")
-
-            agent = initialize_agent(
-                all_tools,
-                cls.llm,
-                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-                verbose=True,
-                handle_parsing_errors=True,
-            )
-            return agent.invoke({ "input": prompt })
-        except Exception as e:
-            logger.error(f"Error in agent_prompt: {e}")
-            return f"Agent failed: {e}"
-
-    def agent_promptv2(
-        cls,
-        system: str,
-        user_input: str,
+    def chat_with_directory(
+        self,
+        prompt: str,
+        directory_path: str,
+        max_files: int = 50,
+        system_message: str = None,
     ) -> str:
+        """
+        Chat with the LLM about a directory/codebase.
+
+        Args:
+            prompt (str): The user prompt.
+            directory_path (str): Path to the directory to analyze.
+            max_files (int): Maximum number of files to analyze from directory.
+            system_message (str): Optional system message.
+
+        Returns:
+            str: The generated response.
+        """
+        # Analyze directory and create summary
+        codebase_summary = self.analyze_codebase(directory_path, max_files)
+        full_prompt = f"{prompt}\n\n{codebase_summary}"
+
+        # Use a code-focused system message if none provided
+        if not system_message:
+            system_message = """You are an expert software developer and code analyst. You can:
+- Analyze code structure and architecture
+- Identify bugs and potential issues
+- Suggest improvements and optimizations
+- Explain code functionality
+- Help with refactoring and debugging
+- Provide best practices and coding standards advice
+- Generate documentation and comments
+- Convert code between programming languages
+
+Please provide detailed, technical responses with code examples when relevant."""
+
+        return self.base_prompt(system_message, full_prompt)
+
+    def get_supported_languages(self) -> List[str]:
+        """
+        Get list of supported programming languages.
+
+        Returns:
+            List[str]: List of supported programming languages.
+        """
+        return sorted(set(FileHandler.LANGUAGE_MAP.values()))
+
+    def get_code_extensions(self) -> List[str]:
+        """
+        Get list of supported code file extensions.
+
+        Returns:
+            List[str]: List of supported code file extensions.
+        """
+        return [
+            ext
+            for ext, file_type in FileHandler.SUPPORTED_EXTENSIONS.items()
+            if file_type.value == "code"
+        ]
+
+    def get_supported_file_types(self) -> List[str]:
+        """
+        Get list of supported file types.
+
+        Returns:
+            List[str]: List of supported file extensions.
+        """
+        return list(FileHandler.SUPPORTED_EXTENSIONS.keys())
+
+    def prompt(self, prompt: str) -> str:
+        """
+        Generate a response using RAG (Retrieval-Augmented Generation).
+
+        Args:
+            prompt (str): The prompt to generate a response to.
+
+        Returns:
+            str: The generated response.
+        """
+        if not self.db:
+            raise ValueError(
+                "Vector store not initialized. Cannot use RAG functionality."
+            )
+
         try:
-            def callback(graph, data):
-                ai_response: str = data.content
-                print(f"AI Response: {ai_response}")
+            # Update LLM instance
+            self.llm = self.llm_adapter.get_langchain_llm()
 
-            # jarvis_response = brain.response_classifier.invoke(user_input)
+            num_indexes = len(self.db.index_to_docstore_id)
+            logger.debug(f"DB INDEXES: {num_indexes}")
 
-            tools = build_agent_tools(["read_file"], "athenah_ai/utils")
-            graph = create_react_agent(cls.llm, tools, checkpointer=MemorySaver())
+            # Pull RAG prompt from hub
+            rag_prompt = hub.pull("rlm/rag-prompt")
 
-            config = {"configurable": {"thread_id": "thread-1", "user_id": "1"}}
+            def retrieve(state: State):
+                retrieved_docs = self.db.similarity_search(state["question"])
+                return {"context": retrieved_docs}
 
-            messages = [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_input},
-            ]
+            def generate(state: State):
+                docs_content = "\n\n".join(doc.page_content for doc in state["context"])
+                messages = rag_prompt.invoke(
+                    {"question": state["question"], "context": docs_content}
+                )
+                response = self.llm.invoke(messages)
+                return {"answer": response.content}
 
-            def from_messages_to_tuple(messages: List[Any]) -> Tuple[str, str]:
-                    return [(m['type'], m['content']) for m in messages]
-            
-            inputs = {"messages": from_messages_to_tuple(messages)}
-            print("START STREAM")
+            # Create and run the graph
+            graph_builder = StateGraph(State).add_sequence([retrieve, generate])
+            graph_builder.add_edge(START, "retrieve")
+            graph = graph_builder.compile()
 
-            def stream(
-                graph: CompiledGraph,
-                inputs: Any,
-                config: Dict[str, Any],
-                callback: Any = None,
-            ):
-                for s in graph.stream(inputs, config, stream_mode="values"):
-                    try:
-                        callback(graph, s["messages"][-1])
-                    except Exception as e:
-                        logger.error(f"Error in do stream: {e}")
-                        pass
-            while True:
-                stream(graph, inputs, config, callback)
-                break
-            print("END STREAM")
+            response = graph.invoke({"question": prompt})
+            return response["answer"]
+
         except Exception as e:
-            logger.error(f"Error in agent_prompt: {e}")
-            return f"Agent failed: {e}"
+            logger.error(f"Error in RAG prompt: {e}")
+            raise ValueError(f"Failed to generate RAG response: {str(e)}")
 
-    def promptv3(system_prompt, user_prompt, *args):
-        messages = []
-        messages.append({"role": "system", "content": system_prompt})
-        get_token_total(system_prompt)
-        messages.append({"role": "user", "content": user_prompt})
-        get_token_total(user_prompt)
-        # loop thru each arg and add it to messages alternating role between "assistant" and "user"
-        # role = "assistant"
-        # {"role": role, "content": value}
-        # role = "user" if role == "assistant" else "assistant"
-        for value in args:
-            messages.append(value)
-            get_token_total(value["content"])
+    def rag_prompt_v2(
+        self, system_prompt: str, user_prompt: str, *args: Dict[str, str]
+    ) -> str:
+        """
+        Generate a response using RAG with custom system and user prompts.
 
-        params = {
-            "model": OPENAI_API_MODEL,
-            "messages": messages,
-            "max_tokens": get_max_tokens(OPENAI_API_MODEL),
-            "temperature": 1 if OPENAI_API_MODEL == 'o4-mini' else 0,
-        }
+        Args:
+            system_prompt (str): The system message.
+            user_prompt (str): The user prompt.
+            *args: Additional message dictionaries.
 
-        # Send the API request
-        keep_trying = True
-        while keep_trying:
-            try:
-                response = openai.ChatCompletion.create(**params)
-                keep_trying = False
-            except Exception as e:
-                # e.g. when the API is too busy, we don't want to fail everything
-                print("Failed to generate response. Error: ", e)
-                import time
+        Returns:
+            str: The generated response.
+        """
+        if not self.db:
+            raise ValueError(
+                "Vector store not initialized. Cannot use RAG functionality."
+            )
 
-                time.sleep(30)
-                print("Retrying...")
+        try:
+            # Prepare messages
+            messages = []
+            messages.append({"role": "system", "content": system_prompt})
+            messages.append({"role": "user", "content": user_prompt})
 
-        # Get the reply from the API response
-        reply = response.choices[0]["message"]["content"]
-        return reply
+            for value in args:
+                messages.append(value)
 
-    def rag_prompt_v2(cls, system_prompt, user_prompt, *args):
-        messages = []
-        messages.append({"role": "system", "content": system_prompt})
-        get_token_total(system_prompt)
-        messages.append({"role": "user", "content": user_prompt})
-        get_token_total(user_prompt)
-        # loop thru each arg and add it to messages alternating role between "assistant" and "user"
-        # role = "assistant"
-        # {"role": role, "content": value}
-        # role = "user" if role == "assistant" else "assistant"
-        for value in args:
-            messages.append(value)
-            get_token_total(value["content"])
+            # Combine all message content for retrieval
+            question_w_system = " ".join([msg["content"] for msg in messages])
 
-        question_w_system: str = " ".join([msg["content"] for msg in messages])
-        total_tokens: int = get_token_total(question_w_system)
+            # Update LLM instance
+            self.llm = self.llm_adapter.get_langchain_llm()
 
-        cls.llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=cls.model_name,
-            temperature=cls.temperature if cls.model_name != 'o4-mini' else 1,
-            max_tokens=get_max_tokens(cls.model_name),
-            n=cls.best_of,
-            # model_kwargs={
-            #     "top_p": cls.top_p,
-            #     "frequency_penalty": cls.frequency_penalty,
-            #     "presence_penalty": cls.presence_penalty,
-            # },
-        )
-
-        # if total_tokens > MODEL_MAP[cls.model_name]:
-        #     print('RAG PROMPT V2: Using o4-mini model due to token limit.')
-        #     cls.model_name = "o4-mini"
-
-        #     cls.llm = ChatOpenAI(
-        #         openai_api_key=OPENAI_API_KEY,
-        #         model_name=cls.model_name,
-        #         temperature=1,
-        #     )
-
-        # Send the API request
-        keep_trying = True
-        retry_count = 0
-        retry_limit = 2
-        while keep_trying:
+            # Use RAG with retry logic
             try:
                 rag_prompt = hub.pull("rlm/rag-prompt")
 
                 def retrieve(state: State):
-                    retrieved_docs = cls.db.similarity_search(state["question"])
+                    retrieved_docs = self.db.similarity_search(state["question"])
                     return {"context": retrieved_docs}
 
                 def generate(state: State):
@@ -748,27 +455,191 @@ class AthenahClient(VectorStore):
                     messages = rag_prompt.invoke(
                         {"question": state["question"], "context": docs_content}
                     )
-                    response = cls.llm.invoke(messages)
+                    response = self.llm.invoke(messages)
                     return {"answer": response.content}
 
                 graph_builder = StateGraph(State).add_sequence([retrieve, generate])
                 graph_builder.add_edge(START, "retrieve")
                 graph = graph_builder.compile()
+
                 response = graph.invoke({"question": question_w_system})
-                keep_trying = False
+                return response["answer"]
+
             except Exception as e:
-                # e.g. when the API is too busy, we don't want to fail everything
-                print("Failed to generate response. Error: ", e)
-                print(OPENAI_API_MODEL)
+                if attempt == max_retries - 1:
+                    raise e
+                logger.warning(f"RAG attempt {attempt + 1} failed: {e}. Retrying...")
 
-                if retry_count > retry_limit:
-                    raise ValueError("Failed to generate response after 10 retries.")
+        except Exception as e:
+            logger.error(f"Error in RAG prompt v2: {e}")
+            raise ValueError(f"Failed to generate RAG response: {str(e)}")
 
-                # import time
+    def agent_prompt(
+        self,
+        name: str,
+        description: str,
+        prompt: str,
+        tools: List[Tool] = None,
+        add_default_tools: bool = True,
+        no_temp: bool = False,
+    ) -> str:
+        """
+        Run an agent with the provided tools and prompt.
 
-                # time.sleep(1)
-                print("Retrying...")
+        Args:
+            name (str): Name for the agent tool.
+            description (str): Description for the agent tool.
+            prompt (str): The user prompt.
+            tools (List[Tool], optional): List of langchain Tool objects.
+            add_default_tools (bool, optional): Whether to add default tools.
+            no_temp (bool, optional): Whether to use temperature 0.
 
-        # Get the reply from the API response
-        reply = response["answer"]
-        return reply
+        Returns:
+            str: The agent's response.
+        """
+        try:
+            # Update LLM instance
+            if no_temp:
+                # Create a new adapter with temperature 0
+                temp_adapter = LLMFactory.create_adapter(
+                    self.provider,
+                    self.model_name,
+                    temperature=0,
+                    max_tokens=self.max_tokens,
+                )
+                llm = temp_adapter.get_langchain_llm()
+            else:
+                llm = self.llm_adapter.get_langchain_llm()
+
+            # Define default tools
+            def read_file(path: str) -> str:
+                try:
+                    with open(path, "r") as f:
+                        return f.read()
+                except Exception as e:
+                    logger.error(f"Error reading file {path}: {e}")
+                    return ""
+
+            def format_athenah_file_path(file_path: str) -> str:
+                """Format the file path to the correct full path on this system."""
+                if hasattr(self, "name_path"):
+                    if file_path.startswith("/src") or file_path.startswith("src"):
+                        file_path = f"{self.name_path}/{file_path}"
+                if not file_path.endswith(".txt") and not file_path.endswith(
+                    ".ai.json"
+                ):
+                    file_path += ".txt"
+                return file_path
+
+            # Prepare tools
+            all_tools = []
+            if tools:
+                all_tools.extend(tools)
+
+            if add_default_tools:
+                default_tools = [
+                    Tool(
+                        name="Read a file",
+                        func=read_file,
+                        description="Read a file from a path. Include the full path to the file.",
+                    ),
+                    Tool(
+                        name="Format filepath",
+                        func=format_athenah_file_path,
+                        description="Format all file paths to the correct full path on this system.",
+                    ),
+                ]
+
+                if self.custom_model and self.db:
+                    try:
+                        chain = RetrievalQA.from_llm(
+                            llm=llm,
+                            retriever=self.db.as_retriever(),
+                        )
+                        default_tools.extend(
+                            [
+                                Tool(
+                                    name=name,
+                                    func=chain.run,
+                                    description=description,
+                                ),
+                                Tool(
+                                    name="Search",
+                                    func=self.db.similarity_search,
+                                    description="Search the vector store for relevant documents.",
+                                ),
+                            ]
+                        )
+                    except Exception as e:
+                        logger.error(f"Error initializing RetrievalQA: {e}")
+                else:
+                    default_tools.append(
+                        Tool(
+                            name="AI LLM",
+                            func=self.base_prompt,
+                            description="Use the AI LLM to generate a response based on the provided prompt.",
+                        )
+                    )
+
+                all_tools.extend(default_tools)
+
+            if not all_tools:
+                raise ValueError("No tools provided to the agent.")
+
+            # Initialize and run agent
+            agent = initialize_agent(
+                all_tools,
+                llm,
+                agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+                verbose=True,
+                handle_parsing_errors=True,
+            )
+
+            result = agent.invoke({"input": prompt})
+            return result.get("output", str(result))
+
+        except Exception as e:
+            logger.error(f"Error in agent_prompt: {e}")
+            return f"Agent failed: {e}"
+
+    def switch_provider(
+        self, provider: Union[LLMProvider, str], model_name: str = None
+    ) -> None:
+        """
+        Switch to a different LLM provider.
+
+        Args:
+            provider (Union[LLMProvider, str]): The new LLM provider.
+            model_name (str, optional): The new model name.
+        """
+        self.provider = (
+            LLMProvider(provider.lower()) if isinstance(provider, str) else provider
+        )
+        self.model_name = model_name
+
+        # Create new adapter
+        self.llm_adapter = LLMFactory.create_adapter(
+            self.provider, self.model_name, self.temperature, self.max_tokens
+        )
+
+        # Update LangChain LLM
+        self.llm = self.llm_adapter.get_langchain_llm()
+
+        logger.info(
+            f"Switched to {self.provider.value} with model {self.llm_adapter.model_name}"
+        )
+
+    def get_provider_info(self) -> Dict[str, Any]:
+        """
+        Get information about the current LLM provider and model.
+
+        Returns:
+            Dict[str, Any]: Provider information.
+        """
+        return {
+            "provider": self.provider.value,
+            "model_name": self.llm_adapter.model_name,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "max_model_tokens": self.llm_adapter.get_max_tokens(),
+        }
