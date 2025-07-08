@@ -1,0 +1,15 @@
+{
+    "symbols": [
+        "XRPBalanceChecks",
+        "XRPBalanceChecks::visitEntry",
+        "XRPBalanceChecks::finalize",
+        "LedgerEntryTypesMatch",
+        "LedgerEntryTypesMatch::visitEntry",
+        "LedgerEntryTypesMatch::finalize",
+        "NoXRPTrustLines",
+        "NoXRPTrustLines::visitEntry",
+        "NoXRPTrustLines::finalize",
+        "log_metadata_difference",
+        "log_one"
+    ]
+}

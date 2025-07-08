@@ -1,0 +1,237 @@
+[
+    {
+        "path": "src/test/jtx/Env.cpp",
+        "function": "Env",
+        "description": "Creates and manages a simulated ledger environment for tests, allowing creation and funding of accounts, submission and processing of transactions, advancing ledger closes, and inspection of ledger state."
+    },
+    {
+        "path": "src/test/jtx/Account.cpp",
+        "function": "Account",
+        "description": "Represents a ledger account in tests, encapsulating account name and providing identity for test operations."
+    },
+    {
+        "path": "src/test/jtx/fund.cpp",
+        "function": "fund",
+        "description": "Funds one or more accounts with a specified amount of XRP in the test environment."
+    },
+    {
+        "path": "src/test/jtx/trust.cpp",
+        "function": "trust",
+        "description": "Establishes a trust line between two accounts for a specified IOU amount in the test environment."
+    },
+    {
+        "path": "src/test/jtx/pay.cpp",
+        "function": "pay",
+        "description": "Sends a payment from one account to another for a specified amount (XRP or IOU) in the test environment."
+    },
+    {
+        "path": "src/test/jtx/account_set.cpp",
+        "function": "account_set",
+        "description": "Sets account flags or properties (such as RequireAuth) for a given account in the test environment."
+    },
+    {
+        "path": "src/test/jtx/flags.cpp",
+        "function": "flags",
+        "description": "Checks or sets specific account flags for an account in the test environment."
+    },
+    {
+        "path": "src/test/jtx/require.cpp",
+        "function": "require",
+        "description": "Asserts that the ledger state matches expected conditions (such as balances, flags, or offers) after transactions are processed."
+    },
+    {
+        "path": "src/test/jtx/Feature.cpp",
+        "function": "Feature",
+        "description": "Enables or disables specific protocol amendments or features in the test environment."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "beast::unit_test::suite",
+        "description": "Base class for all test suites, providing mechanisms for defining, running, and reporting test cases, as well as assertion helpers."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "BEAST_DEFINE_TESTSUITE",
+        "description": "Macro to register a test suite with the test framework, specifying suite name, module, and library."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "run",
+        "description": "Entry point for executing all test cases in a suite; typically overridden to call individual test case functions."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "BEAST_EXPECT",
+        "description": "Assertion macro to check a test condition and report pass or fail with file and line information."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "require",
+        "description": "Used within test cases to assert that certain ledger conditions hold after actions are performed."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "testCase",
+        "description": "Defines an individual test case within a suite, used for organizing and reporting test results."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "pass",
+        "description": "Marks a test assertion as passed and notifies the test runner."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "fail",
+        "description": "Marks a test assertion as failed, records the reason, and notifies the test runner."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "expect",
+        "description": "Checks a condition and calls pass or fail accordingly, optionally with a reason and file/line info."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "except",
+        "description": "Checks that a function throws an exception as expected, marking the test as passed or failed."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "unexcept",
+        "description": "Checks that a function does not throw an exception, marking the test as passed or failed."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "scoped_testcase",
+        "description": "Helper for managing the scope and reporting of individual test cases within a suite."
+    },
+    {
+        "path": "src/test/unit_test/Suite.h",
+        "function": "testcase_t",
+        "description": "Helper for defining and managing test case names and abort behavior within a suite."
+    },
+    {
+        "path": "src/test/unit_test/global_suites.h",
+        "function": "global_suites",
+        "description": "Returns the global list of registered test suites for the test framework."
+    },
+    {
+        "path": "src/test/unit_test/global_suites.h",
+        "function": "insert_suite",
+        "description": "Registers a new test suite with the global suite list, including metadata such as name, module, library, manual flag, and priority."
+    },
+    {
+        "path": "src/test/unit_test/suite_list.h",
+        "function": "suite_list::insert",
+        "description": "Adds a test suite to the suite list, ensuring uniqueness and storing suite metadata."
+    },
+    {
+        "path": "src/test/unit_test/suite_info.h",
+        "function": "make_suite_info",
+        "description": "Creates a suite_info object for a test suite, encapsulating its metadata and run logic."
+    },
+    {
+        "path": "src/test/unit_test/runner.h",
+        "function": "runner::run",
+        "description": "Executes a test suite or a range of suites, managing test case lifecycle events and result tracking."
+    },
+    {
+        "path": "src/test/unit_test/runner.h",
+        "function": "runner::testcase",
+        "description": "Marks the start of a test case, triggering reporting and result tracking."
+    },
+    {
+        "path": "src/test/unit_test/runner.h",
+        "function": "runner::pass",
+        "description": "Records a test assertion as passed and updates test results."
+    },
+    {
+        "path": "src/test/unit_test/runner.h",
+        "function": "runner::fail",
+        "description": "Records a test assertion as failed, with an optional reason, and updates test results."
+    },
+    {
+        "path": "src/test/unit_test/runner.h",
+        "function": "runner::log",
+        "description": "Records a log message for the current test case."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder",
+        "description": "A test runner that collects and stores test results, including passes, failures, and logs, for later reporting."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::report",
+        "description": "Returns the collected test results from the recorder."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_suite_begin",
+        "description": "Handles the start of a test suite, initializing result tracking for the suite."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_suite_end",
+        "description": "Handles the end of a test suite, finalizing and storing suite results."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_case_begin",
+        "description": "Handles the start of a test case, initializing result tracking for the case."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_case_end",
+        "description": "Handles the end of a test case, finalizing and storing case results."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_pass",
+        "description": "Records a test assertion as passed in the current case."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_fail",
+        "description": "Records a test assertion as failed in the current case, with a reason."
+    },
+    {
+        "path": "src/test/unit_test/recorder.h",
+        "function": "recorder::on_log",
+        "description": "Records a log message for the current test case."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "case_results",
+        "description": "Represents the results of a single test case, including pass/fail status and log messages."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "suite_results",
+        "description": "Aggregates results from multiple test cases within a suite, tracking total and failed tests."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "results",
+        "description": "Aggregates results from multiple test suites, tracking overall statistics for all tests run."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "case_results::pass",
+        "description": "Marks a test as passed within a case."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "case_results::fail",
+        "description": "Marks a test as failed within a case, recording the reason."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "suite_results::insert",
+        "description": "Adds a case_results object to the suite, updating totals and failures."
+    },
+    {
+        "path": "src/test/unit_test/results.h",
+        "function": "results::insert",
+        "description": "Adds a suite_results object to the overall results, updating totals and failures."
+    }
+]

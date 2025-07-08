@@ -1,0 +1,82 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "visitLeaves",
+        "description": "Traverses all leaf nodes in the SHAMap, applying a provided function to each SHAMapItem found in the leaves."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "getMissingNodes",
+        "description": "Identifies and returns a list of missing nodes (by node ID and hash) up to a specified maximum, optionally using a sync filter to control which nodes are considered missing."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "getNodeFat",
+        "description": "Retrieves a node and, optionally, its children (if 'fatLeaves' is true), serializing their data for transfer or inspection, up to a specified depth."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "getProofPath",
+        "description": "Generates a Merkle proof path (as a vector of blobs) for a given key, which can be used to prove the inclusion of that key in the SHAMap."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "verifyProofPath",
+        "description": "Verifies a Merkle proof path for a given root hash, key, and path, confirming the key's inclusion in the SHAMap."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "serializeRoot",
+        "description": "Serializes the root node of the SHAMap into a provided serializer object for storage or transmission."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "addRootNode",
+        "description": "Attempts to add a root node to the SHAMap from serialized data and a hash, using a sync filter to process or validate the node; returns a SHAMapAddNode result indicating success or failure."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "addKnownNode",
+        "description": "Attempts to add a known node (by node ID and serialized data) to the SHAMap, using a sync filter for validation; returns a SHAMapAddNode result."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/SHAMap.h.txt",
+        "function": "setImmutable",
+        "description": "Sets the SHAMap's state to Immutable, preventing further modifications to its nodes."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/SHAMap.h.txt",
+        "function": "isSynching",
+        "description": "Checks if the SHAMap is currently in the Synching state."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/SHAMap.h.txt",
+        "function": "setSynching",
+        "description": "Sets the SHAMap's state to Synching, indicating it is synchronizing with another source."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/SHAMap.h.txt",
+        "function": "clearSynching",
+        "description": "Clears the Synching state from the SHAMap, returning it to a non-synchronizing state."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/SHAMap.h.txt",
+        "function": "isValid",
+        "description": "Checks if the SHAMap is in a valid state (not Invalid)."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "gmn_ProcessNodes",
+        "description": "Processes nodes in the MissingNodes stack, traversing children and identifying which nodes are missing or need to be fetched."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMapSync.cpp.txt",
+        "function": "gmn_ProcessDeferredReads",
+        "description": "Processes deferred reads in the MissingNodes structure, handling nodes that were postponed during traversal."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/SHAMap.cpp.txt",
+        "function": "finishFetch",
+        "description": "Completes the process of fetching a node by constructing a SHAMapTreeNode from a hash and a NodeObject, performing validation and error handling."
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "RCLConsensus::Adaptor::validate",
+        "description": "Creates a new STValidation for a built ledger, populates required fields (ledger hash, consensus hash, sequence, signing time, etc.), sets flags, and signs the validation. It serializes the validation, adds it to the hash router for duplicate suppression, and calls handleNewValidation to process it. The validation is then broadcast to peers and published to subscribers."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLValidations.cpp.txt",
+        "function": "handleNewValidation",
+        "description": "Processes a new STValidation: determines if the validator is trusted, sets trust if appropriate, and adds the validation to the Validations set using the node ID. It checks the outcome (current, stale, badSeq, multiple, conflicting), logs byzantine or suspicious behavior, and if the validation is trusted and current, triggers ledger acceptance via LedgerMaster::checkAccept."
+    },
+    {
+        "path": "src/xrpld/consensus/Validations.h.txt",
+        "function": "Validations::add",
+        "description": "Adds a validation to the current set, enforcing sequence rules (via SeqEnforcer), checking freshness/expiry, and detecting duplicates or conflicts. Returns a ValStatus indicating the result: current (accepted), stale, badSeq, multiple, or conflicting. Updates internal structures for tracking by ledger, sequence, and validator."
+    },
+    {
+        "path": "src/xrpld/consensus/Validations.h.txt",
+        "function": "Validations::currentTrusted",
+        "description": "Returns a vector of all current, trusted, full validations. Used to determine the set of validations that are considered for consensus and ledger acceptance."
+    },
+    {
+        "path": "src/xrpld/consensus/Validations.h.txt",
+        "function": "Validations::getTrustedForLedger",
+        "description": "Returns all trusted, full validations for a specific ledger hash and sequence. Used to count validations supporting a ledger for acceptance."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt",
+        "function": "LedgerMaster::checkAccept",
+        "description": "Checks if a ledger should be accepted as validated by counting trusted validations (filtered for negative UNL), comparing to the required quorum, and marking the ledger as validated and full if the threshold is met. Updates internal state to reflect the new validated ledger."
+    },
+    {
+        "path": "src/xrpld/app/ledger/LedgerHistory.cpp.txt",
+        "function": "LedgerHistory::validatedLedger",
+        "description": "Records a ledger as validated in the ledger history, updating caches and consensus validation entries. Used for tracking and diagnosing consensus outcomes and mismatches."
+    },
+    {
+        "path": "src/xrpld/app/ledger/LedgerHistory.cpp.txt",
+        "function": "LedgerHistory::handleMismatch",
+        "description": "Handles cases where the built and validated ledgers differ, logging the mismatch and comparing the ledgers for analysis. This is important for diagnosing byzantine failures or consensus anomalies."
+    }
+]

@@ -1,0 +1,402 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "class testcase_t\n\n{\n\nsuite& suite_;\n\nstd::stringstream ss_;\n\npublic: explicit testcase_t(suite& self) : suite_(self) { }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/net/HTTPClientSSLContext.h",
+        "content": "class T,"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/results.h",
+        "content": "class log_t : public detail::const_container<std::vector<std::string>> { public:\n\nvoid\n\ninsert(std::string const& s)\n\n{\n\ncont().push_back(s);\n\n}\n\n};\n\nstd::string name_;\n\npublic: explicit case_results(std::string const& name = \"\") : name_(name) { }\n\nstd::string const&\n\nname() const\n\n{\n\nreturn name_;\n\n}\n\ntests_t tests;\n\nlog_t log;\n\n};\n\nclass suite_results : public detail::const_container<std::vector<case_results>> { private: std::string name_; std::size_t total_ = 0; std::size_t failed_ = 0;\n\npublic: explicit suite_results(std::string const& name = \"\") : name_(name) { }\n\nstd::string const&\n\nname() const\n\n{\n\nreturn name_;\n\n}\n\nstd::size_t\n\ntotal() const\n\n{\n\nreturn total_;\n\n}\n\nstd::size_t\n\nfailed() const\n\n{\n\nreturn failed_;\n\n}\n\nvoid\n\ninsert(case_results&& r)\n\n{\n\ncont().emplace_back(std::move(r));\n\ntotal_ += r.tests.total();\n\nfailed_ += r.tests.failed();\n\n}\n\nvoid\n\ninsert(case_results const& r)\n\n{\n\ncont().push_back(r);\n\ntotal_ += r.tests.total();\n\nfailed_ += r.tests.failed();\n\n}\n\n};"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "suite::testcase_t::operator<<(T const& t)\n\n{\n\nreturn {suite_, ss_, t};\n\n}\n\ntemplate <class>\n\nvoid\n\nsuite::operator()(runner& r)\n\n{\n\n\n\np_this_suite() = this;\n\ntry\n\n{\n\nrun(r);\n\n\n\np_this_suite() = nullptr;\n\n}\n\ncatch (...)\n\n{\n\n\n\np_this_suite() = nullptr;\n\nthrow;\n\n}\n\n}\n\ntemplate <class Condition, class String> bool suite::expect(Condition const& shouldBeTrue, String const& reason) { if (shouldBeTrue) { pass(); return true; } fail(reason); return false; }\n\ntemplate <class Condition, class String> bool suite::expect( Condition const& shouldBeTrue, String const& reason, char const* file, int line) { if (shouldBeTrue) { pass(); return true; } fail(detail::make_reason(reason, file, line)); return false; }\n\ntemplate <class F, class String> bool suite::except(F&& f, String const& reason) { try { f(); fail(reason); return false; } catch (...) { pass(); } return true; }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "class suite::scoped_testcase\n\n{\n\nprivate:\n\nsuite& suite_;\n\nstd::stringstream& ss_;\n\npublic:\n\nscoped_testcase&\n\noperator=(scoped_testcase const&) = delete;\n\n~scoped_testcase() { auto const& name = ss_.str(); if (!name.empty()) suite_.runner_->testcase(name); }\n\nscoped_testcase(suite& self, std::stringstream& ss) : suite_(self), ss_(ss) { ss_.clear(); ss_.str({}); }\n\ntemplate <class T> scoped_testcase(suite& self, std::stringstream& ss, T const& t) : suite_(self), ss_(ss) { ss_.clear(); ss_.str({}); ss_ << t; }\n\ntemplate <class T>\n\nscoped_testcase&\n\noperator<<(T const& t)\n\n{\n\nss_ << t;\n\nreturn\n\n\n\nthis;\n\n}\n\n};\n\ninline void suite::testcase_t::operator()(std::string const& name, abort_t abort) { suite_.abort_ = abort == abort_on_fail; suite_.runner_->testcase(name); }\n\ninline suite::scoped_testcase suite::testcase_t::operator()(abort_t abort) { suite_.abort_ = abort == abort_on_fail; return {suite_, ss_}; }\n\ntemplate <class T>\n\ninline suite::scoped_testcase"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "void operator()(std::string const& name, abort_t abort = no_abort_on_fail);\n\nscoped_testcase\n\noperator()(abort_t abort);\n\ntemplate <class T>\n\nscoped_testcase\n\noperator<<(T const& t);\n\n};\n\npublic:\n\nlog_os<char> log;\n\ntestcase_t testcase;\n\nstatic suite\n\n\n\nthis_suite()\n\n{\n\nreturn\n\n\n\np_this_suite();\n\n}\n\nsuite() : log(\n\n\n\nthis), testcase(\n\n\n\nthis)\n\n{\n\n}\n\nvirtual ~suite() = default;\n\nsuite(suite const&) = delete;\n\nsuite&\n\noperator=(suite const&) = delete;\n\ntemplate <class = void>\n\nvoid\n\noperator()(runner& r);\n\ntemplate <class = void>\n\nvoid\n\npass();\n\ntemplate <class String> void fail(String const& reason, char const* file, int line);\n\ntemplate <class = void> void fail(std::string const& reason = \"\");\n\ntemplate <class Condition>\n\nbool\n\nexpect(Condition const& shouldBeTrue)\n\n{\n\nreturn expect(shouldBeTrue, \"\");\n\n}\n\ntemplate <class Condition, class String> bool expect(Condition const& shouldBeTrue, String const& reason);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "class suite\n\n{\n\nprivate:\n\nbool abort_ = false;\n\nbool aborted_ = false;\n\nrunner\n\n\n\nrunner_ = nullptr;\n\nstruct abort_exception : public std::exception { char const* what() const noexcept override { return \"test suite aborted\"; } };\n\ntemplate <class CharT, class Traits, class Allocator> class log_buf : public std::basic_stringbuf<CharT, Traits, Allocator> { suite& suite_;\n\npublic: explicit log_buf(suite& self) : suite_(self) { }\n\n~log_buf()\n\n{\n\nsync();\n\n}\n\nint sync() override { auto const& s = this->str(); if (s.size() > 0) suite_.runner_->log(s); this->str(\"\"); return 0; } };\n\ntemplate < class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT>> class log_os : public std::basic_ostream<CharT, Traits> { log_buf<CharT, Traits, Allocator> buf_;\n\npublic:\n\nexplicit log_os(suite& self)\n\n: std::basic_ostream<CharT, Traits>(&buf_), buf_(self)\n\n{\n\n}\n\n};\n\nclass scoped_testcase;"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/ledger_entries.macro",
+        "content": "}))"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/thread.h",
+        "content": "swap(thread& other)\n\n{\n\nstd::swap(s_, other.s_);\n\nstd::swap(t_, other.t_);\n\n}\n\nprivate: void run(std::function<void(void)> f) { try { f(); } catch (suite::abort_exception const&) { } catch (std::exception const& e) { s_->fail(\"unhandled exception: \" + std::string(e.what())); } catch (...) { s_->fail(\"unhandled exception\"); } } };\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/results.h",
+        "content": "class results : public detail::const_container<std::vector<suite_results>> { private: std::size_t m_cases; std::size_t total_; std::size_t failed_;\n\npublic: results() : m_cases(0), total_(0), failed_(0) { }\n\nstd::size_t\n\ncases() const\n\n{\n\nreturn m_cases;\n\n}\n\nstd::size_t\n\ntotal() const\n\n{\n\nreturn total_;\n\n}\n\nstd::size_t\n\nfailed() const\n\n{\n\nreturn failed_;\n\n}\n\nvoid\n\ninsert(suite_results&& r)\n\n{\n\nm_cases += r.size();\n\ntotal_ += r.total();\n\nfailed_ += r.failed();\n\ncont().emplace_back(std::move(r));\n\n}\n\nvoid\n\ninsert(suite_results const& r)\n\n{\n\nm_cases += r.size();\n\ntotal_ += r.total();\n\nfailed_ += r.failed();\n\ncont().push_back(r);\n\n}\n\n};\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/runner.h",
+        "content": "virtual void\n\non_pass()\n\n{\n\n}\n\nvirtual void\n\non_fail(std::string const&)\n\n{\n\n}\n\nvirtual void\n\non_log(std::string const&)\n\n{\n\n}\n\nprivate:\n\nfriend class suite;\n\ntemplate <class = void>\n\nvoid\n\ntestcase(std::string const& name);\n\ntemplate <class = void>\n\nvoid\n\npass();\n\ntemplate <class = void>\n\nvoid\n\nfail(std::string const& reason);\n\ntemplate <class = void>\n\nvoid\n\nlog(std::string const& s);\n\n};\n\ntemplate <class>\n\nbool\n\nrunner::run(suite_info const& s)\n\n{\n\ndefault_ = true;\n\nfailed_ = false;\n\non_suite_begin(s);\n\ns.run(\n\n\n\nthis);\n\nBOOST_ASSERT(cond_);\n\non_case_end();\n\non_suite_end();\n\nreturn failed_;\n\n}\n\ntemplate <class FwdIter> bool runner::run(FwdIter first, FwdIter last) { bool failed(false); for (; first != last; ++first) failed = run(*first) || failed; return failed; }\n\ntemplate <class FwdIter, class Pred> bool runner::run_if(FwdIter first, FwdIter last, Pred pred) { bool failed(false); for (; first != last; ++first) if (pred(*first)) failed = run(*first) || failed; return failed; }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "if (abort_ && aborted_)\n\nBOOST_THROW_EXCEPTION(abort_exception());\n\n}\n\ntemplate <class>\n\nvoid\n\nsuite::run(runner& r)\n\n{\n\nrunner_ = &r;\n\ntry\n\n{\n\nrun();\n\n}\n\ncatch (abort_exception const&)\n\n{\n\n} catch (std::exception const& e) { runner_->fail(\"unhandled exception: \" + std::string(e.what())); } catch (...) { runner_->fail(\"unhandled exception\"); } }\n\n#ifndef BEAST_EXPECT\n\n#define BEAST_EXPECT(cond) expect(cond, __FILE__, __LINE__) #endif\n\n#ifndef BEAST_EXPECTS\n\n#define BEAST_EXPECTS(cond, reason) \\ ((cond) ? (pass(), true) : (fail((reason), __FILE__, __LINE__), false)) #endif\n\n}\n\n}\n\n#define BEAST_DEFINE_TESTSUITE_INSERT(                          \\ Class, Module, Library, manual, priority)                   \\ static beast::unit_test::detail::insert_suite<Class##_test> \\ Library##Module##Class##_test_instance(                 \\ #Class, #Module, #Library, manual, priority)\n\n#ifndef BEAST_DEFINE_TESTSUITE\n\n#ifndef BEAST_NO_UNIT_TEST_INLINE\n\n#define BEAST_NO_UNIT_TEST_INLINE 0\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "return unexpected(shouldBeFalse, \"\");\n\n}\n\nprivate:\n\nfriend class thread;\n\nstatic suite\n\n\n\n\n\np_this_suite()\n\n{\n\nstatic suite\n\n\n\npts = nullptr;\n\nreturn &pts;\n\n}\n\nvirtual void\n\nrun() = 0;\n\nvoid\n\npropagate_abort();\n\ntemplate <class = void>\n\nvoid\n\nrun(runner& r);\n\n};"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/results.h",
+        "content": "#ifndef BEAST_UNIT_TEST_RESULTS_HPP\n\n#define BEAST_UNIT_TEST_RESULTS_HPP\n\n#include <xrpl/beast/unit_test/detail/const_container.h>\n\n#include <string>\n\n#include <vector>\n\nnamespace beast {\n\nnamespace unit_test {\n\nclass case_results\n\n{\n\npublic:\n\nstruct test { explicit test(bool pass_) : pass(pass_) { }\n\ntest(bool pass_, std::string const& reason_) : pass(pass_), reason(reason_) { }\n\nbool pass;\n\nstd::string reason;\n\n};\n\nprivate: class tests_t : public detail::const_container<std::vector<test>> { private: std::size_t failed_;\n\npublic:\n\ntests_t() : failed_(0)\n\n{\n\n}\n\nstd::size_t\n\ntotal() const\n\n{\n\nreturn cont().size();\n\n}\n\nstd::size_t\n\nfailed() const\n\n{\n\nreturn failed_;\n\n}\n\nvoid\n\npass()\n\n{\n\ncont().emplace_back(true);\n\n}\n\nvoid fail(std::string const& reason = \"\") { ++failed_; cont().emplace_back(false, reason); } };"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Main.cpp",
+        "content": "class multi_selector\n\n{\n\nprivate:\n\nstd::vector<beast::unit_test::selector> selectors_;\n\npublic: explicit multi_selector(std::string const& patterns = \"\") { std::vector<std::string> v; boost::split(v, patterns, boost::algorithm::is_any_of(\",\")); selectors_.reserve(v.size()); std::for_each(v.begin(), v.end(), [this](std::string s) { boost::trim(s); if (selectors_.empty() || !s.empty()) selectors_.emplace_back( beast::unit_test::selector::automatch, s); }); }\n\nbool operator()(beast::unit_test::suite_info const& s) { for (auto& sel : selectors_) if (sel(s)) return true; return false; }\n\nstd::size_t\n\nsize() const\n\n{\n\nreturn selectors_.size();\n\n}\n\n};\n\nnamespace test {\n\nextern std::atomic<bool> envUseIPv4;\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "#if BEAST_NO_UNIT_TEST_INLINE #define BEAST_DEFINE_TESTSUITE(Class, Module, Library) #define BEAST_DEFINE_TESTSUITE_MANUAL(Class, Module, Library) #define BEAST_DEFINE_TESTSUITE_PRIO(Class, Module, Library, Priority) #define BEAST_DEFINE_TESTSUITE_MANUAL_PRIO(Class, Module, Library, Priority)\n\n#else #include <xrpl/beast/unit_test/global_suites.h> #define BEAST_DEFINE_TESTSUITE(Class, Module, Library) \\ BEAST_DEFINE_TESTSUITE_INSERT(Class, Module, Library, false, 0) #define BEAST_DEFINE_TESTSUITE_MANUAL(Class, Module, Library) \\ BEAST_DEFINE_TESTSUITE_INSERT(Class, Module, Library, true, 0) #define BEAST_DEFINE_TESTSUITE_PRIO(Class, Module, Library, Priority) \\ BEAST_DEFINE_TESTSUITE_INSERT(Class, Module, Library, false, Priority) #define BEAST_DEFINE_TESTSUITE_MANUAL_PRIO(Class, Module, Library, Priority) \\ BEAST_DEFINE_TESTSUITE_INSERT(Class, Module, Library, true, Priority) #endif\n\n#endif\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "if (!isTesSuccess(thTer))\n\nreturn thTer;\n\n(\n\n\n\nsleBridge)[sfXChainAccountCreateCount] =\n\n(\n\n\n\nsleBridge)[sfXChainAccountCreateCount] + 1;\n\npsb.update(sleBridge);\n\npsb.apply(ctx_.rawView());\n\nreturn tesSUCCESS;\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Main.cpp",
+        "content": "#ifdef ENABLE_TESTS"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "template <class E, class F, class String> bool suite::except(F&& f, String const& reason) { try { f(); fail(reason); return false; } catch (E const&) { pass(); } return true; }\n\ntemplate <class F, class String> bool suite::unexcept(F&& f, String const& reason) { try { f(); pass(); return true; } catch (...) { fail(reason); } return false; }\n\ntemplate <class Condition, class String> bool suite::unexpected(Condition shouldBeFalse, String const& reason) { bool const b = static_cast<bool>(shouldBeFalse); if (!b) pass(); else fail(reason); return !b; }\n\ntemplate <class>\n\nvoid\n\nsuite::pass()\n\n{\n\npropagate_abort();\n\nrunner_\n\n\n\n>pass();\n\n}\n\ntemplate <class>\n\nvoid\n\nsuite::fail(std::string const& reason)\n\n{\n\npropagate_abort();\n\nrunner_\n\n\n\n>fail(reason);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/runner.h",
+        "content": "if (!default_)\n\non_case_end();\n\ndefault_ = false;\n\ncond_ = false;\n\non_case_begin(name);\n\n}\n\ntemplate <class>\n\nvoid\n\nrunner::pass()\n\n{\n\nstd::lock_guard lock(mutex_);\n\nif (default_)\n\ntestcase(\"\");\n\non_pass();\n\ncond_ = true;\n\n}\n\ntemplate <class>\n\nvoid\n\nrunner::fail(std::string const& reason)\n\n{\n\nstd::lock_guard lock(mutex_);\n\nif (default_)\n\ntestcase(\"\");\n\non_fail(reason);\n\nfailed_ = true;\n\ncond_ = true;\n\n}\n\ntemplate <class>\n\nvoid\n\nrunner::log(std::string const& s)\n\n{\n\nstd::lock_guard lock(mutex_);\n\nif (default_)\n\ntestcase(\"\");\n\non_log(s);\n\n}\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite_list.h",
+        "content": "#ifndef BEAST_UNIT_TEST_SUITE_LIST_HPP\n\n#define BEAST_UNIT_TEST_SUITE_LIST_HPP\n\n#include <xrpl/beast/unit_test/detail/const_container.h>\n\n#include <xrpl/beast/unit_test/suite_info.h>\n\n#include <boost/assert.hpp>\n\n#include <set>\n\n#include <typeindex>\n\n#include <unordered_set>\n\nnamespace beast {\n\nnamespace unit_test {"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/match.h",
+        "content": "#ifndef BEAST_UNIT_TEST_MATCH_HPP\n\n#define BEAST_UNIT_TEST_MATCH_HPP\n\n#include <xrpl/beast/unit_test/suite_info.h>\n\n#include <string>\n\nnamespace beast {\n\nnamespace unit_test {"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/apply.cpp",
+        "content": "if (ret.applied && (isTesSuccess(ret.ter) || isTecClaim(ret.ter))) perTxBatchView.apply(batchView);\n\nreturn ret;\n\n};"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/recorder.h",
+        "content": "class recorder : public runner { private: results m_results; suite_results m_suite; case_results m_case;\n\npublic:\n\nrecorder() = default;\n\nresults const&\n\nreport() const\n\n{\n\nreturn m_results;\n\n}\n\nprivate:\n\nvirtual void\n\non_suite_begin(suite_info const& info) override\n\n{\n\nm_suite = suite_results(info.full_name());\n\n}\n\nvirtual void\n\non_suite_end() override\n\n{\n\nm_results.insert(std::move(m_suite));\n\n}\n\nvirtual void\n\non_case_begin(std::string const& name) override\n\n{\n\nm_case = case_results(name);\n\n}\n\nvirtual void\n\non_case_end() override\n\n{\n\nif (m_case.tests.size() > 0)\n\nm_suite.insert(std::move(m_case));\n\n}\n\nvirtual void\n\non_pass() override\n\n{\n\nm_case.tests.pass();\n\n}\n\nvirtual void\n\non_fail(std::string const& reason) override\n\n{\n\nm_case.tests.fail(reason);\n\n}\n\nvirtual void\n\non_log(std::string const& s) override\n\n{\n\nm_case.log.insert(s);\n\n}\n\n};\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/runner.h",
+        "content": "template <class SequenceContainer> bool runner::run_each(SequenceContainer const& c) { bool failed(false); for (auto const& s : c) failed = run(s) || failed; return failed; }\n\ntemplate <class SequenceContainer, class Pred> bool runner::run_each_if(SequenceContainer const& c, Pred pred) { bool failed(false); for (auto const& s : c) if (pred(s)) failed = run(s) || failed; return failed; }\n\ntemplate <class>\n\nvoid\n\nrunner::testcase(std::string const& name)\n\n{\n\nstd::lock_guard lock(mutex_);\n\nBOOST_ASSERT(default_ || !name.empty());\n\nBOOST_ASSERT(default_ || cond_);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite.h",
+        "content": "#ifndef BEAST_UNIT_TEST_SUITE_HPP\n\n#define BEAST_UNIT_TEST_SUITE_HPP\n\n#include <xrpl/beast/unit_test/runner.h>\n\n#include <boost/filesystem.hpp>\n\n#include <boost/lexical_cast.hpp>\n\n#include <boost/throw_exception.hpp>\n\n#include <ostream>\n\n#include <sstream>\n\n#include <string>\n\nnamespace beast {\n\nnamespace unit_test {\n\nnamespace detail {\n\ntemplate <class String> static std::string make_reason(String const& reason, char const* file, int line) { std::string s(reason); if (!s.empty()) s.append(\": \"); namespace fs = boost::filesystem; s.append(fs::path{file}.filename().string()); s.append(\"(\"); s.append(boost::lexical_cast<std::string>(line)); s.append(\")\"); return s; }\n\n}\n\nclass thread;\n\nenum abort_t { no_abort_on_fail, abort_on_fail };"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h",
+        "content": "template <typename FROM> class CanCvtToNotTEC : public std::false_type { }; template <> class CanCvtToNotTEC<TELcodes> : public std::true_type { }; template <> class CanCvtToNotTEC<TEMcodes> : public std::true_type { }; template <> class CanCvtToNotTEC<TEFcodes> : public std::true_type { }; template <> class CanCvtToNotTEC<TERcodes> : public std::true_type { }; template <> class CanCvtToNotTEC<TEScodes> : public std::true_type { };\n\nusing NotTEC = TERSubset<CanCvtToNotTEC>;"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "psb.apply(rawView);\n\nreturn tesSUCCESS;\n\n}\n\ntemplate <class TAttestation>\n\nstd::optional<TAttestation>\n\ntoClaim(STTx const& tx)\n\n{\n\nstatic_assert(\n\nstd::is_same_v<TAttestation, Attestations::AttestationClaim> ||\n\nstd::is_same_v<TAttestation, Attestations::AttestationCreateAccount>);\n\ntry\n\n{\n\nSTObject o{tx};\n\no.setAccountID(sfAccount, o[sfOtherChainSource]);\n\nreturn TAttestation(o);\n\n}\n\ncatch (...)\n\n{\n\n}\n\nreturn std::nullopt;\n\n}\n\ntemplate <class TAttestation>\n\nNotTEC\n\nattestationPreflight(PreflightContext const& ctx)\n\n{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h",
+        "content": "return (x == tesSUCCESS);\n\n}\n\ninline bool\n\nisTecClaim(TER x) noexcept\n\n{\n\nreturn ((x) >= tecCLAIM);\n\n}\n\nstd::unordered_map<\n\nTERUnderlyingType,\n\nstd::pair<char const\n\n\n\nconst, char const\n\n\n\nconst>> const&\n\ntransResults();\n\nbool transResultInfo(TER code, std::string& token, std::string& text);\n\nstd::string\n\ntransToken(TER code);\n\nstd::string\n\ntransHuman(TER code);\n\nstd::optional<TER>\n\ntransCode(std::string const& token);\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/global_suites.h",
+        "content": "#ifndef BEAST_UNIT_TEST_GLOBAL_SUITES_HPP\n\n#define BEAST_UNIT_TEST_GLOBAL_SUITES_HPP\n\n#include <xrpl/beast/unit_test/suite_list.h>\n\nnamespace beast {\n\nnamespace unit_test {\n\nnamespace detail {\n\ninline suite_list&\n\nglobal_suites()\n\n{\n\nstatic suite_list s;\n\nreturn s;\n\n}\n\ntemplate <class Suite> struct insert_suite { insert_suite( char const* name, char const* module, char const* library, bool manual, int priority) { global_suites().insert<Suite>(name, module, library, manual, priority); } };\n\n}\n\ninline suite_list const&\n\nglobal_suites()\n\n{\n\nreturn detail::global_suites();\n\n}\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Main.cpp",
+        "content": "#ifdef ENABLE_TESTS po::options_description test(\"Unit Test Options\"); test.add_options()( \"quiet,q\", \"Suppress test suite messages, \" \"including suite/case name (at start) and test log messages.\")( \"unittest,u\", po::value<std::string>()->implicit_value(\"\"), \"Perform unit tests. The optional argument specifies one or \" \"more comma-separated selectors. Each selector specifies a suite name, \" \"suite name prefix, full-name (lib.module.suite), module, or library \" \"(checked in that order).\")( \"unittest-arg\", po::value<std::string>()->implicit_value(\"\"), \"Supplies an argument string to unit tests. If provided, this argument \" \"is made available to each suite that runs. Interpretation of the \" \"argument is handled individually by any suite that accesses it -- \" \"as such, it typically only make sense to provide this when running \" \"a single suite.\")( \"unittest-ipv6\", \"Use IPv6 localhost when running unittests (default is IPv4).\")( \"unittest-log\", \"Force unit test log message output. Only"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test.h",
+        "content": "#ifndef BEAST_UNIT_TEST_H_INCLUDED\n\n#define BEAST_UNIT_TEST_H_INCLUDED\n\n#include <xrpl/beast/unit_test/amount.h>\n\n#include <xrpl/beast/unit_test/global_suites.h>\n\n#include <xrpl/beast/unit_test/match.h>\n\n#include <xrpl/beast/unit_test/recorder.h>\n\n#include <xrpl/beast/unit_test/reporter.h>\n\n#include <xrpl/beast/unit_test/results.h>\n\n#include <xrpl/beast/unit_test/runner.h>\n\n#include <xrpl/beast/unit_test/suite.h>\n\n#include <xrpl/beast/unit_test/suite_info.h>\n\n#include <xrpl/beast/unit_test/suite_list.h>\n\n#ifndef BEAST_EXPECT\n\n#define BEAST_EXPECT_S1(x) #x\n\n#define BEAST_EXPECT_S2(x) BEAST_EXPECT_S1(x)\n\n#define BEAST_EXPECT(cond) expect(cond, __FILE__ \":\" BEAST_EXPECT_S2(__LINE__)) #endif\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h",
+        "content": "constexpr TERUnderlyingType\n\nTERtoInt(TELcodes v)\n\n{\n\nreturn safe_cast<TERUnderlyingType>(v);\n\n}\n\nconstexpr TERUnderlyingType\n\nTERtoInt(TEMcodes v)\n\n{\n\nreturn safe_cast<TERUnderlyingType>(v);\n\n}\n\nconstexpr TERUnderlyingType\n\nTERtoInt(TEFcodes v)\n\n{\n\nreturn safe_cast<TERUnderlyingType>(v);\n\n}\n\nconstexpr TERUnderlyingType\n\nTERtoInt(TERcodes v)\n\n{\n\nreturn safe_cast<TERUnderlyingType>(v);\n\n}\n\nconstexpr TERUnderlyingType\n\nTERtoInt(TEScodes v)\n\n{\n\nreturn safe_cast<TERUnderlyingType>(v);\n\n}\n\nconstexpr TERUnderlyingType\n\nTERtoInt(TECcodes v)\n\n{\n\nreturn safe_cast<TERUnderlyingType>(v);\n\n}\n\ntemplate <template <typename> class Trait> class TERSubset { TERUnderlyingType code_;\n\npublic:\n\nconstexpr TERSubset() : code_(tesSUCCESS) { } constexpr TERSubset(TERSubset const& rhs) = default; constexpr TERSubset(TERSubset&& rhs) = default;\n\nprivate: constexpr explicit TERSubset(int rhs) : code_(rhs) { }\n\npublic:\n\nstatic constexpr TERSubset\n\nfromInt(int from)\n\n{\n\nreturn TERSubset(from);\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/paths/detail/BookStep.cpp",
+        "content": "if (ctx.prevStep) { if (auto const prev = ctx.prevStep->directStepSrcAcct()) { auto const& view = ctx.view; auto const& cur = book_.in.account;\n\nauto sle = view.read(keylet::line(*prev, cur, book_.in.currency)); if (!sle) return terNO_LINE; if ((*sle)[sfFlags] & ((cur > *prev) ? lsfHighNoRipple : lsfLowNoRipple)) return terNO_RIPPLE; } }\n\nreturn tesSUCCESS;\n\n}\n\nnamespace test {\n\ntemplate <class TIn, class TOut, class TDerived> static bool equalHelper(Step const& step, ripple::Book const& book) { if (auto bs = dynamic_cast<BookStep<TIn, TOut, TDerived> const*>(&step)) return book == bs->book(); return false; }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STTx.h",
+        "content": "STObject const& batchSigner,\n\nRequireFullyCanonicalSig requireCanonicalSig) const;\n\nExpected<void, std::string>\n\ncheckBatchMultiSign(\n\nSTObject const& batchSigner,\n\nRequireFullyCanonicalSig requireCanonicalSig,\n\nRules const& rules) const;\n\nSTBase\n\n\n\ncopy(std::size_t n, void\n\n\n\nbuf) const override;\n\nSTBase\n\n\n\nmove(std::size_t n, void\n\n\n\nbuf) override;\n\nfriend class detail::STVar;\n\nmutable std::vector<uint256> batch_txn_ids_;\n\n};\n\nbool\n\npassesLocalChecks(STObject const& st, std::string&);\n\nstd::shared_ptr<STTx const>\n\nsterilize(STTx const& stx);\n\nbool\n\nisPseudoTx(STObject const& tx);\n\ninline STTx::STTx(SerialIter&& sit) : STTx(sit) { }\n\ninline TxType\n\nSTTx::getTxnType() const\n\n{\n\nreturn tx_type_;\n\n}\n\ninline Blob\n\nSTTx::getSigningPubKey() const\n\n{\n\nreturn getFieldVL(sfSigningPubKey);\n\n}\n\ninline uint256\n\nSTTx::getTransactionID() const\n\n{\n\nreturn tid_;\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/InvariantCheck.cpp",
+        "content": "if (tx.getTxnType() == ttNFTOKEN_MINT) { if (result == tesSUCCESS && beforeMintedTotal >= afterMintedTotal) { JLOG(j.fatal()) << \"Invariant failed: successful minting didn't increase \" \"the number of minted tokens.\"; return false; }\n\nif (result != tesSUCCESS && beforeMintedTotal != afterMintedTotal) { JLOG(j.fatal()) << \"Invariant failed: failed minting changed the \" \"number of minted tokens.\"; return false; }\n\nif (beforeBurnedTotal != afterBurnedTotal) { JLOG(j.fatal()) << \"Invariant failed: minting changed the number of \" \"burned tokens.\"; return false; } }\n\nif (tx.getTxnType() == ttNFTOKEN_BURN) { if (result == tesSUCCESS) { if (beforeBurnedTotal >= afterBurnedTotal) { JLOG(j.fatal()) << \"Invariant failed: successful burning didn't increase \" \"the number of burned tokens.\"; return false; } }\n\nif (result != tesSUCCESS && beforeBurnedTotal != afterBurnedTotal) { JLOG(j.fatal()) << \"Invariant failed: failed burning changed the \" \"number of burned tokens.\"; return false; }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/match.h",
+        "content": "class selector\n\n{\n\npublic:\n\nenum mode_t {\n\nall,\n\nautomatch,\n\nsuite,\n\nlibrary,\n\nmodule,\n\nnone\n\n};\n\nprivate:\n\nmode_t mode_;\n\nstd::string pat_;\n\nstd::string library_;\n\npublic: template <class = void> explicit selector(mode_t mode, std::string const& pattern = \"\");\n\ntemplate <class = void>\n\nbool\n\noperator()(suite_info const& s);\n\n};\n\ntemplate <class> selector::selector(mode_t mode, std::string const& pattern) : mode_(mode), pat_(pattern) { if (mode_ == automatch && pattern.empty()) mode_ = all; }\n\ntemplate <class>\n\nbool\n\nselector::operator()(suite_info const& s)\n\n{\n\nswitch (mode_)\n\n{\n\ncase automatch:\n\nif (s.name() == pat_ || s.full_name() == pat_) { mode_ = none; return true; }\n\nif (pat_ == s.module())\n\n{\n\nmode_ = module;\n\nlibrary_ = s.library();\n\nreturn !s.manual();\n\n}\n\nif (pat_ == s.library())\n\n{\n\nmode_ = library;\n\nreturn !s.manual();\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/misc/detail/Manifest.cpp",
+        "content": "st.set(sit);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/reporter.h",
+        "content": "#ifndef BEAST_UNIT_TEST_REPORTER_HPP\n\n#define BEAST_UNIT_TEST_REPORTER_HPP\n\n#include <xrpl/beast/unit_test/amount.h>\n\n#include <xrpl/beast/unit_test/recorder.h>\n\n#include <boost/lexical_cast.hpp>\n\n#include <boost/optional.hpp>\n\n#include <algorithm>\n\n#include <chrono>\n\n#include <functional>\n\n#include <iomanip>\n\n#include <iostream>\n\n#include <sstream>\n\n#include <string>\n\n#include <utility>\n\nnamespace beast {\n\nnamespace unit_test {\n\nnamespace detail {\n\ntemplate <class = void> class reporter : public runner { private: using clock_type = std::chrono::steady_clock;\n\nstruct case_results\n\n{\n\nstd::string name;\n\nstd::size_t total = 0;\n\nstd::size_t failed = 0;\n\nexplicit case_results(std::string name_ = \"\") : name(std::move(name_)) { } };\n\nstruct suite_results { std::string name; std::size_t cases = 0; std::size_t total = 0; std::size_t failed = 0; typename clock_type::time_point start = clock_type::now();\n\nexplicit suite_results(std::string name_ = \"\") : name(std::move(name_)) { }\n\nvoid"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/IntrusivePointer.h",
+        "content": "p);\n\nT\n\n\n\nptr_{nullptr};\n\n};\n\ntemplate <class T>"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/reporter.h",
+        "content": "add(case_results const& r);\n\n};\n\nstruct results { using run_time = std::pair<std::string, typename clock_type::duration>;\n\nenum { max_top = 10 };\n\nstd::size_t suites = 0; std::size_t cases = 0; std::size_t total = 0; std::size_t failed = 0; std::vector<run_time> top; typename clock_type::time_point start = clock_type::now();\n\nvoid\n\nadd(suite_results const& r);\n\n};\n\nstd::ostream& os_;\n\nresults results_;\n\nsuite_results suite_results_;\n\ncase_results case_results_;\n\npublic:\n\nreporter(reporter const&) = delete;\n\nreporter&\n\noperator=(reporter const&) = delete;\n\n~reporter();\n\nexplicit reporter(std::ostream& os = std::cout);\n\nprivate:\n\nstatic std::string\n\nfmtdur(typename clock_type::duration const& d);\n\nvirtual void\n\non_suite_begin(suite_info const& info) override;\n\nvirtual void\n\non_suite_end() override;\n\nvirtual void\n\non_case_begin(std::string const& name) override;\n\nvirtual void\n\non_case_end() override;\n\nvirtual void\n\non_pass() override;\n\nvirtual void"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/org/xrpl/rpc/v1/README.md",
+        "content": "When modifying an existing gRPC method, be sure to test that modification in the corresponding, existing unit test. When creating a new gRPC method, implement a class that derives from GRPCTestClientBase, and use the newly created class to call the new method. See the class `GrpcTxClient` in the file Tx_test.cpp for an example. The gRPC tests are paired with their JSON counterpart, and the tests should mirror the JSON test as much as possible.\n\nRefer to the Protocol Buffers [language guide](https://developers.google.com/protocol-buffers/docs/proto3) for more detailed information about Protocol Buffers."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STTx.h",
+        "content": "class STTx final : public STObject, public CountedObject<STTx> { uint256 tid_; TxType tx_type_;\n\npublic: static std::size_t const minMultiSigners = 1;\n\nstatic std::size_t\n\nmaxMultiSigners(Rules const\n\n\n\nrules = 0)\n\n{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/paths/detail/XRPEndpointStep.cpp",
+        "content": "if (ctx.view.rules().enabled(fix1781)) { auto const issuesIndex = isLast_ ? 0 : 1; if (!ctx.seenDirectIssues[issuesIndex].insert(xrpIssue()).second) { JLOG(j_.debug()) << \"XRPEndpointStep: loop detected: Index: \" << ctx.strandSize << ' ' << *this; return temBAD_PATH_LOOP; } }\n\nreturn tesSUCCESS;\n\n}\n\nnamespace test {\n\nbool xrpEndpointStepEqual(Step const& step, AccountID const& acc) { if (auto xs = dynamic_cast<XRPEndpointStep<XRPEndpointPaymentStep> const*>(&step)) { return xs->acc() == acc; } return false; } }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/LedgerHistory.cpp",
+        "content": "\" Built:\\n\" << builtMetaData->getJson(JsonOptions::none); JLOG(j.debug()) << \" Valid:\\n\" << validMetaData->getJson(JsonOptions::none); } else if (result_diff) { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different result and nodes!\"; JLOG(j.debug()) << \" Built:\" << \" Result: \" << builtMetaData->getResult() << \" Nodes:\\n\" << builtNodes.getJson(JsonOptions::none); JLOG(j.debug()) << \" Valid:\" << \" Result: \" << validMetaData->getResult() << \" Nodes:\\n\" << validNodes.getJson(JsonOptions::none); } else if (index_diff) { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different index and nodes!\"; JLOG(j.debug()) << \" Built:\" << \" Index: \" << builtMetaData->getIndex() << \" Nodes:\\n\" << builtNodes.getJson(JsonOptions::none); JLOG(j.debug()) << \" Valid:\" << \" Index: \" << validMetaData->getIndex() << \" Nodes:\\n\" << validNodes.getJson(JsonOptions::none); } else { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different nodes!\"; JLOG(j.debug()) << \" Built:\" << \" Nodes:\\n\" <<"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite_list.h",
+        "content": "class suite_list : public detail::const_container<std::set<suite_info>> { private: #ifndef NDEBUG std::unordered_set<std::string> names_; std::unordered_set<std::type_index> classes_; #endif\n\npublic:\n\ntemplate <class Suite>\n\nvoid\n\ninsert(\n\nchar const\n\n\n\nname,\n\nchar const\n\n\n\nmodule,\n\nchar const\n\n\n\nlibrary,\n\nbool manual,\n\nint priority);\n\n};\n\ntemplate <class Suite> void suite_list::insert( char const* name, char const* module, char const* library, bool manual, int priority) { #ifndef NDEBUG { std::string s; s = std::string(library) + \".\" + module + \".\" + name; auto const result(names_.insert(s)); BOOST_ASSERT(result.second); }\n\n{ auto const result(classes_.insert(std::type_index(typeid(Suite)))); BOOST_ASSERT(result.second); } #endif cont().emplace( make_suite_info<Suite>(name, module, library, manual, priority)); }\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite_info.h",
+        "content": "#ifndef BEAST_UNIT_TEST_SUITE_INFO_HPP\n\n#define BEAST_UNIT_TEST_SUITE_INFO_HPP\n\n#include <cstring>\n\n#include <functional>\n\n#include <string>\n\n#include <utility>\n\nnamespace beast {\n\nnamespace unit_test {\n\nclass runner;"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/InboundTransactions.uml",
+        "content": "@startuml\n\nbox \"Server 1\"\n\nparticipant timer1 as \"std::timer\"\n\nparticipant jq1 as \"JobQueue\"\n\nparticipant ib1 as \"InboundTransactions\"\n\nparticipant ta1 as \"TransactionAcquire\"\n\nparticipant pi1 as \"PeerImp\"\n\nend box\n\nbox \"Server 2\"\n\nparticipant pi2 as \"PeerImp\"\n\nparticipant jq2 as \"JobQueue\"\n\nparticipant ib2 as \"InboundTransactions\"\n\nend box\n\nautoactivate on\n\n[\n\n\n\n> ib1 : getSet(rootHash)\n\nib1\n\n\n\n> ta1 : TransactionAcquire(rootHash)\n\nreturn\n\nib1\n\n\n\n> ta1 : init(numPeers=2)\n\nta1\n\n\n\n> ta1 : addPeers(limit=2)\n\nta1\n\n\n\n> ta1 : onPeerAdded(peer)\n\nta1\n\n\n\n> ta1 : trigger(peer)\n\nta1\n\n\n\n> pi1 : send(TMGetLedger)\n\nreturn\n\ndeactivate ta1\n\ndeactivate ta1\n\ndeactivate ta1\n\nta1\n\n\n\n> ta1 : setTimer()\n\nta1\n\n\n\n> timer1 : wait(()\n\n\n\n> TransactionAcquire.queueJob())\n\nreturn\n\ndeactivate ta1\n\nreturn\n\nreturn empty SHAMap\n\n...\n\npi1\n\n\n\n> pi2 : onMessage(TMGetLedger)\n\npi2\n\n\n\n> jq2 : addJob(()\n\n\n\n> PeerImp.getLedger(message))\n\nreturn\n\ndeactivate pi2\n\n...\n\njq2\n\n\n\n> pi2 : getLedger(message)\n\npi2"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/LedgerHistory.cpp",
+        "content": "if (!nodes_diff) { if (result_diff && index_diff) { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different result and index!\"; JLOG(j.debug()) << \" Built:\" << \" Result: \" << builtMetaData->getResult() << \" Index: \" << builtMetaData->getIndex(); JLOG(j.debug()) << \" Valid:\" << \" Result: \" << validMetaData->getResult() << \" Index: \" << validMetaData->getIndex(); } else if (result_diff) { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different result!\"; JLOG(j.debug()) << \" Built:\" << \" Result: \" << builtMetaData->getResult(); JLOG(j.debug()) << \" Valid:\" << \" Result: \" << validMetaData->getResult(); } else if (index_diff) { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different index!\"; JLOG(j.debug()) << \" Built:\" << \" Index: \" << builtMetaData->getIndex(); JLOG(j.debug()) << \" Valid:\" << \" Index: \" << validMetaData->getIndex(); } } else { if (result_diff && index_diff) { JLOG(j.debug()) << \"MISMATCH on TX \" << tx << \": Different result, index and nodes!\"; JLOG(j.debug()) <<"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/suite_info.h",
+        "content": "template <class Suite> suite_info make_suite_info( std::string name, std::string module, std::string library, bool manual, int priority) { return suite_info( std::move(name), std::move(module), std::move(library), manual, priority, [](runner& r) { Suite{}(r); }); }\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/applySteps.cpp",
+        "content": "if (id != beast::zero) { TER result = T::checkSeqProxy(ctx.view, ctx.tx, ctx.j);\n\nif (result != tesSUCCESS)\n\nreturn result;\n\nresult = T::checkPriorTxAndLastLedger(ctx);\n\nif (result != tesSUCCESS)\n\nreturn result;\n\nresult = T::checkFee(ctx, calculateBaseFee(ctx.view, ctx.tx));\n\nif (result != tesSUCCESS)\n\nreturn result;\n\nresult = T::checkPermission(ctx.view, ctx.tx);\n\nif (result != tesSUCCESS)\n\nreturn result;\n\nresult = T::checkSign(ctx);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/handlers/Simulate.cpp",
+        "content": "if (stTx\n\n\n\n>getTxnType() == ttBATCH)\n\n{\n\nreturn RPC::make_error(rpcNOT_IMPL);\n\n}\n\nstd::string reason; auto transaction = std::make_shared<Transaction>(stTx, reason, context.app);\n\ntry\n\n{\n\nreturn simulateTxn(context, transaction);\n\n}\n\ncatch (std::exception const& e)\n\n{\n\nJson::Value jvResult = Json::objectValue;\n\njvResult[jss::error] = \"internalSimulate\";\n\njvResult[jss::error_exception] = e.what();\n\nreturn jvResult;\n\n}\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/base_uint.h",
+        "content": "{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/IOUAmount.cpp",
+        "content": "{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/reporter.h",
+        "content": "template <class _>\n\nvoid\n\nreporter<_>::on_suite_end()\n\n{\n\nresults_.add(suite_results_);\n\n}\n\ntemplate <class _> void reporter<_>::on_case_begin(std::string const& name) { case_results_ = case_results(name); os_ << suite_results_.name << (case_results_.name.empty() ? \"\" : (\" \" + case_results_.name)) << std::endl; }\n\ntemplate <class _>\n\nvoid\n\nreporter<_>::on_case_end()\n\n{\n\nsuite_results_.add(case_results_);\n\n}\n\ntemplate <class _>\n\nvoid\n\nreporter<_>::on_pass()\n\n{\n\n++case_results_.total;\n\n}\n\ntemplate <class _> void reporter<_>::on_fail(std::string const& reason) { ++case_results_.failed; ++case_results_.total; os_ << \"#\" << case_results_.total << \" failed\" << (reason.empty() ? \"\" : \": \") << reason << std::endl; }\n\ntemplate <class _>\n\nvoid\n\nreporter<_>::on_log(std::string const& s)\n\n{\n\nos_ << s;\n\n}\n\n}\n\nusing reporter = detail::reporter<>;\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Quality.h",
+        "content": "class In,\n\nclass Out,"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Quality.h",
+        "content": "class In,\n\nclass Out,"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/codec.h",
+        "content": "template <class = void>"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/recorder.h",
+        "content": "#ifndef BEAST_UNIT_TEST_RECORDER_HPP\n\n#define BEAST_UNIT_TEST_RECORDER_HPP\n\n#include <xrpl/beast/unit_test/results.h>\n\n#include <xrpl/beast/unit_test/runner.h>\n\nnamespace beast {\n\nnamespace unit_test {"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STBase.h",
+        "content": "namespace detail {"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/test/yield_to.h",
+        "content": "#ifndef BEAST_TEST_YIELD_TO_HPP\n\n#define BEAST_TEST_YIELD_TO_HPP\n\n#include <boost/asio/io_service.hpp>\n\n#include <boost/asio/spawn.hpp>\n\n#include <boost/optional.hpp>\n\n#include <condition_variable>\n\n#include <functional>\n\n#include <mutex>\n\n#include <thread>\n\n#include <vector>\n\nnamespace beast {\n\nnamespace test {"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h",
+        "content": "template <typename FROM> class CanCvtToTER : public std::false_type { }; template <> class CanCvtToTER<TELcodes> : public std::true_type { }; template <> class CanCvtToTER<TEMcodes> : public std::true_type { }; template <> class CanCvtToTER<TEFcodes> : public std::true_type { }; template <> class CanCvtToTER<TERcodes> : public std::true_type { }; template <> class CanCvtToTER<TEScodes> : public std::true_type { }; template <> class CanCvtToTER<TECcodes> : public std::true_type { }; template <> class CanCvtToTER<NotTEC> : public std::true_type { };\n\nusing TER = TERSubset<CanCvtToTER>;\n\ninline bool isTelLocal(TER x) noexcept { return (x >= telLOCAL_ERROR && x < temMALFORMED); }\n\ninline bool isTemMalformed(TER x) noexcept { return (x >= temMALFORMED && x < tefFAILURE); }\n\ninline bool isTefFailure(TER x) noexcept { return (x >= tefFAILURE && x < terRETRY); }\n\ninline bool isTerRetry(TER x) noexcept { return (x >= terRETRY && x < tesSUCCESS); }\n\ninline bool\n\nisTesSuccess(TER x) noexcept\n\n{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/runner.h",
+        "content": "class runner\n\n{\n\nstd::string arg_;\n\nbool default_ = false;\n\nbool failed_ = false;\n\nbool cond_ = false;\n\nstd::recursive_mutex mutex_;\n\npublic:\n\nrunner() = default;\n\nvirtual ~runner() = default;\n\nrunner(runner const&) = delete;\n\nrunner&\n\noperator=(runner const&) = delete;\n\nvoid\n\narg(std::string const& s)\n\n{\n\narg_ = s;\n\n}\n\nstd::string const&\n\narg() const\n\n{\n\nreturn arg_;\n\n}\n\ntemplate <class = void>\n\nbool\n\nrun(suite_info const& s);\n\ntemplate <class FwdIter>\n\nbool\n\nrun(FwdIter first, FwdIter last);\n\ntemplate <class FwdIter, class Pred> bool run_if(FwdIter first, FwdIter last, Pred pred = Pred{});\n\ntemplate <class SequenceContainer>\n\nbool\n\nrun_each(SequenceContainer const& c);\n\ntemplate <class SequenceContainer, class Pred> bool run_each_if(SequenceContainer const& c, Pred pred = Pred{});\n\nprotected:\n\nvirtual void\n\non_suite_begin(suite_info const&)\n\n{\n\n}\n\nvirtual void\n\non_suite_end()\n\n{\n\n}\n\nvirtual void\n\non_case_begin(std::string const&)\n\n{\n\n}\n\nvirtual void\n\non_case_end()\n\n{\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/Taker.cpp",
+        "content": "if (result == tesSUCCESS) result = issueIOU(account(), flow.order.out, flow.order.out.issue()); } else { XRPL_ASSERT( isXRP(flow.order.out), \"ripple::Taker::fill : order out is XRP\");\n\nif (result == tesSUCCESS) result = transferXRP(offer.owner(), account(), flow.order.out); }\n\nif (result == tesSUCCESS)\n\ndirect_crossings_++;\n\nreturn result;\n\n}\n\nTER\n\nTaker::fill(\n\nBasicTaker::Flow const& flow1,\n\nOffer& leg1,\n\nBasicTaker::Flow const& flow2,\n\nOffer& leg2)\n\n{\n\nconsume_offer(leg1, flow1.order);\n\nconsume_offer(leg2, flow2.order);\n\nTER result = tesSUCCESS;\n\nif (leg1.owner() != account())\n\n{\n\nif (result == tesSUCCESS)\n\nresult = redeemIOU(\n\naccount(), flow1.issuers.in, flow1.issuers.in.issue());\n\nif (result == tesSUCCESS)\n\nresult =\n\nissueIOU(leg1.owner(), flow1.order.in, flow1.order.in.issue());\n\n}\n\nif (result == tesSUCCESS) result = transferXRP(leg1.owner(), leg2.owner(), flow1.order.out);\n\nif (leg2.owner() != account())\n\n{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/detail/OpenLedger.cpp",
+        "content": "auto const result = ripple::apply(app, view, *tx, flags, j); if (result.applied || result.ter == terQUEUED) return Result::success; if (isTefFailure(result.ter) || isTemMalformed(result.ter) || isTelLocal(result.ter)) return Result::failure; return Result::retry; }\n\nstd::string\n\ndebugTxstr(std::shared_ptr<STTx const> const& tx)\n\n{\n\nstd::stringstream ss;\n\nss << tx\n\n\n\n>getTransactionID();\n\nreturn ss.str().substr(0, 4);\n\n}\n\nstd::string debugTostr(OrderedTxs const& set) { std::stringstream ss; for (auto const& item : set) ss << debugTxstr(item.second) << \", \"; return ss.str(); }\n\nstd::string debugTostr(SHAMap const& set) { std::stringstream ss; for (auto const& item : set) { try { SerialIter sit(item.slice()); auto const tx = std::make_shared<STTx const>(sit); ss << debugTxstr(tx) << \", \"; } catch (std::exception const& ex) { ss << \"THROW:\" << ex.what() << \", \"; } } return ss.str(); }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h",
+        "content": "template < typename T, typename = std::enable_if_t< Trait<std::remove_cv_t<std::remove_reference_t<T>>>::value>> constexpr TERSubset(T rhs) : code_(TERtoInt(rhs)) { }\n\nconstexpr TERSubset& operator=(TERSubset const& rhs) = default; constexpr TERSubset& operator=(TERSubset&& rhs) = default;\n\ntemplate <typename T>\n\nconstexpr auto\n\noperator=(T rhs)\n\n\n\n> std::enable_if_t<Trait<T>::value, TERSubset&>\n\n{\n\ncode_ = TERtoInt(rhs);\n\nreturn\n\n\n\nthis;\n\n}\n\nexplicit\n\noperator bool() const\n\n{\n\nreturn code_ != tesSUCCESS;\n\n}\n\noperator Json::Value() const\n\n{\n\nreturn Json::Value{code_};\n\n}\n\nfriend std::ostream& operator<<(std::ostream& os, TERSubset const& rhs) { return os << rhs.code_; }\n\nfriend constexpr TERUnderlyingType\n\nTERtoInt(TERSubset v)\n\n{\n\nreturn v.code_;\n\n}\n\n};"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/README.md",
+        "content": "The `NodeStore.Timing` test is used to execute a set of read/write workloads to compare current available nodestore backends. It can be executed with:\n\n```\n\n$rippled\n\n\n\n\n\nunittest=NodeStoreTiming\n\n```\n\nIt is also possible to use alternate DB config params by passing config strings as `--unittest-arg`.\n\n## Addendum\n\nThe discussion below refers to a `RocksDBQuick` backend that has since been removed from the code as it was not working and not maintained. That backend primarily used one of the several rocks `Optimize*` methods to setup the majority of the DB options/params, whereas the primary RocksDB backend exposes many of the available config options directly. The code for RocksDBQuick can be found in versions of this repo 1.2 and earlier if you need to refer back to it. The conclusions below date from about 2014 and may need revisiting based on newer versions of RocksDB (TBD).\n\n## Discussion"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/ledger/detail/View.cpp",
+        "content": "class V,\n\nclass N,"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/detail/BuildLedger.cpp",
+        "content": "for (int pass = 0; pass < LEDGER_TOTAL_PASSES; ++pass) { JLOG(j.debug()) << (certainRetry ? \"Pass: \" : \"Final pass: \") << pass << \" begins (\" << txns.size() << \" transactions)\"; int changes = 0;\n\nauto it = txns.begin();\n\nwhile (it != txns.end()) { auto const txid = it->first.getTXID();\n\ntry { if (pass == 0 && built->txExists(txid)) { it = txns.erase(it); continue; }\n\nswitch (applyTransaction(\n\napp, view,\n\n\n\nit\n\n\n\n>second, certainRetry, tapNONE, j))\n\n{\n\ncase ApplyTransactionResult::Success:\n\nit = txns.erase(it);\n\n++changes;\n\nbreak;\n\ncase ApplyTransactionResult::Fail:\n\nfailed.insert(txid);\n\nit = txns.erase(it);\n\nbreak;\n\ncase ApplyTransactionResult::Retry: ++it; } } catch (std::exception const& ex) { JLOG(j.warn()) << \"Transaction \" << txid << \" throws: \" << ex.what(); failed.insert(txid); it = txns.erase(it); } }\n\nJLOG(j.debug()) << (certainRetry ? \"Pass: \" : \"Final pass: \") << pass << \" completed (\" << changes << \" changes)\";\n\ncount += changes;"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/PayChan.cpp",
+        "content": "if (!curExpiration ||\n\n\n\ncurExpiration > settleExpiration)\n\n{\n\n(\n\n\n\nslep)[~sfExpiration] = settleExpiration;\n\nctx_.view().update(slep);\n\n}\n\n}\n\nreturn tesSUCCESS;\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/Transactor.h",
+        "content": "class TxConsequences;\n\nstruct PreflightResult;"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/core/JobTypes.h",
+        "content": "add(jtPACK,              \"makeFetchPack\",               1,     0ms,     0ms); add(jtPUBOLDLEDGER,      \"publishAcqLedger\",            2, 10000ms, 15000ms); add(jtVALIDATION_ut,     \"untrustedValidation\",  maxLimit,  2000ms,  5000ms); add(jtMANIFEST,          \"manifest\",             maxLimit,  2000ms,  5000ms); add(jtTRANSACTION_l,     \"localTransaction\",     maxLimit,   100ms,   500ms); add(jtREPLAY_REQ,        \"ledgerReplayRequest\",        10,   250ms,  1000ms); add(jtLEDGER_REQ,        \"ledgerRequest\",               3,     0ms,     0ms); add(jtPROPOSAL_ut,       \"untrustedProposal\",    maxLimit,   500ms,  1250ms); add(jtREPLAY_TASK,       \"ledgerReplayTask\",     maxLimit,     0ms,     0ms); add(jtLEDGER_DATA,       \"ledgerData\",                  3,     0ms,     0ms); add(jtCLIENT,            \"clientCommand\",        maxLimit,  2000ms,  5000ms); add(jtCLIENT_SUBSCRIBE,  \"clientSubscribe\",      maxLimit,  2000ms,  5000ms); add(jtCLIENT_FEE_CHANGE, \"clientFeeChange\",      maxLimit,"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/paths/detail/StrandFlow.h",
+        "content": "TInAmt const sendMaxInit = sendMaxST ? toAmount<TInAmt>(*sendMaxST) : TInAmt{beast::zero}; std::optional<TInAmt> const sendMax = (sendMaxST && sendMaxInit >= beast::zero) ? std::make_optional(sendMaxInit) : std::nullopt; std::optional<TInAmt> remainingIn = !!sendMax ? std::make_optional(sendMaxInit) : std::nullopt;\n\nTOutAmt remainingOut(outReq);\n\nPaymentSandbox sb(&baseView);\n\nActiveStrands activeStrands(strands);\n\nboost::container::flat_multiset<TInAmt> savedIns;\n\nsavedIns.reserve(maxTries);\n\nboost::container::flat_multiset<TOutAmt> savedOuts;\n\nsavedOuts.reserve(maxTries);\n\nauto sum = [](auto const& col) { using TResult = std::decay_t<decltype(*col.begin())>; if (col.empty()) return TResult{beast::zero}; return std::accumulate(col.begin() + 1, col.end(), *col.begin()); };\n\nboost::container::flat_set<uint256> ofrsToRmOnFail;"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/Batch.cpp",
+        "content": "if (!sigResult) { JLOG(ctx.j.debug()) << \"BatchTrace[\" << parentBatchId << \"]: \" << \"invalid batch txn signature: \" << sigResult.error(); return temBAD_SIGNATURE; } }\n\nif (!requiredSigners.empty()) { JLOG(ctx.j.debug()) << \"BatchTrace[\" << parentBatchId << \"]: \" << \"invalid batch signers.\"; return temBAD_SIGNER; } return tesSUCCESS; }\n\nNotTEC Batch::checkSign(PreclaimContext const& ctx) { if (auto ret = Transactor::checkSign(ctx); !isTesSuccess(ret)) return ret;\n\nif (auto ret = Transactor::checkBatchSign(ctx); !isTesSuccess(ret)) return ret;\n\nreturn tesSUCCESS;\n\n}\n\nTER\n\nBatch::doApply()\n\n{\n\nreturn tesSUCCESS;\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/core/JobTypes.h",
+        "content": "maxLimit,   500ms,  1500ms); add(jtWRITE,             \"writeObjects\",         maxLimit,  1750ms,  2500ms); add(jtACCEPT,            \"acceptLedger\",         maxLimit,     0ms,     0ms); add(jtPROPOSAL_t,        \"trustedProposal\",      maxLimit,   100ms,   500ms); add(jtSWEEP,             \"sweep\",                       1,     0ms,     0ms); add(jtNETOP_CLUSTER,     \"clusterReport\",               1,  9999ms,  9999ms); add(jtNETOP_TIMER,       \"heartbeat\",                   1,   999ms,   999ms); add(jtADMIN,             \"administration\",       maxLimit,     0ms,     0ms); add(jtMISSING_TXN,       \"handleHaveTransactions\",   1200,     0ms,     0ms); add(jtREQUESTED_TXN,     \"doTransactions\",           1200,     0ms,     0ms);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/LedgerHistory.cpp",
+        "content": "if (validMetaData && builtMetaData) { auto const& validNodes = validMetaData->getNodes(); auto const& builtNodes = builtMetaData->getNodes();\n\nbool const result_diff =\n\nvalidMetaData\n\n\n\n>getResultTER() != builtMetaData\n\n\n\n>getResultTER();\n\nbool const index_diff =\n\nvalidMetaData\n\n\n\n>getIndex() != builtMetaData\n\n\n\n>getIndex();\n\nbool const nodes_diff = validNodes != builtNodes;\n\nif (!result_diff && !index_diff && !nodes_diff) { JLOG(j.error()) << \"MISMATCH on TX \" << tx << \": No apparent mismatches detected!\"; return; }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/json/json_value.cpp",
+        "content": "case stringValue:"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "if (!isTesSuccess(\n\n\n\nresult.mainFundsTer) &&\n\nonTransferFail == OnTransferFail::keepClaim)\n\n{\n\nreturn result;\n\n}\n\nresult.rewardTer = [&]()\n\n\n\n> TER {\n\nif (rewardAccounts.empty())\n\nreturn tesSUCCESS;\n\nSTAmount const share = [&] { auto const round_mode = innerSb.rules().enabled(fixXChainRewardRounding) ? Number::rounding_mode::downward : Number::getround(); saveNumberRoundMode _{Number::setround(round_mode)};\n\nSTAmount const den{rewardAccounts.size()}; return divide(rewardPool, den, rewardPool.issue()); }(); STAmount distributed = rewardPool.zeroed(); for (auto const& rewardAccount : rewardAccounts) { auto const thTer = transferHelper( innerSb, rewardPoolSrc, rewardAccount, std::nullopt,\n\nstd::nullopt,\n\nshare,\n\nCanCreateDstPolicy::no,\n\nDepositAuthPolicy::normal,\n\nstd::nullopt,\n\nj);\n\nif (thTer == tecUNFUNDED_PAYMENT || thTer == tecINTERNAL) return thTer;\n\nif (isTesSuccess(thTer))\n\ndistributed += share;\n\n}\n\nif (distributed > rewardPool)\n\nreturn tecINTERNAL;\n\nreturn tesSUCCESS;\n\n}();"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/Change.cpp",
+        "content": "if (!found) { JLOG(j_.warn()) << \"N-UNL: applyUNLModify, ToReEnable is not in negative UNL\"; return tefFAILURE; }\n\nnegUnlObject\n\n\n\n>setFieldVL(sfValidatorToReEnable, validator);\n\n}\n\nview().update(negUnlObject);\n\nreturn tesSUCCESS;\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "if (!isTesSuccess(\n\n\n\nresult.rewardTer) &&\n\n(onTransferFail == OnTransferFail::keepClaim ||\n\n\n\nresult.rewardTer == tecINTERNAL))\n\n{\n\nreturn result;\n\n}\n\nif (!isTesSuccess(\n\n\n\nresult.mainFundsTer) ||\n\nisTesSuccess(\n\n\n\nresult.rewardTer))\n\n{\n\ninnerSb.apply(outerSb);\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Main.cpp",
+        "content": "template <class Runner> static bool anyMissing(Runner& runner, multi_selector const& pred) { if (runner.tests() == 0) { runner.add_failures(1); std::cout << \"Failed: No tests run\" << std::endl; return true; } if (runner.suites() < pred.size()) { auto const missing = pred.size() - runner.suites(); runner.add_failures(missing); std::cout << \"Failed: \" << missing << \" filters did not match any existing test suites\" << std::endl; return true; } return false; }\n\nstatic int\n\nrunUnitTests(\n\nstd::string const& pattern,\n\nstd::string const& argument,\n\nbool quiet,\n\nbool log,\n\nbool child,\n\nbool ipv6,\n\nstd::size_t num_jobs,"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/thread.h",
+        "content": "#ifndef BEAST_UNIT_TEST_THREAD_HPP\n\n#define BEAST_UNIT_TEST_THREAD_HPP\n\n#include <xrpl/beast/unit_test/suite.h>\n\n#include <functional>\n\n#include <thread>\n\n#include <utility>\n\nnamespace beast {\n\nnamespace unit_test {"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/consensus/RCLCxTx.h",
+        "content": "class MutableTxSet\n\n{\n\nfriend class RCLTxSet;\n\nstd::shared_ptr<SHAMap> map_;\n\npublic: MutableTxSet(RCLTxSet const& src) : map_{src.map_->snapShot(true)} { }\n\nbool\n\ninsert(Tx const& t)\n\n{\n\nreturn map_\n\n\n\n>addItem(SHAMapNodeType::tnTRANSACTION_NM, t.tx_);\n\n}\n\nbool\n\nerase(Tx::ID const& entry)\n\n{\n\nreturn map_\n\n\n\n>delItem(entry);\n\n}\n\n};\n\nRCLTxSet(std::shared_ptr<SHAMap> m) : map_{std::move(m)}\n\n{\n\nXRPL_ASSERT(\n\nmap_, \"ripple::RCLTxSet::MutableTxSet::RCLTxSet : non\n\n\n\nnull input\");\n\n}\n\nRCLTxSet(MutableTxSet const& m) : map_{m.map_->snapShot(false)} { }\n\nbool\n\nexists(Tx::ID const& entry) const\n\n{\n\nreturn map_\n\n\n\n>hasItem(entry);\n\n}\n\nboost::intrusive_ptr<SHAMapItem const> const&\n\nfind(Tx::ID const& entry) const\n\n{\n\nreturn map_\n\n\n\n>peekItem(entry);\n\n}\n\nID\n\nid() const\n\n{\n\nreturn map_\n\n\n\n>getHash().as_uint256();\n\n}\n\nstd::map<Tx::ID, bool>\n\ncompare(RCLTxSet const& j) const\n\n{\n\nSHAMap::Delta delta;\n\nmap_\n\n\n\n>compare(\n\n\n\n(j.map_), delta, 65536);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/paths/detail/DirectStep.cpp",
+        "content": "if (ctx.offerCrossing)\n\n{\n\nauto offerCrossingStep =\n\nstd::make_unique<DirectIOfferCrossingStep>(ctx, src, dst, c);\n\nter = offerCrossingStep\n\n\n\n>check(ctx);\n\nr = std::move(offerCrossingStep);\n\n}\n\nelse\n\n{\n\nauto paymentStep =\n\nstd::make_unique<DirectIPaymentStep>(ctx, src, dst, c);\n\nter = paymentStep\n\n\n\n>check(ctx);\n\nr = std::move(paymentStep);\n\n}\n\nif (ter != tesSUCCESS)\n\nreturn {ter, nullptr};\n\nreturn {tesSUCCESS, std::move(r)};\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Main.cpp",
+        "content": "int argc,\n\nchar\n\n\n\n\n\nargv)\n\n{\n\nusing namespace beast::unit_test;\n\nusing namespace ripple::test;\n\nripple::test::envUseIPv4 = (!ipv6);\n\nif (!child && num_jobs == 1) { multi_runner_parent parent_runner;\n\nmulti_runner_child child_runner{num_jobs, quiet, log};\n\nchild_runner.arg(argument);\n\nmulti_selector pred(pattern);\n\nauto const any_failed =\n\nchild_runner.run_multi(pred) || anyMissing(child_runner, pred);\n\nif (any_failed)\n\nreturn EXIT_FAILURE;\n\nreturn EXIT_SUCCESS;\n\n}\n\nif (!child)\n\n{\n\nmulti_runner_parent parent_runner;\n\nstd::vector<boost::process::child> children;\n\nstd::string const exe_name = argv[0]; std::vector<std::string> args; { args.reserve(argc); for (int i = 1; i < argc; ++i) args.emplace_back(argv[i]); args.emplace_back(\"--unittest-child\"); }\n\nfor (std::size_t i = 0; i < num_jobs; ++i) children.emplace_back( boost::process::exe = exe_name, boost::process::args = args);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/Transactor.cpp",
+        "content": "if (ctx.tx.isFlag(tfInnerBatchTxn) && !ctx.rules.enabled(featureBatch))\n\nreturn temINVALID_FLAG;\n\nXRPL_ASSERT( ctx.tx.isFlag(tfInnerBatchTxn) == ctx.parentBatchId.has_value() || !ctx.rules.enabled(featureBatch), \"Inner batch transaction must have a parent batch ID.\");\n\nreturn tesSUCCESS;\n\n}\n\nNotTEC\n\npreflight2(PreflightContext const& ctx)\n\n{\n\nif (ctx.flags & tapDRY_RUN)\n\n{\n\nif (!ctx.tx.getSignature().empty())\n\n{\n\nreturn temINVALID;\n\n}\n\nif (!ctx.tx.isFieldPresent(sfSigners))\n\n{\n\nreturn tesSUCCESS;\n\n}\n\nfor (auto const& signer : ctx.tx.getFieldArray(sfSigners)) { if (signer.isFieldPresent(sfTxnSignature) && !signer[sfTxnSignature].empty()) {\n\nreturn temINVALID;\n\n}\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/core/JobTypes.h",
+        "content": "add(jtPEER,              \"peerCommand\",                 0,   200ms,  2500ms); add(jtDISK,              \"diskAccess\",                  0,   500ms,  1000ms); add(jtTXN_PROC,          \"processTransaction\",          0,     0ms,     0ms); add(jtOB_SETUP,          \"orderBookSetup\",              0,     0ms,     0ms); add(jtPATH_FIND,         \"pathFind\",                    0,     0ms,     0ms); add(jtHO_READ,           \"nodeRead\",                    0,     0ms,     0ms); add(jtHO_WRITE,          \"nodeWrite\",                   0,     0ms,     0ms); add(jtGENERIC,           \"generic\",                     0,     0ms,     0ms); add(jtNS_SYNC_READ,      \"SyncReadNode\",                0,     0ms,     0ms); add(jtNS_ASYNC_READ,     \"AsyncReadNode\",               0,     0ms,     0ms); add(jtNS_WRITE,          \"WriteNode\",                   0,     0ms,     0ms);\n\n}\n\npublic:\n\nstatic JobTypes const&\n\ninstance()\n\n{\n\nstatic JobTypes const types;\n\nreturn types;\n\n}\n\nstatic std::string const&"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "if (!isTesSuccess(slTer))\n\nreturn Unexpected(slTer);\n\nreturn ScopeResult{ srcChain, std::move(signersList), quorum, thisDoor, bridgeK}; }();\n\nif (!scopeResult.has_value())\n\nreturn scopeResult.error();\n\nauto const& [srcChain, signersList, quorum, thisDoor, bridgeK] = scopeResult.value();\n\nstatic_assert(\n\nstd::is_same_v<TAttestation, Attestations::AttestationClaim> ||\n\nstd::is_same_v<TAttestation, Attestations::AttestationCreateAccount>);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/paths/detail/PaySteps.cpp",
+        "content": "double const diff = std::abs(a - b); auto const r = diff / std::max(std::abs(a), std::abs(b)); return r <= ratTol; };\n\nbool checkNear(XRPAmount const& expected, XRPAmount const& actual) { return expected == actual; };\n\nstatic bool\n\nisXRPAccount(STPathElement const& pe)\n\n{\n\nif (pe.getNodeType() != STPathElement::typeAccount)\n\nreturn false;\n\nreturn isXRP(pe.getAccountID());\n\n};\n\nstatic std::pair<TER, std::unique_ptr<Step>>\n\ntoStep(\n\nStrandContext const& ctx,\n\nSTPathElement const\n\n\n\ne1,\n\nSTPathElement const\n\n\n\ne2,\n\nIssue const& curIssue)\n\n{\n\nauto& j = ctx.j;\n\nif (ctx.isFirst && e1\n\n\n\n>isAccount() &&\n\n(e1\n\n\n\n>getNodeType() & STPathElement::typeCurrency) &&\n\nisXRP(e1\n\n\n\n>getCurrency()))\n\n{\n\nreturn make_XRPEndpointStep(ctx, e1\n\n\n\n>getAccountID());\n\n}\n\nif (ctx.isLast && isXRPAccount(\n\n\n\ne1) && e2\n\n\n\n>isAccount())\n\nreturn make_XRPEndpointStep(ctx, e2\n\n\n\n>getAccountID());"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/TxMeta.cpp",
+        "content": "#include <xrpl/basics/Blob.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/protocol/AccountID.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/STAccount.h>\n\n#include <xrpl/protocol/STAmount.h>\n\n#include <xrpl/protocol/STLedgerEntry.h>\n\n#include <xrpl/protocol/STObject.h>\n\n#include <xrpl/protocol/Serializer.h>\n\n#include <xrpl/protocol/TER.h>\n\n#include <xrpl/protocol/TxMeta.h>\n\n#include <boost/container/flat_set.hpp>\n\n#include <cstdint>\n\n#include <stdexcept>\n\n#include <string>\n\nnamespace ripple {\n\ntemplate <class T> TxMeta::TxMeta( uint256 const& txid, std::uint32_t ledger, T const& data, CtorHelper) : mTransactionID(txid), mLedger(ledger), mNodes(sfAffectedNodes, 32) { SerialIter sit(makeSlice(data));\n\nSTObject obj(sit, sfMetadata);\n\nmResult = obj.getFieldU8(sfTransactionResult);\n\nmIndex = obj.getFieldU32(sfTransactionIndex);\n\nmNodes =\n\n\n\ndynamic_cast<STArray"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "if (clearAccountCreate &&\n\nsleBridge\n\n\n\n>isFieldPresent(sfMinAccountCreateAmount))\n\n{\n\nsleBridge\n\n\n\n>makeFieldAbsent(sfMinAccountCreateAmount);\n\n}\n\nctx_.view().update(sleBridge);\n\nreturn tesSUCCESS;\n\n}\n\nNotTEC\n\nXChainClaim::preflight(PreflightContext const& ctx)\n\n{\n\nif (!ctx.rules.enabled(featureXChainBridge))\n\nreturn temDISABLED;\n\nif (auto const ret = preflight1(ctx); !isTesSuccess(ret)) return ret;\n\nif (ctx.tx.getFlags() & tfUniversalMask)\n\nreturn temINVALID_FLAG;\n\nSTXChainBridge const bridgeSpec = ctx.tx[sfXChainBridge]; auto const amount = ctx.tx[sfAmount];"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/TxMetrics.cpp",
+        "content": "switch (type)\n\n{\n\ncase protocol::MessageType::mtTRANSACTION:\n\nadd(tx, val);\n\nbreak;\n\ncase protocol::MessageType::mtHAVE_TRANSACTIONS:\n\nadd(haveTx, val);\n\nbreak;\n\ncase protocol::MessageType::mtGET_LEDGER:\n\nadd(getLedger, val);\n\nbreak;\n\ncase protocol::MessageType::mtLEDGER_DATA:\n\nadd(ledgerData, val);\n\nbreak;\n\ncase protocol::MessageType::mtTRANSACTIONS:\n\nadd(transactions, val);\n\nbreak;\n\ndefault:\n\nreturn;\n\n}\n\n}\n\nvoid\n\nTxMetrics::addMetrics(\n\nstd::uint32_t selected,\n\nstd::uint32_t suppressed,\n\nstd::uint32_t notenabled)\n\n{\n\nstd::lock_guard lock(mutex);\n\nselectedPeers.addMetrics(selected);\n\nsuppressedPeers.addMetrics(suppressed);\n\nnotEnabled.addMetrics(notenabled);\n\n}\n\nvoid\n\nTxMetrics::addMetrics(std::uint32_t missing)\n\n{\n\nstd::lock_guard lock(mutex);\n\nmissingTx.addMetrics(missing);\n\n}\n\nvoid\n\nMultipleMetrics::addMetrics(std::uint32_t val2)\n\n{\n\naddMetrics(1, val2);\n\n}\n\nvoid\n\nMultipleMetrics::addMetrics(std::uint32_t val1, std::uint32_t val2)\n\n{\n\nm1.addMetrics(val1);\n\nm2.addMetrics(val2);\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/applySteps.cpp",
+        "content": "if (result != tesSUCCESS)\n\nreturn result;\n\n}\n\nreturn T::preclaim(ctx);\n\n});\n\n}\n\ncatch (UnknownTxnType const& e)\n\n{\n\nJLOG(ctx.j.fatal()) << \"Unknown transaction type in preclaim: \" << e.txnType; UNREACHABLE(\"ripple::invoke_preclaim : unknown transaction type\"); return temUNKNOWN; } }\n\nstatic XRPAmount invoke_calculateBaseFee(ReadView const& view, STTx const& tx) { try { return with_txn_type(tx.getTxnType(), [&]<typename T>() { return T::calculateBaseFee(view, tx); }); } catch (UnknownTxnType const& e) { UNREACHABLE( \"ripple::invoke_calculateBaseFee : unknown transaction type\"); return XRPAmount{0}; } }\n\nTxConsequences::TxConsequences(NotTEC pfresult) : isBlocker_(false) , fee_(beast::zero) , potentialSpend_(beast::zero) , seqProx_(SeqProxy::sequence(0)) , sequencesConsumed_(0) { XRPL_ASSERT( !isTesSuccess(pfresult), \"ripple::TxConsequences::TxConsequences : is not tesSUCCESS\"); }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/paths/detail/Steps.h",
+        "content": "std::vector<std::unique_ptr<Step>> const& strand_,\n\nAccountID const& strandSrc_,\n\nAccountID const& strandDst_,\n\nIssue const& strandDeliver_,\n\nstd::optional<Quality> const& limitQuality_,\n\nbool isLast_,\n\nbool ownerPaysTransferFee_,\n\nOfferCrossing offerCrossing_,\n\nbool isDefaultPath_,\n\nstd::array<boost::container::flat_set<Issue>, 2>&\n\nseenDirectIssues_,\n\nboost::container::flat_set<Issue>&\n\nseenBookOuts_,\n\nAMMContext& ammContext_,\n\nstd::optional<uint256> const& domainID,\n\nbeast::Journal j_);\n\n};\n\nnamespace test {\n\nbool\n\ndirectStepEqual(\n\nStep const& step,\n\nAccountID const& src,\n\nAccountID const& dst,\n\nCurrency const& currency);\n\nbool xrpEndpointStepEqual(Step const& step, AccountID const& acc);\n\nbool bookStepEqual(Step const& step, ripple::Book const& book); }\n\nstd::pair<TER, std::unique_ptr<Step>>\n\nmake_DirectStepI(\n\nStrandContext const& ctx,\n\nAccountID const& src,\n\nAccountID const& dst,\n\nCurrency const& c);"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/LedgerHistory.cpp",
+        "content": "if (builtTx == validTx) JLOG(j_.error()) << \"MISMATCH with same \" << builtTx.size() << \" transactions\"; else JLOG(j_.error()) << \"MISMATCH with \" << builtTx.size() << \" built and \" << validTx.size() << \" valid transactions.\";\n\nJLOG(j_.error()) << \"built\\n\" << getJson({*builtLedger, {}}); JLOG(j_.error()) << \"valid\\n\" << getJson({*validLedger, {}});\n\nauto b = builtTx.begin(); auto v = validTx.begin(); while (b != builtTx.end() && v != validTx.end()) { if ((*b)->key() < (*v)->key()) { log_one(*builtLedger, (*b)->key(), \"valid\", j_); ++b; } else if ((*b)->key() > (*v)->key()) { log_one(*validLedger, (*v)->key(), \"built\", j_); ++v; } else { if ((*b)->slice() != (*v)->slice()) {\n\nlog_metadata_difference( *builtLedger, *validLedger, (*b)->key(), j_); } ++b; ++v; } } for (; b != builtTx.end(); ++b) log_one(*builtLedger, (*b)->key(), \"valid\", j_); for (; v != validTx.end(); ++v) log_one(*validLedger, (*v)->key(), \"built\", j_); }"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/misc/CredentialHelpers.cpp",
+        "content": "if (isOwner)\n\nadjustOwnerCount(view, sleAccount,\n\n\n\n1, j);\n\nreturn tesSUCCESS;\n\n};\n\nauto const issuer = sleCredential->getAccountID(sfIssuer); auto const subject = sleCredential->getAccountID(sfSubject); bool const accepted = sleCredential->getFlags() & lsfAccepted;\n\nauto err = delSLE(issuer, sfIssuerNode, !accepted || (subject == issuer)); if (!isTesSuccess(err)) return err;\n\nif (subject != issuer) { err = delSLE(subject, sfSubjectNode, accepted); if (!isTesSuccess(err)) return err; }\n\nview.erase(sleCredential);\n\nreturn tesSUCCESS;\n\n}\n\nNotTEC\n\ncheckFields(PreflightContext const& ctx)\n\n{"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/Status.h",
+        "content": "return code_ != OK;\n\n}\n\nbool\n\noperator!() const\n\n{\n\nreturn !bool(\n\n\n\nthis);\n\n}\n\nTER toTER() const { XRPL_ASSERT( type_ == Type::TER, \"ripple::RPC::Status::toTER : type is TER\"); return TER::fromInt(code_); }\n\nerror_code_i toErrorCode() const { XRPL_ASSERT( type_ == Type::error_code_i, \"ripple::RPC::Status::toTER : type is error code\"); return error_code_i(code_); }\n\ntemplate <class Object> void inject(Object& object) const { if (auto ec = toErrorCode()) { if (messages_.empty()) inject_error(ec, object); else inject_error(ec, message(), object); } }\n\nStrings const&\n\nmessages() const\n\n{\n\nreturn messages_;\n\n}\n\nstd::string\n\nmessage() const;\n\nType\n\ntype() const\n\n{\n\nreturn type_;\n\n}\n\nstd::string\n\ntoString() const;\n\nvoid\n\nfillJson(Json::Value&);\n\nprivate:\n\nType type_ = Type::none;\n\nCode code_ = OK;\n\nStrings messages_;\n\n};\n\n}\n\n}\n\n#endif"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/beast/unit_test/reporter.h",
+        "content": "on_fail(std::string const& reason) override;\n\nvirtual void\n\non_log(std::string const& s) override;\n\n};\n\ntemplate <class _>\n\nvoid\n\nreporter<_>::suite_results::add(case_results const& r)\n\n{\n\n++cases;\n\ntotal += r.total;\n\nfailed += r.failed;\n\n}\n\ntemplate <class _> void reporter<_>::results::add(suite_results const& r) { ++suites; total += r.total; cases += r.cases; failed += r.failed; auto const elapsed = clock_type::now() - r.start; if (elapsed >= std::chrono::seconds{1}) { auto const iter = std::lower_bound( top.begin(), top.end(), elapsed, [](run_time const& t1, typename clock_type::duration const& t2) { return t1.second > t2; }); if (iter != top.end()) { if (top.size() == max_top) top.resize(top.size() - 1); top.emplace(iter, r.name, elapsed); } else if (top.size() < max_top) { top.emplace_back(r.name, elapsed); } } }\n\ntemplate <class _>\n\nreporter<_>::reporter(std::ostream& os) : os_(os)\n\n{\n\n}"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/XChainBridge.cpp",
+        "content": "if (!isTesSuccess(slTer))\n\nreturn slTer;\n\nreturn checkAttestationPublicKey( ctx.view, signersList, attestationSignerAccount, pk, ctx.j); }\n\ntemplate <class TAttestation> TER attestationDoApply(ApplyContext& ctx) { auto const att = toClaim<TAttestation>(ctx.tx); if (!att)\n\nreturn tecINTERNAL;\n\nSTXChainBridge const bridgeSpec = ctx.tx[sfXChainBridge];\n\nstruct ScopeResult\n\n{\n\nSTXChainBridge::ChainType srcChain;\n\nstd::unordered_map<AccountID, std::uint32_t> signersList;\n\nstd::uint32_t quorum;\n\nAccountID thisDoor;\n\nKeylet bridgeK;\n\n};\n\nauto const scopeResult = [&]() -> Expected<ScopeResult, TER> {\n\nauto sleBridge = readBridge(ctx.view(), bridgeSpec); if (!sleBridge) { return Unexpected(tecNO_ENTRY); } Keylet const bridgeK{ltBRIDGE, sleBridge->key()}; AccountID const thisDoor = (*sleBridge)[sfAccount];"
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/README.md",
+        "content": "Important point to note that is if this factory is tested with an existing set\n\nof sst files none of the old sst files will benefit from indexing changes until\n\nthey are compacted at a future point in time."
+    }
+]

@@ -1,0 +1,57 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/ManagerImp.cpp.txt",
+        "function": "ManagerImp::make_Database",
+        "description": "Creates a NodeStore::Database instance by first creating a backend with make_Backend, opening it, and then constructing a DatabaseNodeImp with the scheduler, readThreads, backend, config, and journal. This function is responsible for instantiating the main database interface used for storing and retrieving NodeObjects."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/DatabaseNodeImp.h.txt",
+        "function": "DatabaseNodeImp::DatabaseNodeImp",
+        "description": "Initializes the DatabaseNodeImp, which manages storage and retrieval of NodeObjects using a backend and an optional cache. It validates cache configuration, initializes the cache if needed, and ensures the backend is non-null."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/DatabaseNodeImp.cpp.txt",
+        "function": "DatabaseNodeImp::store",
+        "description": "Stores a NodeObject by creating it from the provided type, data, and hash, then passing it to the backend's store method. If a cache is present, it canonicalizes the object in the cache."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/DatabaseNodeImp.cpp.txt",
+        "function": "DatabaseNodeImp::fetchNodeObject",
+        "description": "Fetches a NodeObject by hash, first checking the cache (if present), then querying the backend if not found. Handles status codes for not found, data corruption, and unknown errors, and updates the cache accordingly."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/Backend.h.txt",
+        "function": "Backend::store",
+        "description": "Abstract method implemented by backends to persist a NodeObject. Each backend (e.g., RocksDB, NuDB, Memory) provides its own logic for storing the object in its storage engine."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/Backend.h.txt",
+        "function": "Backend::fetch",
+        "description": "Abstract method implemented by backends to retrieve a NodeObject by key (hash). Each backend provides its own logic for fetching and decoding the object from storage."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/Database.cpp.txt",
+        "function": "Database::importInternal",
+        "description": "Imports all NodeObjects from a source database to a destination backend in batches, using for_each to iterate and storeBatch to persist them. Handles batching and error logging."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/Database.cpp.txt",
+        "function": "Database::fetchNodeObject",
+        "description": "Public method that wraps the internal fetchNodeObject, measures timing, updates fetch statistics, and reports the fetch to the scheduler. Returns the NodeObject if found."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/NodeObject.h.txt",
+        "function": "NodeObject::createObject",
+        "description": "Creates a shared pointer to a NodeObject from the given type, data, and hash. Used by the database and backend layers to encapsulate node data."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/DecodedBlob.h.txt",
+        "function": "DecodedBlob::createObject",
+        "description": "Decodes a binary blob into a NodeObject, extracting the type, hash, and data. Used by backends when reading raw data from storage."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/nodestore/detail/EncodedBlob.h.txt",
+        "function": "EncodedBlob::EncodedBlob",
+        "description": "Encodes a NodeObject's type, hash, and data into a contiguous memory buffer for storage. Used by backends when writing objects to storage."
+    }
+]

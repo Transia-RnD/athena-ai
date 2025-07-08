@@ -1,0 +1,52 @@
+[
+    {
+        "path": "src/xrpld/app/misc/TxQ.h.txt",
+        "function": "TxQ::accept",
+        "description": "Selects transactions from the transaction queue (TxQ), applying prioritization (fee level), per-account limits, and blocker transaction rules, and prepares them for inclusion in the next ledger. Handles batch and ticketed transactions, and ensures only valid, non-expired, and non-blocked transactions are selected."
+    },
+    {
+        "path": "src/xrpld/app/misc/CanonicalTXSet.cpp.txt",
+        "function": "CanonicalTXSet::insert",
+        "description": "Inserts each selected transaction into the CanonicalTXSet, which deterministically orders transactions using a salted account key, sequence/ticket (SeqProxy), and transaction ID. This ensures all nodes will process the same set of transactions in the same order."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "RCLConsensus::Adaptor::onClose",
+        "description": "Begins the consensus round by collecting the ordered transaction set (from CanonicalTXSet), creating a proposal, and sharing it with peers. This function coordinates the start of consensus for a new ledger close."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::phaseEstablish",
+        "description": "Manages the main consensus phase, where proposals from peers are collected, compared, and disputes over transaction inclusion are tracked. Handles updating the local proposal, creating disputes for differing transaction sets, and voting on disputed transactions."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::createDisputes",
+        "description": "Compares the local transaction set with those proposed by peers, identifies differences, and creates DisputedTx objects for each transaction that is not agreed upon. Each DisputedTx tracks votes and can change the local node's vote as consensus progresses."
+    },
+    {
+        "path": "src/xrpld/consensus/DisputedTx.h.txt",
+        "function": "DisputedTx::updateVote",
+        "description": "Updates the local node's vote on a disputed transaction based on peer votes and consensus parameters. May change the local proposal to include or exclude the transaction as consensus converges."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::updateDisputes",
+        "description": "Updates the state of all active disputes as new proposals arrive from peers, ensuring the local node's votes reflect the current state of the network."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.cpp.txt",
+        "function": "checkConsensus",
+        "description": "Determines if sufficient agreement has been reached among peers on the transaction set and close time, based on the number of agreeing/disagreeing proposals, timing, and consensus thresholds. Returns the current consensus state (No, Yes, MovedOn, Expired)."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "RCLConsensus::Adaptor::onAccept",
+        "description": "When consensus is reached, this function finalizes the agreed transaction set and close time, builds the new ledger, and applies the ordered transactions to the ledger. Handles any retriable or failed transactions and triggers validation and ledger publication."
+    },
+    {
+        "path": "src/xrpld/app/ledger/README.md",
+        "function": "Ledger Application (process description)",
+        "description": "Describes the process of applying the canonically ordered transaction set to the ledger, ensuring all nodes reach the same ledger state. Only the closed ledger uses strict canonical ordering; the open ledger may have a non-deterministic order."
+    }
+]

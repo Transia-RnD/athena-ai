@@ -1,0 +1,117 @@
+[
+    {
+        "path": "src/libxrpl/crypto/csprng.cpp.txt",
+        "function": "csprng_engine::operator()",
+        "description": "Fills a buffer with cryptographically secure random bytes using OpenSSL's RAND_bytes, ensuring sufficient entropy for key generation and other cryptographic operations."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "randomSecretKey",
+        "description": "Generates a new 32-byte secret key by filling a buffer with random bytes from the cryptographically secure PRNG, then securely erases the temporary buffer after use."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "generateSecretKey",
+        "description": "Derives a deterministic secret key from a given seed and key type (e.g., secp256k1) by applying a hash function and validating the result as a valid private key."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "derivePublicKey",
+        "description": "Computes the corresponding public key from a given secret key and key type using the appropriate cryptographic algorithm (e.g., secp256k1 or ed25519)."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "generateKeyPair",
+        "description": "Generates a deterministic key pair (public and secret key) from a seed and key type by first deriving the secret key and then the public key."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "randomKeyPair",
+        "description": "Generates a random key pair by first generating a random secret key and then deriving the corresponding public key."
+    },
+    {
+        "path": "src/libxrpl/protocol/tokens.cpp.txt",
+        "function": "encodeBase58Token",
+        "description": "Encodes binary data (such as keys or addresses) into a Base58 string with a checksum and type prefix for human readability and error detection."
+    },
+    {
+        "path": "src/libxrpl/protocol/tokens.cpp.txt",
+        "function": "decodeBase58Token",
+        "description": "Decodes a Base58-encoded string back into its binary form, verifying the checksum and type prefix to ensure data integrity."
+    },
+    {
+        "path": "src/libxrpl/crypto/RFC1751.cpp.txt",
+        "function": "RFC1751::getEnglishFromKey",
+        "description": "Converts a binary key into a human-readable English mnemonic phrase using the RFC1751 standard and a fixed dictionary."
+    },
+    {
+        "path": "src/libxrpl/crypto/RFC1751.cpp.txt",
+        "function": "RFC1751::getKeyFromEnglish",
+        "description": "Converts an English mnemonic phrase back into the original binary key using the RFC1751 standard and dictionary lookup."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "sign",
+        "description": "Signs a message using the provided secret key and public key, applying the appropriate cryptographic algorithm (e.g., secp256k1 signs the SHA-512/256 hash of the message)."
+    },
+    {
+        "path": "src/libxrpl/protocol/SecretKey.cpp.txt",
+        "function": "signDigest",
+        "description": "Signs a precomputed message digest using the secret key and public key, producing a digital signature."
+    },
+    {
+        "path": "src/libxrpl/protocol/PublicKey.cpp.txt",
+        "function": "verify",
+        "description": "Verifies a digital signature against a message and public key, ensuring the signature is valid and, for secp256k1, fully canonical."
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp.txt",
+        "function": "openssl_sha256_hasher::operator()",
+        "description": "Updates the SHA-256 hash context with new data, used for hashing messages, keys, or other data."
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp.txt",
+        "function": "openssl_sha512_hasher::operator()",
+        "description": "Updates the SHA-512 hash context with new data, used for hashing messages, keys, or other data."
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.cpp.txt",
+        "function": "openssl_ripemd160_hasher::operator()",
+        "description": "Updates the RIPEMD-160 hash context with new data, used for address and ID calculations."
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.h.txt",
+        "function": "sha512Half",
+        "description": "Computes the SHA-512 hash of the input and returns the first 256 bits, used for transaction and signature digests."
+    },
+    {
+        "path": "src/libxrpl/protocol/digest.h.txt",
+        "function": "ripesha_hasher::operator result_type",
+        "description": "Computes the RIPEMD-160 hash of the SHA-256 hash of the input, used for account and node IDs."
+    },
+    {
+        "path": "src/libxrpl/crypto/secure_erase.cpp.txt",
+        "function": "secure_erase",
+        "description": "Overwrites a memory region with zeros using OPENSSL_cleanse to securely erase sensitive data such as secret keys from memory."
+    },
+    {
+        "path": "src/libxrpl/basics/make_SSLContext.cpp.txt",
+        "function": "make_SSLContext",
+        "description": "Creates an anonymous SSL context with secure options and cipher suites for encrypted communication."
+    },
+    {
+        "path": "src/libxrpl/basics/make_SSLContext.cpp.txt",
+        "function": "make_SSLContextAuthed",
+        "description": "Creates an authenticated SSL context using provided key, certificate, and chain files for secure peer authentication."
+    },
+    {
+        "path": "src/xrpld/overlay/detail/Handshake.cpp.txt",
+        "function": "buildHandshake",
+        "description": "Builds handshake headers for peer connections, including network information, node public key, and a session signature over a shared fingerprint."
+    },
+    {
+        "path": "src/xrpld/overlay/detail/Handshake.cpp.txt",
+        "function": "verifyHandshake",
+        "description": "Verifies the handshake by checking the session signature against the shared fingerprint and the claimed public key."
+    }
+]

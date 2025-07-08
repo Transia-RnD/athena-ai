@@ -1,0 +1,32 @@
+{
+    "symbols": [
+        "Transactor",
+        "Transactor::apply",
+        "Transactor::preCompute",
+        "Transactor::doApply",
+        "Transactor::operator()",
+        "Transactor::view",
+        "Transactor::view() const",
+        "Transactor::checkSeqProxy",
+        "Transactor::checkPriorTxAndLastLedger",
+        "Transactor::checkFee",
+        "Transactor::checkSign",
+        "Transactor::checkBatchSign",
+        "Transactor::calculateBaseFee",
+        "Transactor::preclaim",
+        "Transactor::checkPermission",
+        "Transactor::ticketDelete",
+        "Transactor::minimumFee",
+        "Transactor::reset",
+        "Transactor::consumeSeqProxy",
+        "Transactor::payFee",
+        "Transactor::checkSingleSign",
+        "Transactor::checkMultiSign",
+        "Transactor::ConsequencesFactoryType",
+        "ctx_",
+        "j_",
+        "account_",
+        "mPriorBalance",
+        "mSourceBalance"
+    ]
+}

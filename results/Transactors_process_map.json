@@ -1,0 +1,87 @@
+[
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::operator()()",
+        "description": "Orchestrates the full transaction lifecycle: runs preflight and preclaim checks, verifies signatures, applies the transaction (calls apply()), runs invariant checks, handles error/result propagation, and manages transaction metadata. It ensures all steps are performed in the correct order and handles special cases such as batch transactions, dry runs, and error scenarios."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::apply",
+        "description": "Performs the main application logic for a transaction: calls preCompute(), fetches the account state, consumes the sequence or ticket (consumeSeqProxy), deducts the transaction fee (payFee), and then calls the transaction-specific doApply(). Updates account state and manages prior/source balances."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::preCompute",
+        "description": "Performs any transaction-specific pre-computation before applying the transaction. Typically used to assert preconditions or prepare internal state."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::consumeSeqProxy",
+        "description": "Consumes the sequence number or deletes a ticket for the account, depending on how the transaction is authorized. Ensures the account's sequence or ticket is properly advanced or removed."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::payFee",
+        "description": "Deducts the transaction fee from the account's balance, ensuring the account has sufficient funds. Updates the account state in the ledger view."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::doApply",
+        "description": "Pure virtual function implemented by each transaction type. Contains the transaction-specific logic to modify the ledger state (e.g., payments, offer creation, etc.)."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::reset",
+        "description": "Resets the account's balance and sequence in case of invariant failure or rollback. Ensures the ledger state is restored and the correct fee is charged."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkSeqProxy",
+        "description": "Checks that the transaction's sequence number or ticket is valid and not expired or already used. Prevents replay attacks and ensures correct ordering."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkPriorTxAndLastLedger",
+        "description": "Checks if the transaction has already been applied or if the account's last transaction is consistent with the ledger. Prevents duplicate or out-of-order transactions."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkFee",
+        "description": "Validates that the transaction fee is present, denominated in the correct currency, and meets the minimum required. Ensures fee rules are enforced before application."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkSign",
+        "description": "Determines whether to use single-signature or multi-signature verification based on transaction fields, and calls the appropriate check. Ensures the transaction is properly authorized."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkSingleSign",
+        "description": "Verifies that the transaction's single signature matches the account's public key and is valid. Ensures only authorized signers can submit transactions."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkMultiSign",
+        "description": "Verifies that all required signatures are present and valid for multi-signature transactions. Checks signer weights and quorum requirements."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::checkPermission",
+        "description": "Checks if the transaction has the necessary permissions, including delegation if applicable. Ensures the submitting account or delegate is authorized to perform the transaction."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::ticketDelete",
+        "description": "Deletes a ticket from the ledger when a transaction is authorized using a ticket instead of a sequence number. Updates the account's owner directory and ticket count."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::minimumFee",
+        "description": "Calculates the minimum fee required for the transaction, considering network load and transaction type. Used to enforce dynamic fee requirements."
+    },
+    {
+        "path": "xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "Transactor::calculateBaseFee",
+        "description": "Computes the base fee for a transaction, factoring in the number of signers for multi-signature transactions. Used as the starting point for fee validation."
+    }
+]

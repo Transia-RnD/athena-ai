@@ -1,0 +1,72 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "RCLConsensus::peerProposal",
+        "description": "Receives a new peer proposal, locks the consensus state, and forwards the proposal to the consensus engine for processing."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::peerProposal",
+        "description": "Handles an incoming peer proposal: updates the record of the peer's latest position, checks for bowing out, updates close time votes, and triggers dispute creation if the peer's transaction set is new."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::createDisputes",
+        "description": "Compares the local transaction set with a peer's transaction set, identifies differences, and creates DisputedTx objects for each differing transaction to track votes and dispute status."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/DisputedTx.h.txt",
+        "function": "DisputedTx::setVote",
+        "description": "Records or updates a peer's vote (yes/no) on a disputed transaction, adjusting internal counters for yays and nays."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/DisputedTx.h.txt",
+        "function": "DisputedTx::updateVote",
+        "description": "Evaluates whether the local node should change its vote on a disputed transaction based on the current vote distribution, consensus parameters, and elapsed time."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/DisputedTx.h.txt",
+        "function": "DisputedTx::stalled",
+        "description": "Determines if a dispute is stalled by checking if the dispute has failed to progress according to consensus parameters and peer activity."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::updateDisputes",
+        "description": "Updates all DisputedTx objects with the latest votes from a peer, ensuring the dispute state reflects the most recent peer positions."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::updateOurPositions",
+        "description": "Re-evaluates the local node's position and transaction set based on the current state of disputes, peer proposals, and consensus progress, possibly changing the local proposal."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::phaseEstablish",
+        "description": "Main loop for the establish phase: advances consensus timers, counts agreements/disagreements, checks for consensus, and updates the consensus state."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.cpp.txt",
+        "function": "checkConsensus",
+        "description": "Evaluates whether consensus has been reached, moved on, expired, or not reached by analyzing agreement counts, timing, and consensus parameters."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::haveConsensus",
+        "description": "Checks the current consensus state and determines if the node should continue, bow out, or finalize the round based on the result of checkConsensus."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus/Consensus.h.txt",
+        "function": "Consensus<Adaptor>::leaveConsensus",
+        "description": "Handles the process of bowing out of consensus: updates the node's mode, stops proposing, and notifies the adaptor."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "RCLConsensus::Adaptor::propose",
+        "description": "Sends the local node's proposal to peers via the network overlay."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "RCLConsensus::Adaptor::share",
+        "description": "Shares a peer proposal or transaction set with other peers through the overlay, ensuring network-wide propagation."
+    }
+]

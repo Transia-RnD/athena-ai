@@ -24,35 +24,17 @@ def main():
         best_of=3,
     )
     system_prompt: str = """
-Sui's Relaying Process (Narwhal/Bullshark)
-What Gets Relayed:
+Create a workshop lesson plan based on the following system prompt:
 
-Transaction data (the raw transaction)
-Cryptographic certificates (validity proofs)
-Dependency information (object references)
-Early validation results (but not full execution)
-
-Early Checks During Relaying:
-
-Signature validation
-Object existence checks
-Basic format validation
-Dependency analysis (which objects are touched)
-Gas estimation
-
-What's Deferred:
-
-Full state execution
-Complex computation
-Final state changes
-Cross-object interactions
+```
+🧪 Lab 1: Setup rippled build to be a validator. Create keys, add token and sync.(Discarded validations. Listen to the validation stream.)
+```
 """
-    user_input: str = """
-I want to update the transaction relay process for the XRPL to use the sui ideas. Transaction relay happens in app.overlay().relay but is called I believe by TxQ. We want to change it from applying the transaction to only doing preflight and preclaim.
-
-- Only return the code changes.
-"""
-    response = ai_source.rag_prompt_v2(system_prompt, user_input)
+    response = ai_source.agent_prompt(
+        "Workshop Creator",
+        "Create a workshop lesson plan based on the provided system prompt.",
+        system_prompt,
+    )
     print(response)
     # write to a file
     with open("response.txt", "w") as f:

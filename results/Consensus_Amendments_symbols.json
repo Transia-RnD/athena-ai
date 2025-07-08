@@ -1,0 +1,30 @@
+{
+    "symbols": [
+        "AmendmentTable",
+        "AmendmentTableImpl",
+        "AmendmentTable::getDesired",
+        "AmendmentTableImpl::getDesired",
+        "AmendmentTable::doVoting",
+        "AmendmentTableImpl::doVoting",
+        "AmendmentTable::doValidation",
+        "AmendmentTableImpl::doValidation",
+        "AmendmentTable::needValidatedLedger",
+        "AmendmentTableImpl::needValidatedLedger",
+        "AmendmentTable::doValidatedLedger",
+        "AmendmentTableImpl::doValidatedLedger",
+        "AmendmentTable::trustChanged",
+        "AmendmentTableImpl::trustChanged",
+        "make_AmendmentTable",
+        "getEnabledAmendments",
+        "getMajorityAmendments",
+        "Rules",
+        "NetClock::time_point",
+        "majorityAmendments_t",
+        "STValidation",
+        "std::vector<uint256>",
+        "std::set<uint256>",
+        "std::map<uint256, std::uint32_t>",
+        "lastVote_",
+        "mutex_"
+    ]
+}

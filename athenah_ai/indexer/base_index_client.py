@@ -28,7 +28,7 @@ load_dotenv()
 OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY")
 EMBEDDING_MODEL: str = os.environ.get("EMBEDDING_MODEL")
 GCP_INDEX_BUCKET: str = os.environ.get("GCP_INDEX_BUCKET", "athenah-ai-indexes")
-DEFAULT_CHUNK_SIZE: int = 2000
+DEFAULT_CHUNK_SIZE: int = 200
 CHUNK_OVERLAP: int = 0
 
 # --- Utility Functions ---

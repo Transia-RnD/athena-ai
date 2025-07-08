@@ -1,0 +1,127 @@
+[
+    {
+        "path": "include/xrpl/server/detail/Door.h.txt",
+        "function": "Door::run",
+        "description": "Begins accepting incoming TCP connections on a server port, handling both plain and SSL protocols. Uses Boost.Asio for asynchronous operations and dispatches new connections to the protocol detector."
+    },
+    {
+        "path": "include/xrpl/server/detail/Door.h.txt",
+        "function": "Door::Detector::run",
+        "description": "Detects whether an incoming connection is plain or SSL by examining the initial bytes, then dispatches to the appropriate handler (PlainHTTPPeer or SSLHTTPPeer)."
+    },
+    {
+        "path": "include/xrpl/server/detail/Door.h.txt",
+        "function": "Door::create",
+        "description": "Instantiates either a PlainHTTPPeer or SSLHTTPPeer based on the detected protocol, passing the socket and connection details to the peer object."
+    },
+    {
+        "path": "include/xrpl/server/detail/PlainHTTPPeer.h.txt",
+        "function": "PlainHTTPPeer::run",
+        "description": "Starts the session for a plain HTTP peer by spawning an asynchronous read loop to process incoming HTTP requests."
+    },
+    {
+        "path": "include/xrpl/server/detail/SSLHTTPPeer.h.txt",
+        "function": "SSLHTTPPeer::run",
+        "description": "Starts the session for an SSL HTTP peer by spawning an asynchronous SSL handshake, then proceeds to read HTTP requests."
+    },
+    {
+        "path": "include/xrpl/server/detail/SSLHTTPPeer.h.txt",
+        "function": "SSLHTTPPeer::do_handshake",
+        "description": "Performs the SSL handshake for a new connection, sets up timers, and on success, begins reading HTTP requests."
+    },
+    {
+        "path": "include/xrpl/server/detail/PlainHTTPPeer.h.txt",
+        "function": "PlainHTTPPeer::do_request",
+        "description": "Processes an incoming HTTP request, checks if it should be handed off (e.g., for protocol upgrade), and writes a response or continues processing."
+    },
+    {
+        "path": "include/xrpl/server/detail/SSLHTTPPeer.h.txt",
+        "function": "SSLHTTPPeer::do_request",
+        "description": "Processes an incoming HTTP request on an SSL connection, checks for handoff (such as protocol upgrade), and writes a response or continues processing."
+    },
+    {
+        "path": "include/xrpl/server/Session.h.txt",
+        "function": "Session::websocketUpgrade",
+        "description": "Upgrades an HTTP session to a WebSocket session by creating a new WSSession-derived object (PlainWSPeer or SSLWSPeer) and returning it."
+    },
+    {
+        "path": "src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+        "function": "ServerHandler::onHandoff",
+        "description": "Handles the protocol upgrade request, calls session.websocketUpgrade(), creates a WSInfoSub for subscription management, associates it with the session, and starts the WebSocket session."
+    },
+    {
+        "path": "include/xrpl/server/WSSession.h.txt",
+        "function": "WSSession::run",
+        "description": "Begins the WebSocket session, performing the protocol handshake and starting the asynchronous read/write loop."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::run",
+        "description": "Sets WebSocket options, installs control callbacks, starts timers, and initiates the asynchronous WebSocket handshake and read loop."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::on_ws_handshake",
+        "description": "Handles the result of the WebSocket handshake; on success, disables the close-on-timer flag and starts reading messages from the client."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::do_read",
+        "description": "Initiates an asynchronous read operation to receive the next WebSocket message from the client."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::on_read",
+        "description": "Handles the completion of a read operation, passes the received message to the handler (ServerHandler::onWSMessage), and consumes the buffer."
+    },
+    {
+        "path": "src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+        "function": "ServerHandler::onWSMessage",
+        "description": "Parses the incoming WebSocket message as JSON, validates it, and if valid, dispatches it for processing; if invalid, sends an error response back to the client."
+    },
+    {
+        "path": "src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+        "function": "ServerHandler::processSession",
+        "description": "Processes a valid WebSocket session message, executes the requested operation, serializes the result, and schedules it to be sent to the client."
+    },
+    {
+        "path": "src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+        "function": "WSSession::send",
+        "description": "Sends a prepared message (typically a JSON result) to the client over the WebSocket connection."
+    },
+    {
+        "path": "src/xrpld/rpc/detail/WSInfoSub.h.txt",
+        "function": "WSInfoSub::send",
+        "description": "Serializes a JSON message into a stream buffer and sends it to the associated WSSession for delivery to the client."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::send",
+        "description": "Queues a message for delivery to the client, enforces the ws_queue_limit, and initiates the write process if the queue was previously empty."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::do_write",
+        "description": "Begins writing the next message in the queue to the WebSocket stream asynchronously."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::on_write",
+        "description": "Handles completion of a write operation, determines if more data remains to be sent, and either continues writing or finalizes the message."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::on_write_fin",
+        "description": "Finalizes the sending of a message, removes it from the queue, and if more messages are queued, starts the next write."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::close",
+        "description": "Closes the WebSocket connection, either immediately or after all queued messages are sent, using the specified close reason."
+    },
+    {
+        "path": "include/xrpl/server/detail/BaseWSPeer.h.txt",
+        "function": "BaseWSPeer::complete",
+        "description": "Marks the current operation as complete and initiates the next read operation to continue processing messages."
+    }
+]

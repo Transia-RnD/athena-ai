@@ -1,0 +1,12 @@
+{
+    "symbols": [
+        "test::xrpEndpointStepEqual",
+        "test::directStepEqual",
+        "test::bookStepEqual",
+        "checkNear",
+        "isXRPAccount",
+        "toStep",
+        "make_DirectStepI",
+        "XRPEndpointStep<TDerived>::check"
+    ]
+}

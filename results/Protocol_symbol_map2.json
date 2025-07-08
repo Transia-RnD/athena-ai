@@ -1,0 +1,1599 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/ripple.proto",
+        "content": "syntax = \"proto2\";\n\npackage protocol;",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "[protocol_buffers]: https://developers.google.com/protocol\n\n\n\nbuffers/\n\n[upgrade_header]: http://en.wikipedia.org/wiki/HTTP/1.1_Upgrade_header",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Protocol.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_PROTOCOL_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_PROTOCOL_H_INCLUDED\n\n#include <xrpl/basics/ByteUtilities.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/basics/partitioned_unordered_map.h>\n\n#include <cstdint>\n\nnamespace ripple {\n\nstd::size_t constexpr txMinSizeBytes = 32;\n\nstd::size_t constexpr txMaxSizeBytes = megabytes(1);\n\nstd::size_t constexpr unfundedOfferRemoveLimit = 1000;\n\nstd::size_t constexpr expiredOfferRemoveLimit = 256;\n\nstd::size_t constexpr oversizeMetaDataCap = 5200;\n\nstd::size_t constexpr dirNodeMaxEntries = 32;\n\nstd::uint64_t constexpr dirNodeMaxPages = 262144;\n\nstd::size_t constexpr dirMaxTokensPerPage = 32;\n\nstd::size_t constexpr maxDeletableDirEntries = 1000;\n\nstd::size_t constexpr maxTokenOfferCancelCount = 500;\n\nstd::size_t constexpr maxDeletableTokenOfferEntries = 500;\n\nstd::uint16_t constexpr maxTransferFee = 50000;\n\nstd::size_t constexpr maxTokenURILength = 256;\n\nstd::size_t constexpr maxDIDDocumentLength = 256;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Protocol.h.txt",
+            "namespaces": "",
+            "description": "This header file defines a set of protocol-level constants and type aliases used throughout the XRPL (XRP Ledger) codebase. These constants specify limits and parameters for transactions, offers, directories, tokens, credentials, oracles, and other protocol features, such as minimum and maximum transaction sizes, maximum lengths for various fields (URIs, domains, metadata), limits on array sizes, and other operational caps. The file also introduces type aliases for ledger indices and transaction IDs. No classes or functions are defined; the file serves as a centralized location for protocol configuration values.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/README.md",
+        "content": "# protocol\n\nClasses and functions for handling data and values associated with the XRP Ledger protocol.\n\n## Serialized Objects\n\nObjects transmitted over the network must be serialized into a canonical format. The prefix \"ST\" refers to classes that deal with the serialized format.\n\nThe term \"Tx\" or \"tx\" is an abbreviation for \"Transaction\", a commonly occurring object type.\n\n### Optional Fields\n\nOur serialized fields have some \"type magic\" to make optional fields easier to read:\n\nThe operation `x[sfFoo]` means \"return the value of 'Foo'\n\nif it exists, or the default value if it doesn't.\"\n\nThe operation `x[~sfFoo]` means \"return the value of 'Foo'\n\nif it exists, or nothing if it doesn't.\" This usage of the\n\ntilde/bitwise NOT operator is not standard outside of the\n\n`rippled` codebase.\n\nAs a consequence of this, `x[~sfFoo] = y[~sfFoo]`\n\nassigns the value of Foo from y to x, including omitting\n\nFoo from x if it doesn't exist in y.",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/base_uint.h",
+        "content": "{",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/base_uint.h.txt",
+            "namespaces": "",
+            "description": "This file defines the base_uint template class, which represents fixed-size unsigned integers of arbitrary bit length (multiples of 32, at least 64 bits). It provides storage, construction, assignment, and arithmetic/bitwise operations for these integers, as well as parsing from hex strings and conversion to strings. The class is used to implement types like uint128, uint160, uint192, and uint256. The file also includes utility templates for checking if a container is contiguous, and provides comparison, hashing, and stream output operators for base_uint types. The design ensures no padding bytes and supports endian conversions for portability. The file is part of the Ripple/XRPL codebase and is used for cryptographic and protocol identifiers.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/IOUAmount.cpp",
+        "content": "{",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/IOUAmount.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the core logic for handling IOU (I Owe You) amounts in the Ripple (XRPL) protocol. It provides functions and constants for representing, normalizing, and manipulating IOU amounts with high precision, using a mantissa and exponent format. The code includes mechanisms to switch between different number handling strategies, normalization routines to ensure values stay within valid ranges, and arithmetic operations such as addition and ratio multiplication (with rounding options). The mulRatio function uses high-precision arithmetic to safely multiply and divide IOU amounts, handling edge cases like overflow, underflow, and rounding. The file also provides utility functions for string conversion and internal state management. Overall, it ensures accurate and robust handling of non-native currency values in the XRPL system.",
+            "functions": [
+                "getStaticSTNumberSwitchover",
+                "getSTNumberSwitchover",
+                "setSTNumberSwitchover",
+                "IOUAmount::minPositiveAmount",
+                "IOUAmount::normalize",
+                "IOUAmount::IOUAmount",
+                "IOUAmount::operator+=",
+                "to_string",
+                "mulRatio"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "Protocol versions are string of the form `XRPL/` followed by a dotted major and minor protocol version number, where the major number is greater than or equal to 2 and the minor is greater than or equal to 0.\n\nSee [RFC 2616 &sect;14.42](https://www.w3.org/Protocols/rfc2616/rfc2616\n\n\n\nsec14.html#sec14.42)\n\n#### Custom Fields\n\n| Field Name          \t|  Request          \t| Response          \t| |---------------------\t|:-----------------:\t|:-----------------:\t| | `Connect-As`        \t| :heavy_check_mark: \t| :heavy_check_mark: \t|\n\nThe mandatory `Connect-As` field is used to specify that type of connection that is being requested.\n\nFor requests the value consists of a comma delimited list of elements, where each element describes a possible connection type. Only one connection types is supported at present: **`peer`**.",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "Each connection is represented by a _Peer_ object. The Overlay manager establishes, receives, and maintains connections to peers. Protocol messages are exchanged between peers and serialized using [_Google Protocol Buffers_][protocol_buffers].\n\n### Structure\n\nEach connection between peers is identified by its connection type, which affects the behavior of message routing. At present, only a single connection type is supported: **Peer**.\n\n## Handshake\n\nTo establish a protocol connection, a peer makes an outgoing TLS encrypted connection to a remote peer, then sends an HTTP request with no message body.\n\n### HTTP\n\nThe HTTP [request](https://www.w3.org/Protocols/rfc2616/rfc2616\n\n\n\nsec5.html) must:\n\nUse HTTP version 1.1.\n\nSpecify a request URI consisting of a single forward slash character (\"/\")\n\nindicating the server root. Requests using different URIs are reserved for\n\nfuture protocol implementations.\n\nUse the [_HTTP/1.1 Upgrade_][upgrade_header] mechanism with additional custom",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolVersion.cpp",
+        "content": "#include <xrpld/overlay/detail/ProtocolVersion.h>\n\n#include <xrpl/beast/core/LexicalCast.h>\n\n#include <xrpl/beast/rfc2616.h>\n\n#include <boost/iterator/function_output_iterator.hpp>\n\n#include <boost/regex.hpp>\n\n#include <algorithm>\n\n#include <functional>\n\nnamespace ripple {\n\nconstexpr ProtocolVersion const supportedProtocolList[]\n\n{\n\n{2, 1},\n\n{2, 2}\n\n};\n\nstatic_assert( []() constexpr -> bool { auto const len = std::distance( std::begin(supportedProtocolList), std::end(supportedProtocolList));\n\nif (len == 0)\n\nreturn false;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolVersion.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements protocol version handling for XRPL overlay networking. It defines a sorted, static list of supported protocol versions and provides functions to convert protocol versions to strings, parse protocol versions from strings, negotiate a mutually supported protocol version between peers, and check if a protocol version is supported. The code ensures the supported protocol list is sorted and unique, parses protocol version strings using regex, and uses set intersection to find common supported versions. It also provides a function to return a comma-separated string of all supported protocol versions.",
+            "functions": [
+                "to_string",
+                "parseProtocolVersions",
+                "negotiateProtocolVersion",
+                "negotiateProtocolVersion",
+                "supportedProtocolVersions",
+                "isProtocolSupported"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h",
+        "content": "switch (header\n\n\n\n>message_type)\n\n{\n\ncase protocol::mtMANIFESTS:\n\nsuccess = detail::invoke<protocol::TMManifests>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtPING:\n\nsuccess =\n\ndetail::invoke<protocol::TMPing>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtCLUSTER:\n\nsuccess =\n\ndetail::invoke<protocol::TMCluster>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtENDPOINTS:\n\nsuccess = detail::invoke<protocol::TMEndpoints>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtTRANSACTION:\n\nsuccess = detail::invoke<protocol::TMTransaction>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtGET_LEDGER:\n\nsuccess = detail::invoke<protocol::TMGetLedger>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtLEDGER_DATA:\n\nsuccess = detail::invoke<protocol::TMLedgerData>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtPROPOSE_LEDGER:\n\nsuccess = detail::invoke<protocol::TMProposeSet>(\n\n\n\nheader, buffers, handler);\n\nbreak;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the core logic for handling protocol messages in the Ripple (XRPL) overlay network. It provides utilities to identify message types and names, parse message headers (including support for compressed and uncompressed messages), and extract message content from network buffers. The MessageHeader struct encapsulates metadata about each message, such as size, type, and compression algorithm. The file includes template functions to parse and dispatch protocol buffer messages to appropriate handler callbacks based on their type, supporting a wide range of XRPL protocol messages. Error handling is integrated for malformed or unsupported messages, and the design supports extensibility for new message types and compression algorithms.",
+            "functions": [
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageName",
+                "buffersBegin",
+                "buffersEnd",
+                "parseMessageHeader",
+                "parseMessageContent",
+                "invoke",
+                "invokeProtocolMessage"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Issue.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_ISSUE_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_ISSUE_H_INCLUDED\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/json/json_value.h>\n\n#include <xrpl/protocol/UintTypes.h>\n\n#include <functional>\n\n#include <type_traits>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Issue.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the Issue class and related functions for representing and manipulating currency issues in the XRPL protocol. An Issue consists of a currency and an account (issuer). The class provides constructors, accessors, and utility methods such as getIssuer, getText, setJson, and native. It also defines comparison operators (== and <=>), hash support, and functions for JSON serialization/deserialization. Helper functions like xrpIssue, noIssue, and isXRP provide standard Issue instances and checks. The file ensures consistent handling of both native XRP and issued currencies within the protocol.",
+            "functions": [
+                "Issue::Issue",
+                "Issue::Issue",
+                "Issue::getIssuer",
+                "Issue::getText",
+                "Issue::setJson",
+                "Issue::native",
+                "operator<=>",
+                "isConsistent",
+                "to_string",
+                "to_json",
+                "issueFromJson",
+                "operator<<",
+                "hash_append",
+                "operator==",
+                "operator<=>",
+                "xrpIssue",
+                "noIssue",
+                "isXRP"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/org/xrpl/rpc/v1/README.md",
+        "content": "When modifying an existing gRPC method, be sure to test that modification in the corresponding, existing unit test. When creating a new gRPC method, implement a class that derives from GRPCTestClientBase, and use the newly created class to call the new method. See the class `GrpcTxClient` in the file Tx_test.cpp for an example. The gRPC tests are paired with their JSON counterpart, and the tests should mirror the JSON test as much as possible.\n\nRefer to the Protocol Buffers [language guide](https://developers.google.com/protocol-buffers/docs/proto3) for more detailed information about Protocol Buffers.",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h",
+        "content": "case protocol::mtPROOF_PATH_RESPONSE:\n\nreturn \"proof_path_response\";\n\ncase protocol::mtREPLAY_DELTA_REQ:\n\nreturn \"replay_delta_request\";",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the core logic for handling protocol messages in the Ripple (XRPL) overlay network. It provides utilities to identify message types and names, parse message headers (including support for compressed and uncompressed messages), and extract message content from network buffers. The MessageHeader struct encapsulates metadata about each message, such as size, type, and compression algorithm. The file includes template functions to parse and dispatch protocol buffer messages to appropriate handler callbacks based on their type, supporting a wide range of XRPL protocol messages. Error handling is integrated for malformed or unsupported messages, and the design supports extensibility for new message types and compression algorithms.",
+            "functions": [
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageName",
+                "buffersBegin",
+                "buffersEnd",
+                "parseMessageHeader",
+                "parseMessageContent",
+                "invoke",
+                "invokeProtocolMessage"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/org/xrpl/rpc/v1/README.md",
+        "content": "When making changes to the protocol buffer definitions in this folder, care must be taken to ensure the changes do not break the wire format, which would break backwards compatibility. At a high level, do not change any existing fields. This includes the field's name, type and field number. Do not remove any existing fields. It is always safe to add fields; just remember to give each of the new fields a unique field number. The field numbers don't have to be in any particular order and there can be gaps. More info about what changes break the wire format can be found [here](https://developers.google.com/protocol-buffers/docs/proto3#updating).\n\n#### Conventions",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/org/xrpl/rpc/v1/ledger.proto",
+        "content": "syntax = \"proto3\";\n\npackage org.xrpl.rpc.v1;\n\noption java_package = \"org.xrpl.rpc.v1\";\n\noption java_multiple_files = true;\n\n// Next field: 4 message LedgerSpecifier { // Next field: 4 enum Shortcut { SHORTCUT_UNSPECIFIED = 0; SHORTCUT_VALIDATED   = 1; SHORTCUT_CLOSED      = 2; SHORTCUT_CURRENT     = 3; }\n\noneof ledger\n\n{\n\nShortcut shortcut = 1;\n\nuint32 sequence = 2;\n\n// 32 bytes\n\nbytes hash = 3;\n\n}\n\n}\n\n// Next field: 3 message RawLedgerObject { // Raw data of the ledger object. In GetLedgerResponse and // GetLedgerDiffResponse, data will be empty if the object was deleted. bytes data = 1;\n\n// Key of the ledger object bytes key = 2;\n\nenum ModificationType\n\n{\n\nUNSPECIFIED = 0;\n\nCREATED = 1;\n\nMODIFIED = 2;\n\nDELETED = 3;\n\n}\n\n// Whether the object was created, modified or deleted ModificationType mod_type = 3;\n\n// Key of the object preceding this object in the desired ledger bytes predecessor = 4;\n\n// Key of the object succeeding this object in the desired ledger bytes successor = 5; }",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "fields to communicate protocol specific information related to the upgrade.\n\nHTTP requests which do not conform to this requirements must generate an appropriate HTTP error and result in the connection being closed.\n\nUpon receipt of a well-formed HTTP upgrade request, and validation of the protocol specific parameters, a peer will either send back a HTTP 101 response and switch to the requested protocol, or a message indicating that the request failed (e.g. by sending HTTP 400 \"Bad Request\" or HTTP 503 \"Service Unavailable\").\n\n##### Example HTTP Upgrade Request\n\n```\n\nGET / HTTP/1.1\n\nUser\n\n\n\nAgent: rippled\n\n\n\n1.4.0\n\n\n\nb1+DEBUG\n\nUpgrade: RTXP/1.2, XRPL/2.0\n\nConnection: Upgrade\n\nConnect\n\n\n\nAs: Peer\n\nCrawl: public\n\nNetwork\n\n\n\nID: 1\n\nNetwork\n\n\n\nTime: 619234489\n\nPublic\n\n\n\nKey: n94MvLTiHQJjByfGZzvQewTxQP2qjF6shQcuHwCjh5WoiozBrdpX\n\nSession\n\n\n\nSignature: MEUCIQCOO8tHOh/tgCSRNe6WwOwmIF6urZ5uSB8l9aAf5q7iRAIgA4aONKBZhpP5RuOuhJP2dP+2UIRioEJcfU4/m4gZdYo=\n\nRemote\n\n\n\nIP: 192.0.2.79\n\nClosed",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/README.md",
+        "content": "# Proto\n\nThis holds protocol buffers source code. The protoc tool stores the output of the .proto files in the build directory.",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/SeqProxy.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_SEQ_PROXY_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_SEQ_PROXY_H_INCLUDED\n\n#include <cstdint>\n\n#include <ostream>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/SeqProxy.h.txt",
+            "namespaces": "",
+            "description": "This file defines the SeqProxy class in the ripple namespace, which acts as a type-safe wrapper for representing either a sequence number or a ticket number, distinguished by an internal enum Type (seq or ticket). The class stores a 32-bit value and its type, provides constructors, copy assignment, and static factory methods. It offers methods to query the type, retrieve the value, and advance the value. SeqProxy supports comparison operators (==, !=, <, >, <=, >=) and stream output, allowing easy use in containers and output streams. The design ensures clear distinction and safe manipulation of sequence and ticket numbers in the XRPL protocol.",
+            "functions": [
+                "SeqProxy",
+                "SeqProxy",
+                "operator=",
+                "sequence",
+                "value",
+                "isSeq",
+                "isTicket",
+                "advanceBy",
+                "operator==",
+                "operator!=",
+                "operator<",
+                "operator>",
+                "operator>=",
+                "operator<=",
+                "operator<<"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h",
+        "content": "case protocol::mtSTATUS_CHANGE:\n\nsuccess = detail::invoke<protocol::TMStatusChange>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtHAVE_SET:\n\nsuccess = detail::invoke<protocol::TMHaveTransactionSet>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtVALIDATION:\n\nsuccess = detail::invoke<protocol::TMValidation>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtVALIDATORLIST:\n\nsuccess = detail::invoke<protocol::TMValidatorList>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtVALIDATORLISTCOLLECTION:\n\nsuccess = detail::invoke<protocol::TMValidatorListCollection>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtGET_OBJECTS:\n\nsuccess = detail::invoke<protocol::TMGetObjectByHash>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtHAVE_TRANSACTIONS:\n\nsuccess = detail::invoke<protocol::TMHaveTransactions>(\n\n\n\nheader, buffers, handler);\n\nbreak;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the core logic for handling protocol messages in the Ripple (XRPL) overlay network. It provides utilities to identify message types and names, parse message headers (including support for compressed and uncompressed messages), and extract message content from network buffers. The MessageHeader struct encapsulates metadata about each message, such as size, type, and compression algorithm. The file includes template functions to parse and dispatch protocol buffer messages to appropriate handler callbacks based on their type, supporting a wide range of XRPL protocol messages. Error handling is integrated for malformed or unsupported messages, and the design supports extensibility for new message types and compression algorithms.",
+            "functions": [
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageName",
+                "buffersBegin",
+                "buffersEnd",
+                "parseMessageHeader",
+                "parseMessageContent",
+                "invoke",
+                "invokeProtocolMessage"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/server/Port.cpp",
+        "content": "#include <xrpl/basics/BasicConfig.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/basics/safe_cast.h>\n\n#include <xrpl/beast/core/LexicalCast.h>\n\n#include <xrpl/beast/net/IPEndpoint.h>\n\n#include <xrpl/beast/rfc2616.h>\n\n#include <xrpl/server/Port.h>\n\n#include <boost/algorithm/string/predicate.hpp>\n\n#include <boost/algorithm/string/trim.hpp>\n\n#include <boost/asio/ip/address.hpp>\n\n#include <boost/asio/ip/impl/network_v4.ipp>\n\n#include <boost/asio/ip/impl/network_v6.ipp>\n\n#include <boost/system/system_error.hpp>\n\n#include <cstdint>\n\n#include <exception>\n\n#include <ostream>\n\n#include <sstream>\n\n#include <string>\n\n#include <vector>\n\nnamespace ripple {\n\nbool Port::secure() const { return protocol.count(\"peer\") > 0 || protocol.count(\"https\") > 0 || protocol.count(\"wss\") > 0 || protocol.count(\"wss2\") > 0; }",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/server/Port.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements logic for configuring and representing network ports in the Ripple server. It provides functions to determine if a port is secure (based on its protocols), to generate a string listing its protocols, and to output a port's configuration details to a stream. The core of the file is the parse_Port function, which reads port configuration from a Section object, validates and parses fields such as IP address, port number, protocols, limits, and WebSocket queue limits, and populates network access control lists for admin and secure gateway subnets (both IPv4 and IPv6). The populate helper function parses and validates subnet specifications, ensuring they are canonical and valid, and logs errors for invalid entries. The file also sets various SSL and WebSocket compression options from the configuration. Overall, it ensures robust and validated port configuration for the server.",
+            "functions": [
+                "Port::secure",
+                "Port::protocols",
+                "operator<<",
+                "populate",
+                "parse_Port"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h",
+        "content": "switch (type)\n\n{\n\ncase protocol::mtMANIFESTS:\n\nreturn \"manifests\";\n\ncase protocol::mtPING:\n\nreturn \"ping\";\n\ncase protocol::mtCLUSTER:\n\nreturn \"cluster\";\n\ncase protocol::mtENDPOINTS:\n\nreturn \"endpoints\";\n\ncase protocol::mtTRANSACTION:\n\nreturn \"tx\";\n\ncase protocol::mtGET_LEDGER:\n\nreturn \"get_ledger\";\n\ncase protocol::mtLEDGER_DATA:\n\nreturn \"ledger_data\";\n\ncase protocol::mtPROPOSE_LEDGER:\n\nreturn \"propose\";\n\ncase protocol::mtSTATUS_CHANGE:\n\nreturn \"status\";\n\ncase protocol::mtHAVE_SET:\n\nreturn \"have_set\";\n\ncase protocol::mtVALIDATORLIST:\n\nreturn \"validator_list\";\n\ncase protocol::mtVALIDATORLISTCOLLECTION:\n\nreturn \"validator_list_collection\";\n\ncase protocol::mtVALIDATION:\n\nreturn \"validation\";\n\ncase protocol::mtGET_OBJECTS:\n\nreturn \"get_objects\";\n\ncase protocol::mtHAVE_TRANSACTIONS:\n\nreturn \"have_transactions\";\n\ncase protocol::mtTRANSACTIONS:\n\nreturn \"transactions\";\n\ncase protocol::mtSQUELCH:\n\nreturn \"squelch\";\n\ncase protocol::mtPROOF_PATH_REQ:\n\nreturn \"proof_path_request\";",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the core logic for handling protocol messages in the Ripple (XRPL) overlay network. It provides utilities to identify message types and names, parse message headers (including support for compressed and uncompressed messages), and extract message content from network buffers. The MessageHeader struct encapsulates metadata about each message, such as size, type, and compression algorithm. The file includes template functions to parse and dispatch protocol buffer messages to appropriate handler callbacks based on their type, supporting a wide range of XRPL protocol messages. Error handling is integrated for malformed or unsupported messages, and the design supports extensibility for new message types and compression algorithms.",
+            "functions": [
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageName",
+                "buffersBegin",
+                "buffersEnd",
+                "parseMessageHeader",
+                "parseMessageContent",
+                "invoke",
+                "invokeProtocolMessage"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STBase.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STBASE_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STBASE_H_INCLUDED\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/Serializer.h>\n\n#include <memory>\n\n#include <ostream>\n\n#include <string>\n\n#include <type_traits>\n\n#include <typeinfo>\n\n#include <utility>\n\nnamespace ripple {\n\nstruct JsonOptions { using underlying_t = unsigned int; underlying_t value;\n\nenum values : underlying_t {\n\nnone                        = 0b0000'0000, include_date                = 0b0000'0001, disable_API_prior_V2        = 0b0000'0010,\n\n// IMPORTANT `_all` must be union of all of the above; see also operator~ _all                        = 0b0000'0011\n\n};\n\nconstexpr JsonOptions(underlying_t v) noexcept : value(v) { }",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STBase.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the base class STBase for the serialization framework in the Ripple (XRPL) protocol. It provides a polymorphic interface for all serializable types, supporting operations such as type identification, JSON conversion, serialization, equivalence checking, and default value checking. The file also defines the JsonOptions struct for controlling JSON output options, and includes utility functions and templates for type-safe downcasting and object emplacement. The design enables flexible and type-safe handling of protocol fields and objects, forming the foundation for more complex protocol data structures.",
+            "functions": [
+                "operator underlying_t",
+                "operator bool",
+                "operator==",
+                "operator!=",
+                "operator|",
+                "operator&",
+                "operator~",
+                "to_json",
+                "~STBase",
+                "STBase",
+                "STBase",
+                "operator=",
+                "STBase",
+                "operator==",
+                "operator!=",
+                "downcast",
+                "downcast",
+                "getSType",
+                "getFullText",
+                "getText",
+                "getJson",
+                "add",
+                "isEquivalent",
+                "isDefault",
+                "setFName",
+                "getFName",
+                "addFieldID",
+                "emplace",
+                "copy",
+                "move",
+                "operator<<",
+                "downcast",
+                "downcast",
+                "emplace"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/json_get_or_throw.h",
+        "content": "#ifndef PROTOCOL_GET_OR_THROW_H_\n\n#define PROTOCOL_GET_OR_THROW_H_\n\n#include <xrpl/basics/Buffer.h>\n\n#include <xrpl/basics/StringUtilities.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/json/json_value.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <charconv>\n\n#include <exception>\n\n#include <optional>\n\n#include <string>\n\nnamespace Json { struct JsonMissingKeyError : std::exception { char const* const key; mutable std::string msg; JsonMissingKeyError(Json::StaticString const& k) : key{k.c_str()} { } char const* what() const noexcept override { if (msg.empty()) { msg = std::string(\"Missing json key: \") + key; } return msg.c_str(); } };",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/json_get_or_throw.h.txt",
+            "namespaces": "",
+            "description": "This header defines utility functions and error types for extracting and validating values from JSON objects using XRPL's SField keys. It introduces two custom exceptions: JsonMissingKeyError (thrown when a required JSON key is missing) and JsonTypeMismatchError (thrown when a value's type does not match the expected type). The core function template getOrThrow<T> is specialized for types like std::string, bool, std::uint64_t, and ripple::Buffer, each extracting and validating the value from the JSON object or throwing the appropriate error. There is also a getOptional<T> function that returns an optional value, returning std::nullopt if extraction fails. The file ensures robust and type-safe access to JSON fields in the context of XRPL protocol code.",
+            "functions": [
+                "JsonMissingKeyError::JsonMissingKeyError",
+                "JsonMissingKeyError::what",
+                "JsonTypeMismatchError::JsonTypeMismatchError",
+                "JsonTypeMismatchError::what",
+                "getOrThrow",
+                "getOrThrow<std::string>",
+                "getOrThrow<bool>",
+                "getOrThrow<std::uint64_t>",
+                "getOrThrow<ripple::Buffer>",
+                "getOptional"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/ledger_entries.macro",
+        "content": "}))",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Overlay.h",
+        "content": "virtual std::set<Peer::id_t> relay( protocol::TMProposeSet& m, uint256 const& uid, PublicKey const& validator) = 0;\n\nvirtual std::set<Peer::id_t> relay( protocol::TMValidation& m, uint256 const& uid, PublicKey const& validator) = 0;\n\nvirtual void relay( uint256 const& hash, std::optional<std::reference_wrapper<protocol::TMTransaction>> m, std::set<Peer::id_t> const& toSkip) = 0;\n\ntemplate <class Function> void foreach(Function f) const { for (auto const& p : getActivePeers()) f(p); }\n\nvirtual void\n\nincJqTransOverflow() = 0;\n\nvirtual std::uint64_t\n\ngetJqTransOverflow() const = 0;\n\nvirtual void\n\nincPeerDisconnect() = 0;\n\nvirtual std::uint64_t\n\ngetPeerDisconnect() const = 0;\n\nvirtual void\n\nincPeerDisconnectCharges() = 0;\n\nvirtual std::uint64_t\n\ngetPeerDisconnectCharges() const = 0;\n\nvirtual std::optional<std::uint32_t>\n\nnetworkID() const = 0;\n\nvirtual Json::Value\n\ntxMetrics() const = 0;\n\n};\n\n}\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Overlay.h.txt",
+            "namespaces": "",
+            "description": "This file defines the Overlay class, an abstract interface for managing peer-to-peer network connections in the Ripple (XRPL) server. Overlay handles peer management, connection setup, message broadcasting, relaying, and network metrics. It provides methods for starting and stopping the overlay, connecting to peers, handling incoming handoffs, broadcasting and relaying protocol messages, tracking peer statistics, and retrieving network information. The class is designed to be extended with concrete implementations and uses Boost.Asio and Boost.Beast for networking and SSL support. It also includes a Setup struct for configuration and supports JSON reporting of its state and metrics.",
+            "functions": [
+                "Overlay",
+                "~Overlay",
+                "start",
+                "stop",
+                "onHandoff",
+                "connect",
+                "limit",
+                "size",
+                "json",
+                "getActivePeers",
+                "checkTracking",
+                "findPeerByShortID",
+                "findPeerByPublicKey",
+                "broadcast",
+                "broadcast",
+                "relay",
+                "relay",
+                "relay",
+                "foreach",
+                "incJqTransOverflow",
+                "getJqTransOverflow",
+                "incPeerDisconnect",
+                "getPeerDisconnect",
+                "incPeerDisconnectCharges",
+                "getPeerDisconnectCharges",
+                "networkID",
+                "txMetrics"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/Handshake.cpp",
+        "content": "http_response_type makeResponse( bool crawlPublic, http_request_type const& req, beast::IP::Address public_ip, beast::IP::Address remote_ip, uint256 const& sharedValue, std::optional<std::uint32_t> networkID, ProtocolVersion protocol, Application& app) { http_response_type resp; resp.result(boost::beast::http::status::switching_protocols); resp.version(req.version()); resp.insert(\"Connection\", \"Upgrade\"); resp.insert(\"Upgrade\", to_string(protocol)); resp.insert(\"Connect-As\", \"Peer\"); resp.insert(\"Server\", BuildInfo::getFullVersionString()); resp.insert(\"Crawl\", crawlPublic ? \"public\" : \"private\"); resp.insert( \"X-Protocol-Ctl\", makeFeaturesResponseHeader( req, app.config().COMPRESSION, app.config().LEDGER_REPLAY, app.config().TX_REDUCE_RELAY_ENABLE, app.config().VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE));\n\nbuildHandshake(resp, sharedValue, networkID, public_ip, remote_ip, app);\n\nreturn resp;\n\n}\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/Handshake.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the handshake logic for peer connections in the Ripple (XRPL) overlay network. It provides functions to extract and verify protocol features from HTTP headers, construct feature negotiation headers, and manage handshake data exchange between peers. The handshake process includes generating and verifying a shared session value using SSL finished messages, building handshake headers with node identity, network information, and cryptographic signatures, and validating incoming handshake data for correctness and security (e.g., checking public keys, network IDs, time synchronization, and IP addresses). The file also defines functions to create HTTP request and response messages for initiating and responding to peer connections, ensuring that protocol features and security requirements are properly negotiated and enforced.",
+            "functions": [
+                "getFeatureValue",
+                "isFeatureValue",
+                "featureEnabled",
+                "makeFeaturesRequestHeader",
+                "makeFeaturesResponseHeader",
+                "hashLastMessage",
+                "makeSharedValue",
+                "buildHandshake",
+                "verifyHandshake",
+                "makeRequest",
+                "makeResponse"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp",
+        "content": "case protocol::nsSHUTTING:\n\nret[jss::status] = \"shutting\";\n\nbreak;\n\ndefault: JLOG(p_journal_.warn()) << \"Unknown status: \" << last_status.newstatus(); } }\n\nret[jss::metrics] = Json::Value(Json::objectValue);\n\nret[jss::metrics][jss::total_bytes_recv] =\n\nstd::to_string(metrics_.recv.total_bytes());\n\nret[jss::metrics][jss::total_bytes_sent] =\n\nstd::to_string(metrics_.sent.total_bytes());\n\nret[jss::metrics][jss::avg_bps_recv] =\n\nstd::to_string(metrics_.recv.average_bytes());\n\nret[jss::metrics][jss::avg_bps_sent] =\n\nstd::to_string(metrics_.sent.average_bytes());\n\nreturn ret;\n\n}\n\nbool PeerImp::supportsFeature(ProtocolFeature f) const { switch (f) { case ProtocolFeature::ValidatorListPropagation: return protocol_ >= make_protocol(2, 1); case ProtocolFeature::ValidatorList2Propagation: return protocol_ >= make_protocol(2, 2); case ProtocolFeature::LedgerReplay: return ledgerReplayEnabled_; } return false; }",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the PeerImp class, which represents a peer connection in the XRPL (Ripple) overlay network. PeerImp manages the lifecycle and communication of a peer, including connection setup, message sending and receiving, protocol negotiation, resource usage tracking, and feature support. It handles various protocol messages (transactions, validations, proposals, ledger data, etc.), manages transaction and ledger queues, enforces resource limits, and supports features like transaction reduce-relay, ledger replay, and squelching. The class also tracks peer metrics (latency, bytes sent/received), manages peer status and tracking (converged/diverged), and interacts with other network components such as the job queue, ledger master, validators, and resource manager. The file includes logic for relaying messages, handling protocol errors, charging peers for resource usage, and maintaining peer state for network health and synchronization.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Overlay.h",
+        "content": "int ipLimit = 0;\n\nstd::uint32_t crawlOptions = 0;\n\nstd::optional<std::uint32_t> networkID;\n\nbool vlEnabled = true;\n\n};\n\nusing PeerSequence = std::vector<std::shared_ptr<Peer>>;\n\nvirtual ~Overlay() = default;\n\nvirtual void\n\nstart()\n\n{\n\n}\n\nvirtual void\n\nstop()\n\n{\n\n}\n\nvirtual Handoff\n\nonHandoff(\n\nstd::unique_ptr<stream_type>&& bundle,\n\nhttp_request_type&& request,\n\nboost::asio::ip::tcp::endpoint remote_address) = 0;\n\nvirtual void connect(beast::IP::Endpoint const& address) = 0;\n\nvirtual int\n\nlimit() = 0;\n\nvirtual std::size_t\n\nsize() const = 0;\n\nvirtual Json::Value\n\njson() = 0;\n\nvirtual PeerSequence\n\ngetActivePeers() const = 0;\n\nvirtual void\n\ncheckTracking(std::uint32_t index) = 0;\n\nvirtual std::shared_ptr<Peer> findPeerByShortID(Peer::id_t const& id) const = 0;\n\nvirtual std::shared_ptr<Peer> findPeerByPublicKey(PublicKey const& pubKey) = 0;\n\nvirtual void\n\nbroadcast(protocol::TMProposeSet& m) = 0;\n\nvirtual void\n\nbroadcast(protocol::TMValidation& m) = 0;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Overlay.h.txt",
+            "namespaces": "",
+            "description": "This file defines the Overlay class, an abstract interface for managing peer-to-peer network connections in the Ripple (XRPL) server. Overlay handles peer management, connection setup, message broadcasting, relaying, and network metrics. It provides methods for starting and stopping the overlay, connecting to peers, handling incoming handoffs, broadcasting and relaying protocol messages, tracking peer statistics, and retrieving network information. The class is designed to be extended with concrete implementations and uses Boost.Asio and Boost.Beast for networking and SSL support. It also includes a Setup struct for configuration and supports JSON reporting of its state and metrics.",
+            "functions": [
+                "Overlay",
+                "~Overlay",
+                "start",
+                "stop",
+                "onHandoff",
+                "connect",
+                "limit",
+                "size",
+                "json",
+                "getActivePeers",
+                "checkTracking",
+                "findPeerByShortID",
+                "findPeerByPublicKey",
+                "broadcast",
+                "broadcast",
+                "relay",
+                "relay",
+                "relay",
+                "foreach",
+                "incJqTransOverflow",
+                "getJqTransOverflow",
+                "incPeerDisconnect",
+                "getPeerDisconnect",
+                "incPeerDisconnectCharges",
+                "getPeerDisconnectCharges",
+                "networkID",
+                "txMetrics"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/net/detail/RPCCall.cpp",
+        "content": "if (!quiet) { JLOG(j.info()) << (bSSL ? \"Securely connecting to \" : \"Connecting to \") << strIp << \":\" << iPort << std::endl; }\n\nheaders[\"Authorization\"] = std::string(\"Basic \") + base64_encode(strUsername + \":\" + strPassword);\n\nconstexpr auto RPC_REPLY_MAX_BYTES = megabytes(256);\n\nusing namespace std::chrono_literals; auto constexpr RPC_WEBHOOK_TIMEOUT = 30s;\n\nHTTPClient::request(\n\nbSSL,\n\nio_service,\n\nstrIp,\n\niPort,\n\nstd::bind(\n\n&RPCCallImp::onRequest,\n\nstrMethod,\n\njvParams,\n\nheaders,\n\nstrPath,\n\nstd::placeholders::_1,\n\nstd::placeholders::_2,\n\nj),\n\nRPC_REPLY_MAX_BYTES,\n\nRPC_WEBHOOK_TIMEOUT,\n\nstd::bind(\n\n&RPCCallImp::onResponse,\n\ncallbackFuncP,\n\nstd::placeholders::_1,\n\nstd::placeholders::_2,\n\nstd::placeholders::_3,\n\nj),\n\nj);\n\n}\n\n}\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/net/detail/RPCCall.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the core logic for parsing, constructing, and executing RPC (Remote Procedure Call) commands for the Ripple (XRPL) server. The main class, RPCParser, provides a comprehensive set of parsing functions for various RPC commands, converting command-line or JSON input into the appropriate JSON request format for the server. It handles parameter validation, error reporting, and supports a wide range of commands (e.g., account_info, ledger, submit, etc.), each with its own parsing logic. The file also includes functions for creating HTTP POST requests, handling responses, and managing network communication with the server, including authentication and error handling. The RPCCall namespace provides entry points for executing RPC commands from the command line or over the network, integrating with the server's configuration and logging systems. Overall, the file serves as the bridge between user input (CLI or JSON) and the XRPL server's RPC interface, ensuring correct formatting, validation, and communication for RPC operations.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/messages.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_MESSAGES_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_MESSAGES_H_INCLUDED\n\n#ifdef TYPE_BOOL\n\n#undef TYPE_BOOL\n\n#endif\n\n#include <xrpl/proto/ripple.pb.h>\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/messages.h.txt",
+            "namespaces": "",
+            "description": "This header file serves as an include guard for the Ripple protocol messages, ensuring that the ripple.pb.h protobuf definitions are included only once. It also undefines TYPE_BOOL if previously defined to avoid conflicts. The file does not define any classes or functions.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/GRPCServer.cpp",
+        "content": "RPC::GRPCContext<Request> context{\n\n{app_.journal(\"gRPCServer\"),\n\napp_,\n\nloadType,\n\napp_.getOPs(),\n\napp_.getLedgerMaster(),\n\nusage,\n\nrole,\n\ncoro,\n\nInfoSub::pointer(),\n\napiVersion},\n\nrequest_};\n\nerror_code_i conditionMetRes =\n\nRPC::conditionMet(requiredCondition_, context);",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/GRPCServer.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the gRPC server for the XRPLedger (rippled) application. It defines the GRPCServer and GRPCServerImpl classes, which manage the lifecycle and operation of the gRPC server, including starting, stopping, and handling incoming RPC requests. The core logic is handled by the GRPCServerImpl::CallData template class, which manages individual RPC calls, including request processing, resource usage tracking, role determination (user vs. unlimited/secure gateway), and response handling. The server supports multiple RPC endpoints (GetLedger, GetLedgerData, GetLedgerDiff, GetLedgerEntry), each with its own CallData handler. The server reads configuration (IP, port, secure gateway IPs) from the application's config, sets up listeners for each RPC, and processes requests asynchronously using a job queue. The implementation includes error handling, logging, and resource management to ensure robust and secure operation.",
+            "functions": [
+                "getEndpoint",
+                "GRPCServerImpl::CallData::CallData",
+                "GRPCServerImpl::CallData::clone",
+                "GRPCServerImpl::CallData::process",
+                "GRPCServerImpl::CallData::process",
+                "GRPCServerImpl::CallData::isFinished",
+                "GRPCServerImpl::CallData::getLoadType",
+                "GRPCServerImpl::CallData::getRole",
+                "GRPCServerImpl::CallData::getUser",
+                "GRPCServerImpl::CallData::getClientIpAddress",
+                "GRPCServerImpl::CallData::getClientEndpoint",
+                "GRPCServerImpl::CallData::clientIsUnlimited",
+                "GRPCServerImpl::CallData::setIsUnlimited",
+                "GRPCServerImpl::CallData::getUsage",
+                "GRPCServerImpl::GRPCServerImpl",
+                "GRPCServerImpl::shutdown",
+                "GRPCServerImpl::handleRpcs",
+                "GRPCServerImpl::setupListeners",
+                "GRPCServerImpl::start",
+                "GRPCServerImpl::getEndpoint",
+                "GRPCServer::start",
+                "GRPCServer::stop",
+                "GRPCServer::~GRPCServer",
+                "GRPCServer::getEndpoint"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Application.cpp",
+        "content": "#include <xrpl/protocol/Protocol.h>\n\n#include <xrpl/protocol/STParsedJSON.h>\n\n#include <xrpl/resource/Fees.h>\n\n#include <boost/algorithm/string/predicate.hpp>\n\n#include <boost/asio/steady_timer.hpp>\n\n#include <boost/system/error_code.hpp>\n\n#include <date/date.h>\n\n#include <chrono>\n\n#include <condition_variable>\n\n#include <cstring>\n\n#include <iostream>\n\n#include <limits>\n\n#include <mutex>\n\n#include <optional>\n\n#include <sstream>\n\n#include <utility>\n\nnamespace ripple {\n\nstatic void fixConfigPorts(Config& config, Endpoints const& endpoints);",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/Application.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the core Application class for the XRPL (Ripple) server, encapsulated as ApplicationImp. It manages the initialization, configuration, startup, operation, and shutdown of the server, coordinating all major subsystems such as ledger management, networking, consensus, validation, resource management, and RPC handling. The ApplicationImp class aggregates and orchestrates components like the ledger master, job queue, network operations, validator lists, overlay network, and various caches. It handles server startup modes (fresh, load, replay, network), loads and replays ledgers, manages timers for periodic tasks (sweeping caches, entropy mixing), and responds to system signals for graceful shutdown. The file also provides utility functions for configuration, thread management, and server health checks. Overall, it serves as the main entry point and lifecycle manager for the XRPL server process.",
+            "functions": [
+                "fixConfigPorts",
+                "numberOfThreads",
+                "ApplicationImp",
+                "setup",
+                "start",
+                "run",
+                "signalStop",
+                "checkSigs",
+                "checkSigs",
+                "isStopping",
+                "fdRequired",
+                "startGenesisLedger",
+                "getLastFullLedger",
+                "loadLedgerFromFile",
+                "loadOldLedger",
+                "serverOkay",
+                "journal",
+                "setMaxDisallowedLedger",
+                "Application",
+                "make_Application"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Serializer.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_SERIALIZER_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_SERIALIZER_H_INCLUDED\n\n#include <xrpl/basics/Blob.h>\n\n#include <xrpl/basics/Buffer.h>\n\n#include <xrpl/basics/Slice.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/basics/safe_cast.h>\n\n#include <xrpl/basics/strHex.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/protocol/HashPrefix.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <cstdint>\n\n#include <cstring>\n\n#include <iomanip>\n\n#include <type_traits>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Serializer.h.txt",
+            "namespaces": "",
+            "description": "This header file defines two main classes, Serializer and SerialIter, used in the XRPL protocol for serializing and deserializing binary data. The Serializer class provides methods to construct, manipulate, and access a binary data buffer (Blob), supporting addition of various integer types, raw data, variable-length fields, and bit strings. It also includes methods for retrieving data, comparing buffers, and encoding/decoding length fields. The SerialIter class is designed for iterating over serialized data, allowing extraction of various integer types, bit strings, raw and variable-length data, and supports skipping and resetting the iterator. Both classes are essential for handling the binary serialization format used in XRPL protocol messages.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/Port.h",
+        "content": "class context;\n\n}\n\n}\n\n}\n\nnamespace ripple {\n\nstruct Port\n\n{\n\nexplicit Port() = default;\n\nstd::string name;\n\nboost::asio::ip::address ip;\n\nstd::uint16_t port = 0;\n\nstd::set<std::string, boost::beast::iless> protocol;\n\nstd::vector<boost::asio::ip::network_v4> admin_nets_v4;\n\nstd::vector<boost::asio::ip::network_v6> admin_nets_v6;\n\nstd::vector<boost::asio::ip::network_v4> secure_gateway_nets_v4;\n\nstd::vector<boost::asio::ip::network_v6> secure_gateway_nets_v6;\n\nstd::string user;\n\nstd::string password;\n\nstd::string admin_user;\n\nstd::string admin_password;\n\nstd::string ssl_key;\n\nstd::string ssl_cert;\n\nstd::string ssl_chain;\n\nstd::string ssl_ciphers;\n\nboost::beast::websocket::permessage_deflate pmd_options;\n\nstd::shared_ptr<boost::asio::ssl::context> context;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/Port.h.txt",
+            "namespaces": "",
+            "description": "This header file defines structures and functions for configuring and managing network ports in the Ripple server. The main structure, Port, encapsulates all configuration details for a server port, including IP address, port number, supported protocols, admin and secure gateway networks, user authentication, SSL/TLS settings, WebSocket options, and connection limits. It provides methods to check if the port supports WebSockets or secure connections, and to retrieve supported protocols as a string. The ParsedPort structure is used for intermediate parsing of port configuration, supporting optional values. The file also declares a function to parse port configuration from a configuration section, and an operator to output Port details to a stream. The code relies on Boost.Asio and Boost.Beast for networking and protocol handling, and supports both IPv4 and IPv6.",
+            "functions": [
+                "websockets",
+                "secure",
+                "protocols",
+                "operator<<",
+                "parse_Port"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/IntrusivePointer.ipp",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2023 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/SharedWeakCachePointer.ipp",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2023 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/shamap/detail/TaggedPointer.ipp",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2020 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/Handshake.h",
+        "content": "makeSharedValue(stream_type& ssl, beast::Journal journal);\n\nvoid\n\nbuildHandshake(\n\nboost::beast::http::fields& h,\n\nuint256 const& sharedValue,\n\nstd::optional<std::uint32_t> networkID,\n\nbeast::IP::Address public_ip,\n\nbeast::IP::Address remote_ip,\n\nApplication& app);\n\nPublicKey\n\nverifyHandshake(\n\nboost::beast::http::fields const& headers,\n\nuint256 const& sharedValue,\n\nstd::optional<std::uint32_t> networkID,\n\nbeast::IP::Address public_ip,\n\nbeast::IP::Address remote,\n\nApplication& app);\n\nrequest_type\n\nmakeRequest(\n\nbool crawlPublic,\n\nbool comprEnabled,\n\nbool ledgerReplayEnabled,\n\nbool txReduceRelayEnabled,\n\nbool vpReduceRelayEnabled);\n\nhttp_response_type\n\nmakeResponse(\n\nbool crawlPublic,\n\nhttp_request_type const& req,\n\nbeast::IP::Address public_ip,\n\nbeast::IP::Address remote_ip,\n\nuint256 const& sharedValue,\n\nstd::optional<std::uint32_t> networkID,\n\nProtocolVersion version,\n\nApplication& app);\n\nstatic constexpr char FEATURE_COMPR[] = \"compr\";",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/Handshake.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the interface for the handshake process in the Ripple (XRPL) overlay network. It provides functions for creating and verifying handshake messages between peers, building HTTP request and response headers for feature negotiation, and managing shared values for secure communication. The file includes utilities to check and set feature flags (such as compression, ledger replay, transaction relay reduction, and validator peer relay reduction) in HTTP headers, and to construct appropriate handshake requests and responses. It uses Boost.Beast and Boost.Asio SSL for networking and HTTP handling, and integrates with the main application context. No classes are defined; the file consists of function declarations and feature flag constants.",
+            "functions": [
+                "makeSharedValue",
+                "buildHandshake",
+                "verifyHandshake",
+                "makeRequest",
+                "makeResponse",
+                "getFeatureValue",
+                "isFeatureValue",
+                "featureEnabled",
+                "peerFeatureEnabled",
+                "peerFeatureEnabled",
+                "makeFeaturesRequestHeader",
+                "makeFeaturesResponseHeader"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/permissions.macro",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2025 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/BaseHTTPPeer.h",
+        "content": "template <class Handler, class Impl> class BaseHTTPPeer : public io_list::work, public Session { protected: using clock_type = std::chrono::system_clock; using error_code = boost::system::error_code; using endpoint_type = boost::asio::ip::tcp::endpoint; using yield_context = boost::asio::yield_context;\n\nenum {\n\nbufferSize = 4\n\n\n\n1024,\n\ntimeoutSeconds = 30,\n\ntimeoutSecondsLocal = 3\n\n};\n\nstruct buffer { buffer(void const* ptr, std::size_t len) : data(new char[len]), bytes(len), used(0) { memcpy(data.get(), ptr, len); }\n\nstd::unique_ptr<char[]> data;\n\nstd::size_t bytes;\n\nstd::size_t used;\n\n};\n\nPort const& port_;\n\nHandler& handler_;\n\nboost::asio::executor_work_guard<boost::asio::executor> work_;\n\nboost::asio::strand<boost::asio::executor> strand_;\n\nendpoint_type remote_address_;\n\nbeast::Journal const journal_;\n\nstd::string id_;\n\nstd::size_t nid_;\n\nboost::asio::streambuf read_buf_;\n\nhttp_request_type message_;\n\nstd::vector<buffer> wq_;\n\nstd::vector<buffer> wq2_;\n\nstd::mutex mutex_;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/BaseHTTPPeer.h.txt",
+            "namespaces": "",
+            "description": "This file defines the BaseHTTPPeer template class, which serves as a base for handling HTTP peer connections in the Ripple (XRPL) server. It is designed to work with Boost.Asio and Boost.Beast for asynchronous network and HTTP operations. The class manages the lifecycle of an HTTP session, including reading and writing HTTP messages, handling timeouts, managing buffers, and supporting both graceful and immediate connection closure. It uses a strand for thread safety, maintains read/write queues, and provides hooks for derived classes to implement request handling and connection closing logic. The class also tracks statistics such as request count and bytes transferred, and integrates with the server's logging and session management infrastructure. Key methods include do_read, on_write, do_writer, fail, start_timer, cancel_timer, and virtual methods do_request and do_close for customization by derived classes.",
+            "functions": [
+                "session",
+                "close",
+                "impl",
+                "fail",
+                "start_timer",
+                "cancel_timer",
+                "on_timer",
+                "do_read",
+                "on_write",
+                "do_writer",
+                "do_request",
+                "do_close",
+                "journal",
+                "port",
+                "remoteAddress",
+                "request",
+                "write",
+                "write",
+                "detach",
+                "complete",
+                "close",
+                "BaseHTTPPeer",
+                "~BaseHTTPPeer"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/Handshake.h",
+        "content": "#ifndef RIPPLE_OVERLAY_HANDSHAKE_H_INCLUDED\n\n#define RIPPLE_OVERLAY_HANDSHAKE_H_INCLUDED\n\n#include <xrpld/app/main/Application.h>\n\n#include <xrpld/overlay/detail/ProtocolVersion.h>\n\n#include <xrpl/beast/utility/Journal.h>\n\n#include <xrpl/protocol/BuildInfo.h>\n\n#include <boost/asio/ssl.hpp>\n\n#include <boost/beast/core/tcp_stream.hpp>\n\n#include <boost/beast/http/dynamic_body.hpp>\n\n#include <boost/beast/http/empty_body.hpp>\n\n#include <boost/beast/http/fields.hpp>\n\n#include <boost/beast/ssl/ssl_stream.hpp>\n\n#include <optional>\n\n#include <utility>\n\nnamespace ripple {\n\nusing socket_type = boost::beast::tcp_stream;\n\nusing stream_type = boost::beast::ssl_stream<socket_type>;\n\nusing request_type =\n\nboost::beast::http::request<boost::beast::http::empty_body>;\n\nusing http_request_type =\n\nboost::beast::http::request<boost::beast::http::dynamic_body>;\n\nusing http_response_type =\n\nboost::beast::http::response<boost::beast::http::dynamic_body>;\n\nstd::optional<uint256>",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/Handshake.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the interface for the handshake process in the Ripple (XRPL) overlay network. It provides functions for creating and verifying handshake messages between peers, building HTTP request and response headers for feature negotiation, and managing shared values for secure communication. The file includes utilities to check and set feature flags (such as compression, ledger replay, transaction relay reduction, and validator peer relay reduction) in HTTP headers, and to construct appropriate handshake requests and responses. It uses Boost.Beast and Boost.Asio SSL for networking and HTTP handling, and integrates with the main application context. No classes are defined; the file consists of function declarations and feature flag constants.",
+            "functions": [
+                "makeSharedValue",
+                "buildHandshake",
+                "verifyHandshake",
+                "makeRequest",
+                "makeResponse",
+                "getFeatureValue",
+                "isFeatureValue",
+                "featureEnabled",
+                "peerFeatureEnabled",
+                "peerFeatureEnabled",
+                "makeFeaturesRequestHeader",
+                "makeFeaturesResponseHeader"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STIssue.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STISSUE_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STISSUE_H_INCLUDED\n\n#include <xrpl/basics/CountedObject.h>\n\n#include <xrpl/protocol/Asset.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <xrpl/protocol/Serializer.h>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STIssue.h.txt",
+            "namespaces": "",
+            "description": "This file defines the STIssue class, which represents an 'issue' (asset or currency) in the XRPL protocol. STIssue inherits from STBase and CountedObject, and encapsulates an Asset object, providing type-safe access and manipulation of asset data. The class supports construction from various sources (default, copy, serialized data, or specific asset types), and provides methods to get or set the underlying asset, check its type, serialize/deserialize, compare for equality or ordering, and output textual or JSON representations. The class ensures consistency between asset types and their native status, throwing exceptions on mismatches. Several operator overloads are provided for comparison with other STIssue or Asset objects. The file also includes a utility function to construct an STIssue from JSON.",
+            "functions": [
+                "STIssue",
+                "STIssue",
+                "STIssue",
+                "STIssue",
+                "STIssue",
+                "operator=",
+                "get",
+                "holds",
+                "value",
+                "setIssue",
+                "getSType",
+                "getText",
+                "getJson",
+                "add",
+                "isEquivalent",
+                "isDefault",
+                "operator==",
+                "operator<=>",
+                "operator==",
+                "operator<=>",
+                "copy",
+                "move",
+                "STIssue",
+                "issueFromJson",
+                "holds",
+                "get",
+                "value",
+                "setIssue",
+                "operator==",
+                "operator<=>",
+                "operator==",
+                "operator<=>"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h",
+        "content": "case protocol::mtTRANSACTIONS:\n\nsuccess = detail::invoke<protocol::TMTransactions>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtSQUELCH:\n\nsuccess =\n\ndetail::invoke<protocol::TMSquelch>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtPROOF_PATH_REQ:\n\nsuccess = detail::invoke<protocol::TMProofPathRequest>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtPROOF_PATH_RESPONSE:\n\nsuccess = detail::invoke<protocol::TMProofPathResponse>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtREPLAY_DELTA_REQ:\n\nsuccess = detail::invoke<protocol::TMReplayDeltaRequest>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ncase protocol::mtREPLAY_DELTA_RESPONSE:\n\nsuccess = detail::invoke<protocol::TMReplayDeltaResponse>(\n\n\n\nheader, buffers, handler);\n\nbreak;\n\ndefault:\n\nhandler.onMessageUnknown(header\n\n\n\n>message_type);\n\nsuccess = true;\n\nbreak;\n\n}\n\nresult.first = header\n\n\n\n>total_wire_size;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the core logic for handling protocol messages in the Ripple (XRPL) overlay network. It provides utilities to identify message types and names, parse message headers (including support for compressed and uncompressed messages), and extract message content from network buffers. The MessageHeader struct encapsulates metadata about each message, such as size, type, and compression algorithm. The file includes template functions to parse and dispatch protocol buffer messages to appropriate handler callbacks based on their type, supporting a wide range of XRPL protocol messages. Error handling is integrated for malformed or unsupported messages, and the design supports extensibility for new message types and compression algorithms.",
+            "functions": [
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageName",
+                "buffersBegin",
+                "buffersEnd",
+                "parseMessageHeader",
+                "parseMessageContent",
+                "invoke",
+                "invokeProtocolMessage"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "\"107.150.55.21:6561\",\"54.186.230.77:51235\",\"54.187.110.243:51235\",\n\n\"85.127.34.221:51235\",\"50.43.33.236:51235\",\"54.187.138.75:51235\"]}\n\n```\n\n#### Standard Fields\n\n| Field Name          \t|  Request          \t| Response          \t| |---------------------\t|:-----------------:\t|:-----------------:\t| | `User-Agent`        \t| :heavy_check_mark: \t|                   \t|\n\nThe `User-Agent` field indicates the version of the software that the peer that is making the HTTP request is using. No semantic meaning is assigned to the value in this field but it is recommended that implementations specify the version of the software that is used.\n\nSee [RFC2616 &sect;14.43](https://www.w3.org/Protocols/rfc2616/rfc2616\n\n\n\nsec14.html#sec14.43).\n\n| Field Name          \t|  Request          \t| Response          \t| |---------------------\t|:-----------------:\t|:-----------------:\t| | `Server`            \t|                   \t| :heavy_check_mark: \t|",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/PlainHTTPPeer.h",
+        "content": "if (!socket_.is_open())\n\nreturn;\n\nboost::asio::spawn(\n\nthis\n\n\n\n>strand_,\n\nstd::bind(\n\n&PlainHTTPPeer::do_read,\n\nthis\n\n\n\n>shared_from_this(),\n\nstd::placeholders::_1));\n\n}\n\ntemplate <class Handler>\n\nstd::shared_ptr<WSSession>\n\nPlainHTTPPeer<Handler>::websocketUpgrade()\n\n{\n\nauto ws = this\n\n\n\n>ios().template emplace<PlainWSPeer<Handler>>(\n\nthis\n\n\n\n>port_,\n\nthis\n\n\n\n>handler_,\n\nthis\n\n\n\n>remote_address_,\n\nstd::move(this\n\n\n\n>message_),\n\nstd::move(stream_),\n\nthis\n\n\n\n>journal_);\n\nreturn ws;\n\n}\n\ntemplate <class Handler> void PlainHTTPPeer<Handler>::do_request() { ++this->request_count_; auto const what = this->handler_.onHandoff( this->session(), std::move(this->message_), this->remote_address_); if (what.moved) return; boost::system::error_code ec; if (what.response) {\n\nif (!what.keep_alive)\n\nsocket_.shutdown(socket_type::shutdown_receive, ec);\n\nif (ec)\n\nreturn this\n\n\n\n>fail(ec, \"request\");\n\nreturn this\n\n\n\n>write(what.response, what.keep_alive);\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/PlainHTTPPeer.h.txt",
+            "namespaces": "",
+            "description": "This file defines the PlainHTTPPeer class template, which handles plain (non-encrypted) HTTP peer connections for the XRPL server. It inherits from BaseHTTPPeer and manages the lifecycle of an HTTP session over a TCP socket, including accepting connections, reading requests, handling HTTP handoff and upgrades to WebSocket, and closing connections. The class uses Boost.Asio and Boost.Beast for asynchronous networking and HTTP protocol handling. Key methods include run (to start the session), websocketUpgrade (to upgrade to a WebSocket session), do_request (to process HTTP requests and responses), and do_close (to close the connection). The implementation ensures proper handling of keep-alive, shutdown, and error conditions, and optimizes loopback connections by disabling Nagle's algorithm.",
+            "functions": [
+                "PlainHTTPPeer",
+                "run",
+                "websocketUpgrade",
+                "do_request",
+                "do_close",
+                "PlainHTTPPeer",
+                "run",
+                "websocketUpgrade",
+                "do_request",
+                "do_close"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/STObject.cpp",
+        "content": "#include <xrpl/basics/Blob.h>\n\n#include <xrpl/basics/Log.h>\n\n#include <xrpl/basics/Slice.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/json/json_value.h>\n\n#include <xrpl/protocol/AccountID.h>\n\n#include <xrpl/protocol/Feature.h>\n\n#include <xrpl/protocol/HashPrefix.h>\n\n#include <xrpl/protocol/InnerObjectFormats.h>\n\n#include <xrpl/protocol/Rules.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/SOTemplate.h>\n\n#include <xrpl/protocol/STAccount.h>\n\n#include <xrpl/protocol/STAmount.h>\n\n#include <xrpl/protocol/STArray.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <xrpl/protocol/STBitString.h>\n\n#include <xrpl/protocol/STBlob.h>\n\n#include <xrpl/protocol/STCurrency.h>\n\n#include <xrpl/protocol/STInteger.h>\n\n#include <xrpl/protocol/STIssue.h>\n\n#include <xrpl/protocol/STNumber.h>\n\n#include <xrpl/protocol/STObject.h>\n\n#include <xrpl/protocol/STPathSet.h>\n\n#include <xrpl/protocol/STVector256.h>",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/STObject.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the STObject class, a core data structure in the Ripple (XRPL) protocol for representing serialized objects with fields. The class supports construction from templates, serialization/deserialization, field access and mutation, template enforcement, and JSON conversion. It manages a vector of fields (v_), supports deep copying and moving, and enforces field presence and order according to templates. The class provides methods for field lookup, addition, deletion, and type-safe accessors for various field types (integers, blobs, arrays, amounts, etc.). It also handles object equivalence, hashing (for signing and general use), and flag manipulation. The implementation includes error handling for template mismatches, duplicate fields, and invalid field access, ensuring data integrity and protocol compliance.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/ServerHandler.cpp",
+        "content": "if (count == 0) log << \"Warning: No peer protocol configured\"; }\n\nreturn result;\n\n}\n\nstatic void setup_Client(ServerHandler::Setup& setup) { decltype(setup.ports)::const_iterator iter; for (iter = setup.ports.cbegin(); iter != setup.ports.cend(); ++iter) if (iter->protocol.count(\"http\") > 0 || iter->protocol.count(\"https\") > 0) break; if (iter == setup.ports.cend()) return; setup.client.secure = iter->protocol.count(\"https\") > 0; setup.client.ip = beast::IP::is_unspecified(iter->ip) ?\n\n(iter->ip.is_v6() ? \"::1\" : \"127.0.0.1\") : iter->ip.to_string(); setup.client.port = iter->port; setup.client.user = iter->user; setup.client.password = iter->password; setup.client.admin_user = iter->admin_user; setup.client.admin_password = iter->admin_password; }",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the ServerHandler class for the XRPL (Ripple) server, responsible for handling incoming HTTP and WebSocket RPC requests, managing server ports, authentication, resource usage, and request processing. It includes logic for accepting and handing off connections, authorizing requests, parsing and validating JSON-RPC requests (including batch requests), managing resource limits and roles, and generating appropriate HTTP or WebSocket responses. The file also provides setup utilities for configuring server ports, SSL contexts, and client/overlay endpoints based on configuration files. Error handling, logging, and request duration tracking are integrated throughout. The ServerHandler::Setup class and related functions help parse and apply server configuration. The code ensures secure, efficient, and standards-compliant handling of RPC traffic for the XRPL server.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/basics/TaggedCache.ipp",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2012, 2013 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/core/Coro.ipp",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2012, 2013 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/ledger/detail/ReadViewFwdRange.ipp",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2012, 2013 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/features.macro",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2024 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/ledger_entries.macro",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2024 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/transactions.macro",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2024 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/sfields.macro",
+        "content": "//------------------------------------------------------------------------------ /* This file is part of rippled: https://github.com/ripple/rippled Copyright (c) 2024 Ripple Labs Inc.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose  with  or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE  SOFTWARE IS PROVIDED AS IS AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */ //==============================================================================",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/digest.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_DIGEST_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_DIGEST_H_INCLUDED\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/crypto/secure_erase.h>\n\n#include <boost/endian/conversion.hpp>\n\n#include <algorithm>\n\n#include <array>\n\nnamespace ripple {\n\nstruct openssl_ripemd160_hasher { public: static constexpr auto const endian = boost::endian::order::native;\n\nusing result_type = std::array<std::uint8_t, 20>;\n\nopenssl_ripemd160_hasher();\n\nvoid\n\noperator()(void const\n\n\n\ndata, std::size_t size) noexcept;\n\nexplicit\n\noperator result_type() noexcept;\n\nprivate:\n\nchar ctx_[96];\n\n};\n\nstruct openssl_sha512_hasher { public: static constexpr auto const endian = boost::endian::order::native;\n\nusing result_type = std::array<std::uint8_t, 64>;\n\nopenssl_sha512_hasher();\n\nvoid\n\noperator()(void const\n\n\n\ndata, std::size_t size) noexcept;\n\nexplicit\n\noperator result_type() noexcept;\n\nprivate:\n\nchar ctx_[216];\n\n};",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/digest.h.txt",
+            "namespaces": "",
+            "description": "This header file defines cryptographic hashers for the XRPL protocol, providing classes and utilities for computing RIPEMD-160, SHA-256, SHA-512, and combined hash digests using OpenSSL. The main classes are openssl_ripemd160_hasher, openssl_sha256_hasher, openssl_sha512_hasher, and ripesha_hasher (which computes RIPEMD-160 of a SHA-256 hash). There is also a template class basic_sha512_half_hasher (with secure and non-secure variants) that computes the first half of a SHA-512 digest, with optional secure memory erasure. The file provides utility functions sha512Half and sha512Half_s for convenient hashing of multiple arguments. The design emphasizes endian safety and secure erasure for sensitive data.",
+            "functions": [
+                "openssl_ripemd160_hasher::openssl_ripemd160_hasher",
+                "openssl_ripemd160_hasher::operator()",
+                "openssl_ripemd160_hasher::operator result_type",
+                "openssl_sha512_hasher::openssl_sha512_hasher",
+                "openssl_sha512_hasher::operator()",
+                "openssl_sha512_hasher::operator result_type",
+                "openssl_sha256_hasher::openssl_sha256_hasher",
+                "openssl_sha256_hasher::operator()",
+                "openssl_sha256_hasher::operator result_type",
+                "ripesha_hasher::operator()",
+                "ripesha_hasher::operator result_type",
+                "detail::basic_sha512_half_hasher::~basic_sha512_half_hasher",
+                "detail::basic_sha512_half_hasher::operator()",
+                "detail::basic_sha512_half_hasher::operator result_type",
+                "detail::basic_sha512_half_hasher::erase",
+                "detail::basic_sha512_half_hasher::erase",
+                "sha512Half",
+                "sha512Half_s"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/org/xrpl/rpc/v1/README.md",
+        "content": "For fields that are reused across different message types, we define the field as a unique message type in common.proto. The name of the message type is the same as the field name, with the exception that the field name itself is snake case, whereas the message type is in Pascal case. The message type has one field, called `value`. This pattern does not need to be strictly followed across the entire API, but should be followed for transactions and ledger objects, since there is a high rate of field reuse across different transactions and ledger objects. The motivation for this pattern is two-fold. First, we ensure the field has the same type everywhere that the field is used. Second, wrapping primitive types in their own message type prevents default initialization of those primitive types. For example, `uint32` is initialized to `0` if not explicitly set; there is no way to tell if the client or server set the field to `0` (which may be a valid value for the field) or the field was",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolVersion.h",
+        "content": "#ifndef RIPPLE_OVERLAY_PROTOCOLVERSION_H_INCLUDED\n\n#define RIPPLE_OVERLAY_PROTOCOLVERSION_H_INCLUDED\n\n#include <boost/beast/core/string.hpp>\n\n#include <cstdint>\n\n#include <optional>\n\n#include <string>\n\n#include <utility>\n\n#include <vector>\n\nnamespace ripple {\n\nusing ProtocolVersion = std::pair<std::uint16_t, std::uint16_t>;\n\ninline constexpr ProtocolVersion\n\nmake_protocol(std::uint16_t major, std::uint16_t minor)\n\n{\n\nreturn {major, minor};\n\n}\n\nstd::string\n\nto_string(ProtocolVersion const& p);\n\nstd::vector<ProtocolVersion>\n\nparseProtocolVersions(boost::beast::string_view const& s);\n\nstd::optional<ProtocolVersion>\n\nnegotiateProtocolVersion(std::vector<ProtocolVersion> const& versions);\n\nstd::optional<ProtocolVersion>\n\nnegotiateProtocolVersion(boost::beast::string_view const& versions);\n\nstd::string const&\n\nsupportedProtocolVersions();\n\nbool\n\nisProtocolSupported(ProtocolVersion const& v);\n\n}\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolVersion.h.txt",
+            "namespaces": "",
+            "description": "This header file defines types and functions for handling protocol versions in the Ripple overlay network. It introduces ProtocolVersion as a pair of 16-bit unsigned integers (major, minor). The file provides functions to create protocol versions, convert them to strings, parse protocol versions from strings, negotiate a protocol version from a list or string, retrieve supported protocol versions, and check if a protocol version is supported.",
+            "functions": [
+                "make_protocol",
+                "to_string",
+                "parseProtocolVersions",
+                "negotiateProtocolVersion",
+                "negotiateProtocolVersion",
+                "supportedProtocolVersions",
+                "isProtocolSupported"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp",
+        "content": "if (packet.query())\n\n{\n\nif (send_queue_.size() >= Tuning::dropSendQueue) { JLOG(p_journal_.debug()) << \"GetObject: Large send queue\"; return; }\n\nif (packet.type() == protocol::TMGetObjectByHash::otFETCH_PACK)\n\n{\n\ndoFetchPack(m);\n\nreturn;\n\n}\n\nif (packet.type() == protocol::TMGetObjectByHash::otTRANSACTIONS)\n\n{\n\nif (!txReduceRelayEnabled())\n\n{\n\nJLOG(p_journal_.error())\n\n<< \"TMGetObjectByHash: tx reduce\n\n\n\nrelay is disabled\";\n\nfee_.update(Resource::feeMalformedRequest, \"disabled\");\n\nreturn;\n\n}\n\nstd::weak_ptr<PeerImp> weak = shared_from_this(); app_.getJobQueue().addJob( jtREQUESTED_TXN, \"doTransactions\", [weak, m]() { if (auto peer = weak.lock()) peer->doTransactions(m); }); return; }\n\nprotocol::TMGetObjectByHash reply;\n\nreply.set_query(false);\n\nif (packet.has_seq())\n\nreply.set_seq(packet.seq());\n\nreply.set_type(packet.type());\n\nif (packet.has_ledgerhash())\n\n{",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the PeerImp class, which represents a peer connection in the XRPL (Ripple) overlay network. PeerImp manages the lifecycle and communication of a peer, including connection setup, message sending and receiving, protocol negotiation, resource usage tracking, and feature support. It handles various protocol messages (transactions, validations, proposals, ledger data, etc.), manages transaction and ledger queues, enforces resource limits, and supports features like transaction reduce-relay, ledger replay, and squelching. The class also tracks peer metrics (latency, bytes sent/received), manages peer status and tracking (converged/diverged), and interacts with other network components such as the job queue, ledger master, validators, and resource manager. The file includes logic for relaying messages, handling protocol errors, charging peers for resource usage, and maintaining peer state for network health and synchronization.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp",
+        "content": "if (!negotiatedProtocol) return fail( \"processResponse: Unable to negotiate protocol version\"); }\n\nauto const sharedValue = makeSharedValue(*stream_ptr_, journal_); if (!sharedValue) return close();\n\ntry\n\n{\n\nauto publicKey = verifyHandshake(\n\nresponse_,\n\n\n\nsharedValue,\n\noverlay_.setup().networkID,\n\noverlay_.setup().public_ip,\n\nremote_endpoint_.address(),\n\napp_);\n\nJLOG(journal_.info()) << \"Public Key: \" << toBase58(TokenType::NodePublic, publicKey);\n\nJLOG(journal_.debug()) << \"Protocol: \" << to_string(*negotiatedProtocol);\n\nauto const member = app_.cluster().member(publicKey); if (member) { JLOG(journal_.info()) << \"Cluster name: \" << *member; }\n\nauto const result = overlay_.peerFinder().activate( slot_, publicKey, static_cast<bool>(member)); if (result != PeerFinder::Result::success) return fail(\"Outbound slots full\");",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the ConnectAttempt class, which manages the process of establishing an outbound peer connection in the Ripple (XRPL) overlay network. The class handles the asynchronous connection lifecycle using Boost.Asio, including connecting to a remote endpoint, performing SSL handshakes, sending and receiving handshake HTTP requests, handling timeouts, and processing responses. It manages connection state, error handling, and resource cleanup. If the connection and handshake succeed, it negotiates protocol versions, verifies peer identity, and activates the peer within the overlay network. The class also handles redirects and service unavailability responses, and ensures proper logging and resource management throughout the connection attempt.",
+            "functions": [
+                "ConnectAttempt::ConnectAttempt",
+                "ConnectAttempt::~ConnectAttempt",
+                "ConnectAttempt::stop",
+                "ConnectAttempt::run",
+                "ConnectAttempt::close",
+                "ConnectAttempt::fail",
+                "ConnectAttempt::fail",
+                "ConnectAttempt::setTimer",
+                "ConnectAttempt::cancelTimer",
+                "ConnectAttempt::onTimer",
+                "ConnectAttempt::onConnect",
+                "ConnectAttempt::onHandshake",
+                "ConnectAttempt::onWrite",
+                "ConnectAttempt::onRead",
+                "ConnectAttempt::onShutdown",
+                "ConnectAttempt::processResponse"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/st.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_ST_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_ST_H_INCLUDED\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/STAccount.h>\n\n#include <xrpl/protocol/STAmount.h>\n\n#include <xrpl/protocol/STArray.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <xrpl/protocol/STBitString.h>\n\n#include <xrpl/protocol/STBlob.h>\n\n#include <xrpl/protocol/STInteger.h>\n\n#include <xrpl/protocol/STLedgerEntry.h>\n\n#include <xrpl/protocol/STNumber.h>\n\n#include <xrpl/protocol/STObject.h>\n\n#include <xrpl/protocol/STParsedJSON.h>\n\n#include <xrpl/protocol/STPathSet.h>\n\n#include <xrpl/protocol/STTx.h>\n\n#include <xrpl/protocol/STValidation.h>\n\n#include <xrpl/protocol/STVector256.h>\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/st.h.txt",
+            "namespaces": "",
+            "description": "This file is a header include guard for the XRPL protocol, aggregating and including various protocol-related header files such as SField, STAccount, STAmount, STArray, and others. It serves as a central point to include all standard types (ST) used in the XRPL protocol, but does not define any classes or functions itself.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/Handler.h",
+        "content": "class Object;\n\n}\n\nnamespace ripple {\n\nnamespace RPC {\n\nenum Condition { NO_CONDITION = 0, NEEDS_NETWORK_CONNECTION = 1, NEEDS_CURRENT_LEDGER = 1 << 1, NEEDS_CLOSED_LEDGER = 1 << 2, };\n\nstruct Handler { template <class JsonValue> using Method = std::function<Status(JsonContext&, JsonValue&)>;\n\nchar const\n\n\n\nname_;\n\nMethod<Json::Value> valueMethod_;\n\nRole role_;\n\nRPC::Condition condition_;\n\nunsigned minApiVer_ = apiMinimumSupportedVersion;\n\nunsigned maxApiVer_ = apiMaximumValidVersion;\n\n};\n\nHandler const* getHandler(unsigned int version, bool betaEnabled, std::string const&);\n\ntemplate <class Value> Json::Value makeObjectValue( Value const& value, Json::StaticString const& field = jss::message) { Json::Value result(Json::objectValue); result[field] = value; return result; }\n\nstd::set<char const\n\n\n\n>\n\ngetHandlerNames();\n\ntemplate <class T>\n\nerror_code_i\n\nconditionMet(Condition condition_required, T& context)\n\n{",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/Handler.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the structure and logic for handling RPC (Remote Procedure Call) methods in the XRPL (XRP Ledger) server. It introduces an enum for various conditions required to execute RPC handlers, such as network connectivity and ledger state. The core structure is the Handler, which associates an RPC method name, its implementation, required user role, and conditions. The file provides utility functions to retrieve handlers by name and version, generate JSON objects for responses, list available handler names, and check if the necessary conditions are met before executing a handler. The conditionMet function performs a series of checks on the application and network state to ensure the requested RPC can be processed, returning appropriate error codes if requirements are not satisfied.",
+            "functions": [
+                "getHandler",
+                "makeObjectValue",
+                "getHandlerNames",
+                "conditionMet"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_TER_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_TER_H_INCLUDED\n\n#include <xrpl/basics/safe_cast.h>\n\n#include <xrpl/json/json_value.h>\n\n#include <optional>\n\n#include <ostream>\n\n#include <string>\n\n#include <unordered_map>\n\nnamespace ripple {\n\nusing TERUnderlyingType = int;\n\nenum TELcodes : TERUnderlyingType {\n\ntelLOCAL_ERROR =\n\n\n\n399,\n\ntelBAD_DOMAIN,\n\ntelBAD_PATH_COUNT,\n\ntelBAD_PUBLIC_KEY,\n\ntelFAILED_PROCESSING,\n\ntelINSUF_FEE_P,\n\ntelNO_DST_PARTIAL,\n\ntelCAN_NOT_QUEUE,\n\ntelCAN_NOT_QUEUE_BALANCE,\n\ntelCAN_NOT_QUEUE_BLOCKS,\n\ntelCAN_NOT_QUEUE_BLOCKED,\n\ntelCAN_NOT_QUEUE_FEE,\n\ntelCAN_NOT_QUEUE_FULL,\n\ntelWRONG_NETWORK,\n\ntelREQUIRES_NETWORK_ID,\n\ntelNETWORK_ID_MAKES_TX_NON_CANONICAL,\n\ntelENV_RPC_FAILED\n\n};\n\nenum TEMcodes : TERUnderlyingType {\n\ntemMALFORMED =\n\n\n\n299,\n\ntemBAD_AMOUNT,\n\ntemBAD_CURRENCY,\n\ntemBAD_EXPIRATION,\n\ntemBAD_FEE,\n\ntemBAD_ISSUER,\n\ntemBAD_LIMIT,\n\ntemBAD_OFFER,\n\ntemBAD_PATH,\n\ntemBAD_PATH_LOOP,\n\ntemBAD_REGKEY,\n\ntemBAD_SEND_XRP_LIMIT,\n\ntemBAD_SEND_XRP_MAX,",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/TER.h.txt",
+            "namespaces": "",
+            "description": "This file defines the transaction engine result (TER) codes and related utilities for the XRP Ledger protocol. It introduces several enumerations (TELcodes, TEMcodes, TEFcodes, TERcodes, TEScodes, TECcodes) representing different categories of transaction results, each with specific integer values. The TERSubset template class provides a type-safe wrapper for these codes, supporting construction, assignment, comparison, and conversion to/from integers and JSON. Type traits (CanCvtToNotTEC, CanCvtToTER) control which code types can be converted to NotTEC and TER types, respectively. The file also provides utility functions for comparing TER codes, checking code categories (e.g., isTelLocal, isTesSuccess), and mapping codes to human-readable strings and tokens. Overall, this header centralizes the definition, categorization, and handling of transaction result codes in the XRP Ledger codebase.",
+            "functions": [
+                "TERtoInt",
+                "TERtoInt",
+                "TERtoInt",
+                "TERtoInt",
+                "TERtoInt",
+                "TERtoInt",
+                "fromInt",
+                "operator=",
+                "operator=",
+                "operator=",
+                "operator bool",
+                "operator Json::Value",
+                "operator<<",
+                "TERtoInt",
+                "operator==",
+                "operator!=",
+                "operator<",
+                "operator<=",
+                "operator>",
+                "operator>=",
+                "isTelLocal",
+                "isTemMalformed",
+                "isTefFailure",
+                "isTerRetry",
+                "isTesSuccess",
+                "isTecClaim",
+                "transResults",
+                "transResultInfo",
+                "transToken",
+                "transHuman",
+                "transCode"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/ripple.proto",
+        "content": "message TMPing { enum pingType { ptPING = 0; // we want a reply ptPONG = 1; // this is a reply } required pingType type      = 1; optional uint32 seq         = 2; // detect stale replies, ensure other side is reading optional uint64 pingTime    = 3; // know when we think we sent the ping optional uint64 netTime     = 4; }\n\nmessage TMSquelch { required bool squelch           = 1; // squelch if true, otherwise unsquelch required bytes validatorPubKey  = 2; // validator's public key optional uint32 squelchDuration = 3; // squelch duration in seconds }\n\nenum TMLedgerMapType { lmTRANASCTION   = 1;        // transaction map lmACCOUNT_STATE = 2;        // account state map }\n\nmessage TMProofPathRequest { required bytes key = 1; required bytes ledgerHash = 2; required TMLedgerMapType type = 3; }",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Book.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_BOOK_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_BOOK_H_INCLUDED\n\n#include <xrpl/basics/CountedObject.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/protocol/Issue.h>\n\n#include <boost/utility/base_from_member.hpp>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Book.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the Book class in the Ripple (XRPL) protocol, representing an order book for trading between two Issues (currencies or tokens), with an optional domain identifier. The Book class includes constructors, equality and comparison operators, and utility functions such as isConsistent, to_string, and reversed. Hashing support is provided for both Book and Issue types, with custom std::hash and boost::hash specializations to enable their use in hash-based containers. The file also includes functions for hashing Book objects and for outputting them to streams. Overall, the file provides the core data structure and related utilities for representing and manipulating order books in the XRPL protocol.",
+            "functions": [
+                "Book::Book",
+                "Book::Book",
+                "isConsistent",
+                "to_string",
+                "operator<<",
+                "hash_append",
+                "reversed",
+                "operator==",
+                "operator<=>",
+                "std::hash<ripple::Issue>::hash",
+                "std::hash<ripple::Issue>::operator()",
+                "std::hash<ripple::Book>::hash",
+                "std::hash<ripple::Book>::operator()",
+                "boost::hash<ripple::Issue>::hash",
+                "boost::hash<ripple::Book>::hash"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.h",
+        "content": "void fail(std::string const& name, error_code ec);\n\nvoid\n\ngracefulClose();\n\nvoid\n\nsetTimer();\n\nvoid\n\ncancelTimer();\n\nstatic std::string\n\nmakePrefix(id_t id);\n\nvoid\n\nonTimer(boost::system::error_code const& ec);\n\nvoid\n\nonShutdown(error_code ec);\n\nvoid\n\ndoAccept();\n\nstd::string\n\nname() const;\n\nstd::string\n\ndomain() const;\n\nvoid\n\ndoProtocolStart();\n\nvoid\n\nonReadMessage(error_code ec, std::size_t bytes_transferred);\n\nvoid\n\nonWriteMessage(error_code ec, std::size_t bytes_transferred);\n\nvoid\n\nhandleTransaction(\n\nstd::shared_ptr<protocol::TMTransaction> const& m,\n\nbool eraseTxQueue,\n\nbool batch);\n\nvoid\n\nhandleHaveTransactions(\n\nstd::shared_ptr<protocol::TMHaveTransactions> const& m);\n\npublic:\n\nvoid\n\nonMessageUnknown(std::uint16_t type);\n\nvoid\n\nonMessageBegin(\n\nstd::uint16_t type,\n\nstd::shared_ptr<::google::protobuf::Message> const& m,\n\nstd::size_t size,\n\nstd::size_t uncompressed_size,\n\nbool isCompressed);\n\nvoid\n\nonMessageEnd(\n\nstd::uint16_t type,",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.h.txt",
+            "namespaces": "",
+            "description": "This file defines the PeerImp class, which implements the core logic for a peer connection in the XRPL overlay network. PeerImp manages the state, communication, and protocol handling for a single peer, including message sending/receiving, resource usage, protocol versioning, compression, transaction and ledger synchronization, and feature negotiation. It tracks peer metrics, manages transaction and ledger queues, and handles protocol-specific messages. The class also supports features like transaction reduce relay, ledger replay, and squelching. PeerImp inherits from Peer and OverlayImpl::Child, and is tightly integrated with the application's overlay and resource management subsystems. The file also defines supporting structures for metrics tracking and resource charging with context.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Peer.h",
+        "content": "#ifndef RIPPLE_OVERLAY_PEER_H_INCLUDED\n\n#define RIPPLE_OVERLAY_PEER_H_INCLUDED\n\n#include <xrpld/overlay/Message.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/beast/net/IPEndpoint.h>\n\n#include <xrpl/json/json_value.h>\n\n#include <xrpl/protocol/PublicKey.h>\n\nnamespace ripple {\n\nnamespace Resource {\n\nclass Charge;\n\n}\n\nenum class ProtocolFeature {\n\nValidatorListPropagation,\n\nValidatorList2Propagation,\n\nLedgerReplay,\n\n};",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Peer.h.txt",
+            "namespaces": "",
+            "description": "This file defines the abstract Peer class for the Ripple (XRPL) overlay network. The Peer class represents a network peer and specifies a set of pure virtual methods for peer communication, transaction queue management, resource charging, feature support, ledger and transaction set queries, and status reporting. It includes methods for sending messages, managing transaction queues, charging for resource usage, retrieving peer information (such as public key, address, and score), checking protocol feature support, handling publisher list sequences, and querying ledger/transaction set availability. The file also defines a ProtocolFeature enum for supported protocol features and includes necessary dependencies. The Peer class is intended to be subclassed for concrete peer implementations.",
+            "functions": [
+                "send",
+                "getRemoteAddress",
+                "sendTxQueue",
+                "addTxQueue",
+                "removeTxQueue",
+                "charge",
+                "id",
+                "cluster",
+                "isHighLatency",
+                "getScore",
+                "getNodePublic",
+                "json",
+                "supportsFeature",
+                "publisherListSequence",
+                "setPublisherListSequence",
+                "getClosedLedgerHash",
+                "hasLedger",
+                "ledgerRange",
+                "hasTxSet",
+                "cycleStatus",
+                "hasRange",
+                "compressionEnabled",
+                "txReduceRelayEnabled"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/detail/InboundLedger.cpp",
+        "content": "if (mSeq != 0)\n\nio\n\n\n\n>set_ledgerseq(mSeq);\n\n}\n\n}\n\nauto packet = std::make_shared<Message>(tmBH, protocol::mtGET_OBJECTS); auto const& peerIds = mPeerSet->getPeerIds(); std::for_each( peerIds.begin(), peerIds.end(), [this, &packet](auto id) { if (auto p = app_.overlay().findPeerByShortID(id)) { mByHash = false; p->send(packet); } }); } else { JLOG(journal_.info()) << \"getNeededHashes says acquire is complete\"; mHaveHeader = true; mHaveTransactions = true; mHaveState = true; complete_ = true; } } }\n\nif (!mHaveHeader && !failed_) { tmGL.set_itype(protocol::liBASE); if (mSeq != 0) tmGL.set_ledgerseq(mSeq); JLOG(journal_.trace()) << \"Sending header request to \" << (peer ? \"selected peer\" : \"all peers\"); mPeerSet->sendRequest(tmGL, peer); return; }\n\nif (mLedger)\n\ntmGL.set_ledgerseq(mLedger\n\n\n\n>info().seq);\n\nif (reason != TriggerReason::reply)\n\n{\n\ntmGL.set_querydepth(0); } else if (peer && peer->isHighLatency()) {\n\ntmGL.set_querydepth(2);\n\n}\n\nelse\n\ntmGL.set_querydepth(1);",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/ledger/detail/InboundLedger.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the InboundLedger class, which manages the acquisition and assembly of ledgers from the network in the XRPL (Ripple) node software. The class coordinates fetching ledger data (header, state, and transactions) from peers, handles timeouts and retries, and ensures data integrity. It interacts with local storage to check for already available data, requests missing pieces from peers, and processes incoming data. The class maintains state about which parts of the ledger have been acquired, manages peer selection and request strategies, and finalizes the ledger once all required data is obtained. It also provides JSON status reporting and handles concurrency and error conditions robustly. The file includes logic for filtering duplicate node requests, managing peer data quality, and integrating with the job queue for asynchronous processing. The PeerDataCounts struct is used internally to track and sample peers based on the usefulness of their responses.",
+            "functions": [
+                "InboundLedger::InboundLedger",
+                "InboundLedger::init",
+                "InboundLedger::getPeerCount",
+                "InboundLedger::update",
+                "InboundLedger::checkLocal",
+                "InboundLedger::~InboundLedger",
+                "neededHashes",
+                "InboundLedger::neededTxHashes",
+                "InboundLedger::neededStateHashes",
+                "InboundLedger::tryDB",
+                "InboundLedger::onTimer",
+                "InboundLedger::addPeers",
+                "InboundLedger::pmDowncast",
+                "InboundLedger::done",
+                "InboundLedger::trigger",
+                "InboundLedger::filterNodes",
+                "InboundLedger::takeHeader",
+                "InboundLedger::receiveNode",
+                "InboundLedger::takeAsRootNode",
+                "InboundLedger::takeTxRootNode",
+                "InboundLedger::getNeededHashes",
+                "InboundLedger::gotData",
+                "InboundLedger::processData",
+                "detail::PeerDataCounts::update",
+                "detail::PeerDataCounts::prune",
+                "detail::PeerDataCounts::sampleN",
+                "InboundLedger::runData",
+                "InboundLedger::getJson"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp",
+        "content": "if (!OverlayImpl::isPeerUpgrade(response_)) { JLOG(journal_.info()) << \"Unable to upgrade to peer protocol: \" << response_.result() << \" (\" << response_.reason() << \")\"; return close(); }\n\nstd::optional<ProtocolVersion> negotiatedProtocol;\n\n{ auto const pvs = parseProtocolVersions(response_[\"Upgrade\"]);\n\nif (pvs.size() == 1 && isProtocolSupported(pvs[0])) negotiatedProtocol = pvs[0];",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the ConnectAttempt class, which manages the process of establishing an outbound peer connection in the Ripple (XRPL) overlay network. The class handles the asynchronous connection lifecycle using Boost.Asio, including connecting to a remote endpoint, performing SSL handshakes, sending and receiving handshake HTTP requests, handling timeouts, and processing responses. It manages connection state, error handling, and resource cleanup. If the connection and handshake succeed, it negotiates protocol versions, verifies peer identity, and activates the peer within the overlay network. The class also handles redirects and service unavailability responses, and ensures proper logging and resource management throughout the connection attempt.",
+            "functions": [
+                "ConnectAttempt::ConnectAttempt",
+                "ConnectAttempt::~ConnectAttempt",
+                "ConnectAttempt::stop",
+                "ConnectAttempt::run",
+                "ConnectAttempt::close",
+                "ConnectAttempt::fail",
+                "ConnectAttempt::fail",
+                "ConnectAttempt::setTimer",
+                "ConnectAttempt::cancelTimer",
+                "ConnectAttempt::onTimer",
+                "ConnectAttempt::onConnect",
+                "ConnectAttempt::onHandshake",
+                "ConnectAttempt::onWrite",
+                "ConnectAttempt::onRead",
+                "ConnectAttempt::onShutdown",
+                "ConnectAttempt::processResponse"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/PayChan.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_PAYCHAN_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_PAYCHAN_H_INCLUDED\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/protocol/HashPrefix.h>\n\n#include <xrpl/protocol/Serializer.h>\n\n#include <xrpl/protocol/XRPAmount.h>\n\nnamespace ripple {\n\ninline void\n\nserializePayChanAuthorization(\n\nSerializer& msg,\n\nuint256 const& key,\n\nXRPAmount const& amt)\n\n{\n\nmsg.add32(HashPrefix::paymentChannelClaim);\n\nmsg.addBitString(key);\n\nmsg.add64(amt.drops());\n\n}\n\n}\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/PayChan.h.txt",
+            "namespaces": "",
+            "description": "This header file defines a single inline function, serializePayChanAuthorization, within the ripple namespace. The function serializes a payment channel authorization by adding a payment channel claim prefix, a channel key, and an amount (in drops) to a Serializer object. The file includes necessary dependencies for handling serialization, hash prefixes, and XRP amounts. No classes are defined in this file.",
+            "functions": [
+                "serializePayChanAuthorization"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/org/xrpl/rpc/v1/README.md",
+        "content": "To add a new gRPC method, add the gRPC method in xrp_ledger.proto. The method name should begin with a verb. Define the request and response types in their own file. The name of the request type should be the method name suffixed with `Request`, and the response type name should be the method name suffixed with `Response`. For example, the `GetAccountInfo` method has request type `GetAccountInfoRequest` and response type `GetAccountInfoResponse`.\n\nAfter defining the protobuf messages for the new method, add an instantiation of the templated `CallData` class in GRPCServerImpl::setupListeners(). The template parameters should be the request type and the response type.\n\nFinally, define the handler itself in the appropriate file under the src/ripple/rpc/handlers folder. If the method already has a JSON/Websocket equivalent, write the gRPC handler in the same file, and abstract common logic into helper functions (see Tx.cpp or AccountTx.cpp for an example).\n\n#### Testing",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/GRPCServer.h",
+        "content": "getUsage();\n\nstd::optional<boost::asio::ip::address>\n\ngetClientIpAddress();\n\nstd::optional<boost::asio::ip::tcp::endpoint>\n\ngetClientEndpoint();\n\nstd::optional<boost::asio::ip::address>\n\ngetProxiedClientIpAddress();\n\nstd::optional<boost::asio::ip::tcp::endpoint>\n\ngetProxiedClientEndpoint();\n\nstd::optional<std::string>\n\ngetUser();\n\nvoid\n\nsetIsUnlimited(Response& response, bool isUnlimited);\n\nbool\n\nclientIsUnlimited();\n\nbool\n\nwasForwarded();\n\nvoid\n\nforwardToP2p(RPC::GRPCContext<Request>& context);\n\n};\n\n};",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/main/GRPCServer.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the gRPC server infrastructure for the XRPLedger application. It introduces an abstract Processor class for handling asynchronous RPC processing, and a GRPCServerImpl class that manages the gRPC server lifecycle, request handling, and listener setup. GRPCServerImpl uses templates to support various request/response types and includes an inner CallData class that encapsulates the logic for processing individual RPC calls, including authentication, forwarding, and resource management. The GRPCServer class provides a simple interface to start and stop the server, delegating implementation to GRPCServerImpl. The design emphasizes modularity, thread safety, and extensibility for handling gRPC-based API requests in the XRPLedger ecosystem.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.h",
+        "content": "int flags,\n\nbool checkSignature,\n\nstd::shared_ptr<STTx const> const& stx,\n\nbool batch);\n\nvoid\n\ncheckPropose(\n\nbool isTrusted,\n\nstd::shared_ptr<protocol::TMProposeSet> const& packet,\n\nRCLCxPeerPos peerPos);\n\nvoid\n\ncheckValidation(\n\nstd::shared_ptr<STValidation> const& val,\n\nuint256 const& key,\n\nstd::shared_ptr<protocol::TMValidation> const& packet);\n\nvoid\n\nsendLedgerBase(\n\nstd::shared_ptr<Ledger const> const& ledger,\n\nprotocol::TMLedgerData& ledgerData);\n\nstd::shared_ptr<Ledger const>\n\ngetLedger(std::shared_ptr<protocol::TMGetLedger> const& m);\n\nstd::shared_ptr<SHAMap const>\n\ngetTxSet(std::shared_ptr<protocol::TMGetLedger> const& m) const;\n\nvoid\n\nprocessLedgerRequest(std::shared_ptr<protocol::TMGetLedger> const& m);\n\n};",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.h.txt",
+            "namespaces": "",
+            "description": "This file defines the PeerImp class, which implements the core logic for a peer connection in the XRPL overlay network. PeerImp manages the state, communication, and protocol handling for a single peer, including message sending/receiving, resource usage, protocol versioning, compression, transaction and ledger synchronization, and feature negotiation. It tracks peer metrics, manages transaction and ledger queues, and handles protocol-specific messages. The class also supports features like transaction reduce relay, ledger replay, and squelching. PeerImp inherits from Peer and OverlayImpl::Child, and is tightly integrated with the application's overlay and resource management subsystems. The file also defines supporting structures for metrics tracking and resource charging with context.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/SOTemplate.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_SOTEMPLATE_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_SOTEMPLATE_H_INCLUDED\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <functional>\n\n#include <initializer_list>\n\n#include <memory>\n\n#include <stdexcept>\n\nnamespace ripple {\n\nenum SOEStyle {\n\nsoeINVALID =\n\n\n\n1,\n\nsoeREQUIRED = 0,\n\nsoeOPTIONAL = 1,\n\nsoeDEFAULT = 2,\n\n};\n\nenum SOETxMPTIssue { soeMPTNone, soeMPTSupported, soeMPTNotSupported };",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/SOTemplate.h.txt",
+            "namespaces": "",
+            "description": "This header file defines classes and enums for representing and managing templates of serialized object (SO) fields in the Ripple protocol. The SOElement class encapsulates a single field (SField), its style (required, optional, or default), and its support for a specific transaction feature (MPT). The SOTemplate class manages a collection of SOElements, providing methods to iterate over elements, get their count, retrieve their style, and find their index. The file also defines enums for field style (SOEStyle) and MPT support (SOETxMPTIssue). The design supports both unique and common fields in templates, and enforces that fields are 'useful' at construction.",
+            "functions": [
+                "SOElement::init",
+                "SOElement::SOElement",
+                "SOElement::SOElement",
+                "SOElement::sField",
+                "SOElement::style",
+                "SOElement::supportMPT",
+                "SOTemplate::SOTemplate",
+                "SOTemplate::operator=",
+                "SOTemplate::SOTemplate",
+                "SOTemplate::begin",
+                "SOTemplate::cbegin",
+                "SOTemplate::end",
+                "SOTemplate::cend",
+                "SOTemplate::size",
+                "SOTemplate::getIndex",
+                "SOTemplate::style"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp",
+        "content": "void PeerImp::checkPropose( bool isTrusted, std::shared_ptr<protocol::TMProposeSet> const& packet, RCLCxPeerPos peerPos) { JLOG(p_journal_.trace()) << \"Checking \" << (isTrusted ? \"trusted\" : \"UNTRUSTED\") << \" proposal\";\n\nXRPL_ASSERT(packet, \"ripple::PeerImp::checkPropose : non\n\n\n\nnull packet\");\n\nif (!cluster() && !peerPos.checkSign()) { std::string desc{\"Proposal fails sig check\"}; JLOG(p_journal_.warn()) << desc; charge(Resource::feeInvalidSignature, desc); return; }\n\nbool relay;\n\nif (isTrusted) relay = app_.getOPs().processTrustedProposal(peerPos); else relay = app_.config().RELAY_UNTRUSTED_PROPOSALS == 1 || cluster();\n\nif (relay)\n\n{\n\nauto haveMessage = app_.overlay().relay(\n\n\n\npacket, peerPos.suppressionID(), peerPos.publicKey());\n\nif (!haveMessage.empty())\n\noverlay_.updateSlotAndSquelch(\n\npeerPos.suppressionID(),\n\npeerPos.publicKey(),\n\nstd::move(haveMessage),\n\nprotocol::mtPROPOSE_LEDGER);\n\n}\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the PeerImp class, which represents a peer connection in the XRPL (Ripple) overlay network. PeerImp manages the lifecycle and communication of a peer, including connection setup, message sending and receiving, protocol negotiation, resource usage tracking, and feature support. It handles various protocol messages (transactions, validations, proposals, ledger data, etc.), manages transaction and ledger queues, enforces resource limits, and supports features like transaction reduce-relay, ledger replay, and squelching. The class also tracks peer metrics (latency, bytes sent/received), manages peer status and tracking (converged/diverged), and interacts with other network components such as the job queue, ledger master, validators, and resource manager. The file includes logic for relaying messages, handling protocol errors, charging peers for resource usage, and maintaining peer state for network health and synchronization.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/serialize.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_SERIALIZE_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_SERIALIZE_H_INCLUDED\n\n#include <xrpl/basics/strHex.h>\n\n#include <xrpl/protocol/STObject.h>\n\n#include <xrpl/protocol/Serializer.h>\n\nnamespace ripple {\n\ntemplate <class Object>\n\nBlob\n\nserializeBlob(Object const& o)\n\n{\n\nSerializer s;\n\no.add(s);\n\nreturn s.peekData();\n\n}\n\ninline std::string\n\nserializeHex(STObject const& o)\n\n{\n\nreturn strHex(serializeBlob(o));\n\n}\n\n}\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/serialize.h.txt",
+            "namespaces": "",
+            "description": "This header file provides utility functions for serializing XRPL protocol objects. It defines a template function serializeBlob that serializes an object into a binary blob using a Serializer, and a function serializeHex that serializes an STObject into a hexadecimal string. The file includes necessary dependencies and wraps the functions in the ripple namespace.",
+            "functions": [
+                "serializeBlob",
+                "serializeHex"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "**1**: The Ripple-operated [Test Net](https://xrpl.org/xrp-test-net-faucet.html).\n\nIf a server configured to join one network receives a connection request from a server configured to join another network, the request should fail with an appropriate HTTP error code (e.g. by sending an HTTP 400 \"Bad Request\" response).\n\n| Field Name          \t|  Request          \t| Response          \t| |---------------------\t|:-----------------:\t|:-----------------:\t| | `Network-Time`      \t| :white_check_mark: \t| :white_check_mark: \t|\n\nThe optional `Network-Time` field reports the current [time](https://xrpl.org/basic-data-types.html#specifying-time) according to sender's internal clock.\n\nServers should fail a connection if their clocks are not within 20 seconds of each other with an appropriate HTTP error code (e.g. by sending an HTTP 400 \"Bad Request\" response).",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/STTx.cpp",
+        "content": "#include <xrpl/basics/Blob.h>\n\n#include <xrpl/basics/Expected.h>\n\n#include <xrpl/basics/Log.h>\n\n#include <xrpl/basics/Slice.h>\n\n#include <xrpl/basics/StringUtilities.h>\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/basics/safe_cast.h>\n\n#include <xrpl/basics/strHex.h>\n\n#include <xrpl/beast/utility/Zero.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/json/json_value.h>\n\n#include <xrpl/protocol/AccountID.h>\n\n#include <xrpl/protocol/Batch.h>\n\n#include <xrpl/protocol/HashPrefix.h>\n\n#include <xrpl/protocol/MPTIssue.h>\n\n#include <xrpl/protocol/Protocol.h>\n\n#include <xrpl/protocol/PublicKey.h>\n\n#include <xrpl/protocol/Rules.h>\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/SOTemplate.h>\n\n#include <xrpl/protocol/STAccount.h>\n\n#include <xrpl/protocol/STAmount.h>\n\n#include <xrpl/protocol/STArray.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <xrpl/protocol/STObject.h>\n\n#include <xrpl/protocol/STTx.h>",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/protocol/STTx.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the core logic for the STTx class, which represents a serialized transaction in the XRP Ledger protocol. It handles transaction construction, serialization, deserialization, signature management (single, multi, and batch signing), and validation checks. The code ensures transactions conform to protocol rules, including field validation (such as memos, account fields, and raw transactions), signature verification, and proper transaction formatting. It also provides utilities for extracting transaction metadata, generating SQL statements for database storage, and checking for pseudo-transactions. The file is central to transaction processing, ensuring transactions are well-formed, valid, and securely signed before being accepted into the ledger.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp",
+        "content": "if (m\n\n\n\n>has_newstatus())\n\n{\n\nswitch (m\n\n\n\n>newstatus())\n\n{\n\ncase protocol::nsCONNECTING:\n\nj[jss::status] = \"CONNECTING\";\n\nbreak;\n\ncase protocol::nsCONNECTED:\n\nj[jss::status] = \"CONNECTED\";\n\nbreak;\n\ncase protocol::nsMONITORING:\n\nj[jss::status] = \"MONITORING\";\n\nbreak;\n\ncase protocol::nsVALIDATING:\n\nj[jss::status] = \"VALIDATING\";\n\nbreak;\n\ncase protocol::nsSHUTTING:\n\nj[jss::status] = \"SHUTTING\";\n\nbreak;\n\n}\n\n}\n\nif (m\n\n\n\n>has_newevent())\n\n{\n\nswitch (m\n\n\n\n>newevent())\n\n{\n\ncase protocol::neCLOSING_LEDGER:\n\nj[jss::action] = \"CLOSING_LEDGER\";\n\nbreak;\n\ncase protocol::neACCEPTED_LEDGER:\n\nj[jss::action] = \"ACCEPTED_LEDGER\";\n\nbreak;\n\ncase protocol::neSWITCHED_LEDGER:\n\nj[jss::action] = \"SWITCHED_LEDGER\";\n\nbreak;\n\ncase protocol::neLOST_SYNC:\n\nj[jss::action] = \"LOST_SYNC\";\n\nbreak;\n\n}\n\n}\n\nif (m\n\n\n\n>has_ledgerseq())\n\n{\n\nj[jss::ledger_index] = m\n\n\n\n>ledgerseq();\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the PeerImp class, which represents a peer connection in the XRPL (Ripple) overlay network. PeerImp manages the lifecycle and communication of a peer, including connection setup, message sending and receiving, protocol negotiation, resource usage tracking, and feature support. It handles various protocol messages (transactions, validations, proposals, ledger data, etc.), manages transaction and ledger queues, enforces resource limits, and supports features like transaction reduce-relay, ledger replay, and squelching. The class also tracks peer metrics (latency, bytes sent/received), manages peer status and tracking (converged/diverged), and interacts with other network components such as the job queue, ledger master, validators, and resource manager. The file includes logic for relaying messages, handling protocol errors, charging peers for resource usage, and maintaining peer state for network health and synchronization.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/server/Port.cpp",
+        "content": "section.value_or(\"server_max_window_bits\", 15);\n\nport.pmd_options.client_no_context_takeover =\n\nsection.value_or(\"client_no_context_takeover\", false);\n\nport.pmd_options.server_no_context_takeover =\n\nsection.value_or(\"server_no_context_takeover\", false);\n\nport.pmd_options.compLevel = section.value_or(\"compress_level\", 8);\n\nport.pmd_options.memLevel = section.value_or(\"memory_level\", 4);\n\n}\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/libxrpl/server/Port.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements logic for configuring and representing network ports in the Ripple server. It provides functions to determine if a port is secure (based on its protocols), to generate a string listing its protocols, and to output a port's configuration details to a stream. The core of the file is the parse_Port function, which reads port configuration from a Section object, validates and parses fields such as IP address, port number, protocols, limits, and WebSocket queue limits, and populates network access control lists for admin and secure gateway subnets (both IPv4 and IPv6). The populate helper function parses and validates subnet specifications, ensuring they are canonical and valid, and logs errors for invalid entries. The file also sets various SSL and WebSocket compression options from the configuration. Overall, it ensures robust and validated port configuration for the server.",
+            "functions": [
+                "Port::secure",
+                "Port::protocols",
+                "operator<<",
+                "populate",
+                "parse_Port"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.h",
+        "content": "while (first != last)\n\n{\n\nauto& tme2(\n\n\n\ntm.add_endpoints_v2());\n\ntme2.set_endpoint(first\n\n\n\n>address.to_string());\n\ntme2.set_hops(first\n\n\n\n>hops);\n\nfirst++;\n\n}\n\ntm.set_version(2);\n\nsend(std::make_shared<Message>(tm, protocol::mtENDPOINTS));\n\n}\n\n}\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.h.txt",
+            "namespaces": "",
+            "description": "This file defines the PeerImp class, which implements the core logic for a peer connection in the XRPL overlay network. PeerImp manages the state, communication, and protocol handling for a single peer, including message sending/receiving, resource usage, protocol versioning, compression, transaction and ledger synchronization, and feature negotiation. It tracks peer metrics, manages transaction and ledger queues, and handles protocol-specific messages. The class also supports features like transaction reduce relay, ledger replay, and squelching. PeerImp inherits from Peer and OverlayImpl::Child, and is tightly integrated with the application's overlay and resource management subsystems. The file also defines supporting structures for metrics tracking and resource charging with context.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STBlob.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STBLOB_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STBLOB_H_INCLUDED\n\n#include <xrpl/basics/Buffer.h>\n\n#include <xrpl/basics/CountedObject.h>\n\n#include <xrpl/basics/Slice.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <cstring>\n\n#include <memory>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STBlob.h.txt",
+            "namespaces": "",
+            "description": "This file defines the STBlob class, which represents a binary blob (arbitrary binary data) as a serialized type in the XRPL protocol. STBlob inherits from STBase and CountedObject, and internally stores its data in a Buffer. The class provides constructors for various initialization methods (copy, from raw data, from Buffer, from SField, from SerialIter), and methods to access the size and data, serialize the blob, compare for equivalence, check for default state, and assign new values from a Slice or Buffer. It also includes private copy and move methods for internal use. The class is designed to be used as part of the XRPL serialization framework.",
+            "functions": [
+                "STBlob",
+                "STBlob",
+                "STBlob",
+                "STBlob",
+                "STBlob",
+                "STBlob",
+                "size",
+                "data",
+                "getSType",
+                "getText",
+                "add",
+                "isEquivalent",
+                "isDefault",
+                "operator=",
+                "value",
+                "operator=",
+                "setValue",
+                "copy",
+                "move"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolVersion.cpp",
+        "content": "std::string const& supportedProtocolVersions() { static std::string const supported = []() { std::string ret; for (auto const& v : supportedProtocolList) { if (!ret.empty()) ret += \", \"; ret += to_string(v); }\n\nreturn ret;\n\n}();\n\nreturn supported;\n\n}\n\nbool\n\nisProtocolSupported(ProtocolVersion const& v)\n\n{\n\nreturn std::end(supportedProtocolList) !=\n\nstd::find(\n\nstd::begin(supportedProtocolList),\n\nstd::end(supportedProtocolList),\n\nv);\n\n}\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolVersion.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements protocol version handling for XRPL overlay networking. It defines a sorted, static list of supported protocol versions and provides functions to convert protocol versions to strings, parse protocol versions from strings, negotiate a mutually supported protocol version between peers, and check if a protocol version is supported. The code ensures the supported protocol list is sorted and unique, parses protocol version strings using regex, and uses set intersection to find common supported versions. It also provides a function to return a comma-separated string of all supported protocol versions.",
+            "functions": [
+                "to_string",
+                "parseProtocolVersions",
+                "negotiateProtocolVersion",
+                "negotiateProtocolVersion",
+                "supportedProtocolVersions",
+                "isProtocolSupported"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Indexes.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_INDEXES_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_INDEXES_H_INCLUDED\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/protocol/Book.h>\n\n#include <xrpl/protocol/Keylet.h>\n\n#include <xrpl/protocol/LedgerFormats.h>\n\n#include <xrpl/protocol/Protocol.h>\n\n#include <xrpl/protocol/PublicKey.h>\n\n#include <xrpl/protocol/STXChainBridge.h>\n\n#include <xrpl/protocol/Serializer.h>\n\n#include <xrpl/protocol/UintTypes.h>\n\n#include <xrpl/protocol/jss.h>\n\n#include <cstdint>\n\nnamespace ripple {",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/Indexes.h.txt",
+            "namespaces": "",
+            "description": "This header file defines keylet-related functions and structures for generating and working with ledger object indices in the XRPL protocol. It provides a set of functions to compute unique keys (Keylets) for various ledger objects such as accounts, offers, tickets, escrows, payment channels, NFTs, AMMs, credentials, vaults, and more. The file also includes utility functions for calculating book bases, quality, and ticket indices, as well as templates and arrays for describing keylet functions. The keylet namespace encapsulates most of these utilities, supporting both direct and parameterized access to ledger entries. The file is essential for mapping high-level XRPL concepts to their underlying ledger storage representations.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Peer.h",
+        "content": "class Peer\n\n{\n\npublic:\n\nusing ptr = std::shared_ptr<Peer>;\n\nusing id_t = std::uint32_t;\n\nvirtual ~Peer() = default;\n\nvirtual void send(std::shared_ptr<Message> const& m) = 0;\n\nvirtual beast::IP::Endpoint\n\ngetRemoteAddress() const = 0;\n\nvirtual void\n\nsendTxQueue() = 0;\n\nvirtual void\n\naddTxQueue(uint256 const&) = 0;\n\nvirtual void\n\nremoveTxQueue(uint256 const&) = 0;\n\nvirtual void charge(Resource::Charge const& fee, std::string const& context) = 0;\n\nvirtual id_t\n\nid() const = 0;\n\nvirtual bool\n\ncluster() const = 0;\n\nvirtual bool\n\nisHighLatency() const = 0;\n\nvirtual int\n\ngetScore(bool) const = 0;\n\nvirtual PublicKey const&\n\ngetNodePublic() const = 0;\n\nvirtual Json::Value\n\njson() = 0;\n\nvirtual bool supportsFeature(ProtocolFeature f) const = 0;\n\nvirtual std::optional<std::size_t> publisherListSequence(PublicKey const&) const = 0;\n\nvirtual void setPublisherListSequence(PublicKey const&, std::size_t const) = 0;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Peer.h.txt",
+            "namespaces": "",
+            "description": "This file defines the abstract Peer class for the Ripple (XRPL) overlay network. The Peer class represents a network peer and specifies a set of pure virtual methods for peer communication, transaction queue management, resource charging, feature support, ledger and transaction set queries, and status reporting. It includes methods for sending messages, managing transaction queues, charging for resource usage, retrieving peer information (such as public key, address, and score), checking protocol feature support, handling publisher list sequences, and querying ledger/transaction set availability. The file also defines a ProtocolFeature enum for supported protocol features and includes necessary dependencies. The Peer class is intended to be subclassed for concrete peer implementations.",
+            "functions": [
+                "send",
+                "getRemoteAddress",
+                "sendTxQueue",
+                "addTxQueue",
+                "removeTxQueue",
+                "charge",
+                "id",
+                "cluster",
+                "isHighLatency",
+                "getScore",
+                "getNodePublic",
+                "json",
+                "supportsFeature",
+                "publisherListSequence",
+                "setPublisherListSequence",
+                "getClosedLedgerHash",
+                "hasLedger",
+                "ledgerRange",
+                "hasTxSet",
+                "cycleStatus",
+                "hasRange",
+                "compressionEnabled",
+                "txReduceRelayEnabled"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Overlay.h",
+        "content": "class Overlay : public beast::PropertyStream::Source { protected: using socket_type = boost::beast::tcp_stream; using stream_type = boost::beast::ssl_stream<socket_type>;\n\nOverlay() : beast::PropertyStream::Source(\"peers\")\n\n{\n\n}\n\npublic: enum class Promote { automatic, never, always };\n\nstruct Setup\n\n{\n\nexplicit Setup() = default;\n\nstd::shared_ptr<boost::asio::ssl::context> context;\n\nbeast::IP::Address public_ip;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Overlay.h.txt",
+            "namespaces": "",
+            "description": "This file defines the Overlay class, an abstract interface for managing peer-to-peer network connections in the Ripple (XRPL) server. Overlay handles peer management, connection setup, message broadcasting, relaying, and network metrics. It provides methods for starting and stopping the overlay, connecting to peers, handling incoming handoffs, broadcasting and relaying protocol messages, tracking peer statistics, and retrieving network information. The class is designed to be extended with concrete implementations and uses Boost.Asio and Boost.Beast for networking and SSL support. It also includes a Setup struct for configuration and supports JSON reporting of its state and metrics.",
+            "functions": [
+                "Overlay",
+                "~Overlay",
+                "start",
+                "stop",
+                "onHandoff",
+                "connect",
+                "limit",
+                "size",
+                "json",
+                "getActivePeers",
+                "checkTracking",
+                "findPeerByShortID",
+                "findPeerByPublicKey",
+                "broadcast",
+                "broadcast",
+                "relay",
+                "relay",
+                "relay",
+                "foreach",
+                "incJqTransOverflow",
+                "getJqTransOverflow",
+                "incPeerDisconnect",
+                "getPeerDisconnect",
+                "incPeerDisconnectCharges",
+                "getPeerDisconnectCharges",
+                "networkID",
+                "txMetrics"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/net/InfoSub.h",
+        "content": "subManifests(ref ispListener) = 0;\n\nvirtual bool\n\nunsubManifests(std::uint64_t uListener) = 0;\n\nvirtual void\n\npubManifest(Manifest const&) = 0;\n\nvirtual bool subServer(ref ispListener, Json::Value& jvResult, bool admin) = 0; virtual bool unsubServer(std::uint64_t uListener) = 0;\n\nvirtual bool subBook(ref ispListener, Book const&) = 0; virtual bool unsubBook(std::uint64_t uListener, Book const&) = 0;\n\nvirtual bool\n\nsubTransactions(ref ispListener) = 0;\n\nvirtual bool\n\nunsubTransactions(std::uint64_t uListener) = 0;\n\nvirtual bool\n\nsubRTTransactions(ref ispListener) = 0;\n\nvirtual bool\n\nunsubRTTransactions(std::uint64_t uListener) = 0;\n\nvirtual bool\n\nsubValidations(ref ispListener) = 0;\n\nvirtual bool\n\nunsubValidations(std::uint64_t uListener) = 0;\n\nvirtual bool\n\nsubPeerStatus(ref ispListener) = 0;\n\nvirtual bool\n\nunsubPeerStatus(std::uint64_t uListener) = 0;\n\nvirtual void\n\npubPeerStatus(std::function<Json::Value(void)> const&) = 0;\n\nvirtual bool\n\nsubConsensus(ref ispListener) = 0;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/net/InfoSub.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the InfoSub and InfoSubRequest classes, which are part of the subscription and notification system in the Ripple (XRPL) server. InfoSub represents a subscription to various types of server events (such as account updates, ledger changes, transactions, etc.) and manages the state and delivery of notifications to subscribers. The InfoSub::Source interface provides methods for subscribing and unsubscribing to different event types, managing account and ledger subscriptions, and handling RPC-based subscriptions. The InfoSub class also tracks subscription details, manages API versioning, and associates each subscription with a resource consumer for rate limiting. InfoSubRequest is an abstract base for handling specific subscription requests. The file establishes the structure for managing real-time and historical data subscriptions in the XRPL server.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/PlainHTTPPeer.h",
+        "content": "class PlainHTTPPeer\n\n: public BaseHTTPPeer<Handler, PlainHTTPPeer<Handler>>,\n\npublic std::enable_shared_from_this<PlainHTTPPeer<Handler>>\n\n{\n\nprivate:\n\nfriend class BaseHTTPPeer<Handler, PlainHTTPPeer>;\n\nusing socket_type = boost::asio::ip::tcp::socket;\n\nusing stream_type = boost::beast::tcp_stream;\n\nusing endpoint_type = boost::asio::ip::tcp::endpoint;\n\nstream_type stream_;\n\nsocket_type& socket_;\n\npublic:\n\ntemplate <class ConstBufferSequence>\n\nPlainHTTPPeer(\n\nPort const& port,\n\nHandler& handler,\n\nboost::asio::io_context& ioc,\n\nbeast::Journal journal,\n\nendpoint_type remote_address,\n\nConstBufferSequence const& buffers,\n\nstream_type&& stream);\n\nvoid\n\nrun();\n\nstd::shared_ptr<WSSession>\n\nwebsocketUpgrade() override;\n\nprivate:\n\nvoid\n\ndo_request() override;\n\nvoid\n\ndo_close() override;\n\n};\n\ntemplate <class Handler>\n\ntemplate <class ConstBufferSequence>\n\nPlainHTTPPeer<Handler>::PlainHTTPPeer(\n\nPort const& port,\n\nHandler& handler,\n\nboost::asio::io_context& ioc,\n\nbeast::Journal journal,",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/PlainHTTPPeer.h.txt",
+            "namespaces": "",
+            "description": "This file defines the PlainHTTPPeer class template, which handles plain (non-encrypted) HTTP peer connections for the XRPL server. It inherits from BaseHTTPPeer and manages the lifecycle of an HTTP session over a TCP socket, including accepting connections, reading requests, handling HTTP handoff and upgrades to WebSocket, and closing connections. The class uses Boost.Asio and Boost.Beast for asynchronous networking and HTTP protocol handling. Key methods include run (to start the session), websocketUpgrade (to upgrade to a WebSocket session), do_request (to process HTTP requests and responses), and do_close (to close the connection). The implementation ensures proper handling of keep-alive, shutdown, and error conditions, and optimizes loopback connections by disabling Nagle's algorithm.",
+            "functions": [
+                "PlainHTTPPeer",
+                "run",
+                "websocketUpgrade",
+                "do_request",
+                "do_close",
+                "PlainHTTPPeer",
+                "run",
+                "websocketUpgrade",
+                "do_request",
+                "do_close"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/STVar.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STVAR_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STVAR_H_INCLUDED\n\n#include <xrpl/protocol/SField.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <xrpl/protocol/Serializer.h>\n\n#include <cstddef>\n\n#include <type_traits>\n\nnamespace ripple {\n\nnamespace detail {\n\nstruct defaultObject_t\n\n{\n\nexplicit defaultObject_t() = default;\n\n};\n\nstruct nonPresentObject_t\n\n{\n\nexplicit nonPresentObject_t() = default;\n\n};\n\nextern defaultObject_t defaultObject;\n\nextern nonPresentObject_t nonPresentObject;\n\ntemplate <typename... Args>\n\nconcept ValidConstructSTArgs =\n\n(std::is_same_v<\n\nstd::tuple<std::remove_cvref_t<Args>...>,\n\nstd::tuple<SField>> ||\n\nstd::is_same_v<\n\nstd::tuple<std::remove_cvref_t<Args>...>,\n\nstd::tuple<SerialIter, SField>>);",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/detail/STVar.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the STVar class, a type-erased container for XRPL protocol objects derived from STBase. STVar manages storage for these objects, either in-place (using aligned storage up to a fixed size) or on the heap if the object is larger. It provides constructors for various initialization scenarios, including from STBase, default and non-present objects, and deserialization. The class supports copy/move semantics, pointer-like access to the contained object, and equality comparison. Helper structures and concepts ensure type safety for construction. Utility functions like make_stvar facilitate type-safe creation of STVar instances. The file also defines marker types for default and non-present objects, and includes logic to determine if the contained object is heap-allocated.",
+            "functions": [
+                "~STVar",
+                "STVar",
+                "STVar",
+                "operator=",
+                "operator=",
+                "STVar",
+                "STVar",
+                "STVar",
+                "STVar",
+                "STVar",
+                "get",
+                "operator*",
+                "operator->",
+                "get",
+                "operator*",
+                "operator->",
+                "STVar",
+                "STVar",
+                "destroy",
+                "construct",
+                "constructST",
+                "on_heap",
+                "make_stvar",
+                "operator==",
+                "operator!="
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h",
+        "content": "#ifndef RIPPLE_OVERLAY_PROTOCOLMESSAGE_H_INCLUDED\n\n#define RIPPLE_OVERLAY_PROTOCOLMESSAGE_H_INCLUDED\n\n#include <xrpld/overlay/Compression.h>\n\n#include <xrpld/overlay/Message.h>\n\n#include <xrpld/overlay/detail/ZeroCopyStream.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/protocol/messages.h>\n\n#include <boost/asio/buffer.hpp>\n\n#include <boost/asio/buffers_iterator.hpp>\n\n#include <cstdint>\n\n#include <optional>\n\n#include <type_traits>\n\n#include <vector>\n\nnamespace ripple {\n\ninline protocol::MessageType\n\nprotocolMessageType(protocol::TMGetLedger const&)\n\n{\n\nreturn protocol::mtGET_LEDGER;\n\n}\n\ninline protocol::MessageType\n\nprotocolMessageType(protocol::TMReplayDeltaRequest const&)\n\n{\n\nreturn protocol::mtREPLAY_DELTA_REQ;\n\n}\n\ninline protocol::MessageType\n\nprotocolMessageType(protocol::TMProofPathRequest const&)\n\n{\n\nreturn protocol::mtPROOF_PATH_REQ;\n\n}\n\ntemplate <class = void>\n\nstd::string\n\nprotocolMessageName(int type)\n\n{",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ProtocolMessage.h.txt",
+            "namespaces": "",
+            "description": "This header file defines the core logic for handling protocol messages in the Ripple (XRPL) overlay network. It provides utilities to identify message types and names, parse message headers (including support for compressed and uncompressed messages), and extract message content from network buffers. The MessageHeader struct encapsulates metadata about each message, such as size, type, and compression algorithm. The file includes template functions to parse and dispatch protocol buffer messages to appropriate handler callbacks based on their type, supporting a wide range of XRPL protocol messages. Error handling is integrated for malformed or unsupported messages, and the design supports extensibility for new message types and compression algorithms.",
+            "functions": [
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageType",
+                "protocolMessageName",
+                "buffersBegin",
+                "buffersEnd",
+                "parseMessageHeader",
+                "parseMessageContent",
+                "invoke",
+                "invokeProtocolMessage"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STValidation.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STVALIDATION_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STVALIDATION_H_INCLUDED\n\n#include <xrpl/basics/Log.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/protocol/FeeUnits.h>\n\n#include <xrpl/protocol/PublicKey.h>\n\n#include <xrpl/protocol/STObject.h>\n\n#include <xrpl/protocol/SecretKey.h>\n\n#include <cstdint>\n\n#include <functional>\n\n#include <memory>\n\n#include <optional>\n\n#include <sstream>\n\nnamespace ripple {\n\nconstexpr std::uint32_t vfFullValidation = 0x00000001;\n\nconstexpr std::uint32_t vfFullyCanonicalSig = 0x80000000;",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STValidation.h.txt",
+            "namespaces": "",
+            "description": "This file defines the STValidation class, which represents a validation message in the XRP Ledger consensus protocol. The class inherits from STObject and CountedObject, and encapsulates information about a validation, such as the signing public key, node ID, sign and seen times, and trust status. It provides constructors for deserializing from a stream or creating a new validation, and methods to access validation details (ledger hash, consensus hash, public key, node ID, etc.), check validity, trust, and completeness, and serialize or render the validation. The class enforces the use of secp256k1 keys and ensures required fields are present. It also manages the trusted status and signature verification of validations.",
+            "functions": [
+                "STValidation",
+                "STValidation",
+                "getLedgerHash",
+                "getConsensusHash",
+                "getSignTime",
+                "getSeenTime",
+                "getSignerPublic",
+                "getNodeID",
+                "isValid",
+                "isFull",
+                "isTrusted",
+                "getSigningHash",
+                "setTrusted",
+                "setUntrusted",
+                "setSeen",
+                "getSerialized",
+                "getSignature",
+                "render",
+                "validationFormat",
+                "copy",
+                "move"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/ServerHandler.cpp",
+        "content": "#include <boost/beast/http/fields.hpp>\n\n#include <boost/beast/http/string_body.hpp>\n\n#include <algorithm>\n\n#include <stdexcept>\n\nnamespace ripple {\n\nstatic bool isStatusRequest(http_request_type const& request) { return request.version() >= 11 && request.target() == \"/\" && request.body().size() == 0 && request.method() == boost::beast::http::verb::get; }\n\nstatic Handoff\n\nstatusRequestResponse(\n\nhttp_request_type const& request,\n\nboost::beast::http::status status)\n\n{\n\nusing namespace boost::beast::http;\n\nHandoff handoff;\n\nresponse<string_body> msg;\n\nmsg.version(request.version());\n\nmsg.result(status);\n\nmsg.insert(\"Server\", BuildInfo::getFullVersionString());\n\nmsg.insert(\"Content\n\n\n\nType\", \"text/html\");\n\nmsg.insert(\"Connection\", \"close\");\n\nmsg.body() = \"Invalid protocol.\";\n\nmsg.prepare_payload();\n\nhandoff.response = std::make_shared<SimpleWriter>(msg);\n\nreturn handoff;\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the ServerHandler class for the XRPL (Ripple) server, responsible for handling incoming HTTP and WebSocket RPC requests, managing server ports, authentication, resource usage, and request processing. It includes logic for accepting and handing off connections, authorizing requests, parsing and validating JSON-RPC requests (including batch requests), managing resource limits and roles, and generating appropriate HTTP or WebSocket responses. The file also provides setup utilities for configuring server ports, SSL contexts, and client/overlay endpoints based on configuration files. Error handling, logging, and request duration tracking are integrated throughout. The ServerHandler::Setup class and related functions help parse and apply server configuration. The code ensures secure, efficient, and standards-compliant handling of RPC traffic for the XRPL server.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/PlainHTTPPeer.h",
+        "content": "#ifndef RIPPLE_SERVER_PLAINHTTPPEER_H_INCLUDED\n\n#define RIPPLE_SERVER_PLAINHTTPPEER_H_INCLUDED\n\n#include <xrpl/beast/rfc2616.h>\n\n#include <xrpl/server/detail/BaseHTTPPeer.h>\n\n#include <xrpl/server/detail/PlainWSPeer.h>\n\n#include <boost/beast/core/tcp_stream.hpp>\n\n#include <memory>\n\nnamespace ripple {\n\ntemplate <class Handler>",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/server/detail/PlainHTTPPeer.h.txt",
+            "namespaces": "",
+            "description": "This file defines the PlainHTTPPeer class template, which handles plain (non-encrypted) HTTP peer connections for the XRPL server. It inherits from BaseHTTPPeer and manages the lifecycle of an HTTP session over a TCP socket, including accepting connections, reading requests, handling HTTP handoff and upgrades to WebSocket, and closing connections. The class uses Boost.Asio and Boost.Beast for asynchronous networking and HTTP protocol handling. Key methods include run (to start the session), websocketUpgrade (to upgrade to a WebSocket session), do_request (to process HTTP requests and responses), and do_close (to close the connection). The implementation ensures proper handling of keep-alive, shutdown, and error conditions, and optimizes loopback connections by disabling Nagle's algorithm.",
+            "functions": [
+                "PlainHTTPPeer",
+                "run",
+                "websocketUpgrade",
+                "do_request",
+                "do_close",
+                "PlainHTTPPeer",
+                "run",
+                "websocketUpgrade",
+                "do_request",
+                "do_close"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/README.md",
+        "content": "The value is advisory and is not used by the code at this time, except for reporting purposes. External tools should verify this value prior to using it by attempting to locate a [TOML file](https://xrpl.org/xrp-ledger-toml.html) under the specified domain and locating the public key of this server under the `[NODES]` key.\n\nSending a malformed domain will prevent a connection from being established.\n\n| Field Name          \t|  Request          \t| Response          \t| |---------------------\t|:-----------------:\t|:-----------------:\t| | `Session-Signature` \t| :heavy_check_mark: \t| :heavy_check_mark: \t|\n\nThe `Session-Signature` field is mandatory and is used to secure the peer link against certain types of attack. For more details see \"Session Signature\" below.\n\nThe value is presently encoded using **Base64** encoding, but implementations should support both **Base64** and **HEX** encoding for this value.\n\nFor more details on this field, please see **Session Signature** below.",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/ServerHandler.cpp",
+        "content": "if (session.port().protocol.count(\"http\") == 0 && session.port().protocol.count(\"https\") == 0) { HTTPReply(403, \"Forbidden\", makeOutput(session), app_.journal(\"RPC\")); session.close(true); return; }\n\nif (!authorized(session.port(), build_map(session.request())))\n\n{\n\nHTTPReply(403, \"Forbidden\", makeOutput(session), app_.journal(\"RPC\"));\n\nsession.close(true);\n\nreturn;\n\n}\n\nstd::shared_ptr<Session> detachedSession = session.detach(); auto const postResult = m_jobQueue.postCoro( jtCLIENT_RPC, \"RPC-Client\", [this, detachedSession](std::shared_ptr<JobQueue::Coro> coro) { processSession(detachedSession, coro); }); if (postResult == nullptr) {\n\nHTTPReply(\n\n503,\n\n\"Service Unavailable\",\n\nmakeOutput(\n\n\n\ndetachedSession),\n\napp_.journal(\"RPC\"));\n\ndetachedSession\n\n\n\n>close(true);\n\nreturn;\n\n}\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/ServerHandler.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the ServerHandler class for the XRPL (Ripple) server, responsible for handling incoming HTTP and WebSocket RPC requests, managing server ports, authentication, resource usage, and request processing. It includes logic for accepting and handing off connections, authorizing requests, parsing and validating JSON-RPC requests (including batch requests), managing resource limits and roles, and generating appropriate HTTP or WebSocket responses. The file also provides setup utilities for configuring server ports, SSL contexts, and client/overlay endpoints based on configuration files. Error handling, logging, and request duration tracking are integrated throughout. The ServerHandler::Setup class and related functions help parse and apply server configuration. The code ensures secure, efficient, and standards-compliant handling of RPC traffic for the XRPL server.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STParsedJSON.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STPARSEDJSON_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STPARSEDJSON_H_INCLUDED\n\n#include <xrpl/protocol/STArray.h>\n\n#include <optional>\n\nnamespace ripple {\n\nclass STParsedJSONObject\n\n{\n\npublic:\n\nSTParsedJSONObject(std::string const& name, Json::Value const& json);\n\nSTParsedJSONObject() = delete;\n\nSTParsedJSONObject(STParsedJSONObject const&) = delete;\n\nSTParsedJSONObject&\n\noperator=(STParsedJSONObject const&) = delete;\n\n~STParsedJSONObject() = default;\n\nstd::optional<STObject> object;\n\nJson::Value error;\n\n};\n\nclass STParsedJSONArray\n\n{\n\npublic:\n\nSTParsedJSONArray(std::string const& name, Json::Value const& json);\n\nSTParsedJSONArray() = delete;\n\nSTParsedJSONArray(STParsedJSONArray const&) = delete;\n\nSTParsedJSONArray&\n\noperator=(STParsedJSONArray const&) = delete;\n\n~STParsedJSONArray() = default;\n\nstd::optional<STArray> array;\n\nJson::Value error;\n\n};\n\n}\n\n#endif",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STParsedJSON.h.txt",
+            "namespaces": "",
+            "description": "This header file defines two classes, STParsedJSONObject and STParsedJSONArray, used for parsing JSON objects and arrays within the Ripple protocol. Each class provides a constructor that takes a name and a JSON value, and stores either a parsed STObject or STArray (wrapped in std::optional) or an error (as a Json::Value) if parsing fails. Copy construction and assignment are disabled for both classes. The file includes necessary dependencies and uses the ripple namespace.",
+            "functions": [
+                "STParsedJSONObject::STParsedJSONObject",
+                "STParsedJSONObject::~STParsedJSONObject",
+                "STParsedJSONArray::STParsedJSONArray",
+                "STParsedJSONArray::~STParsedJSONArray"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STObject.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_STOBJECT_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_STOBJECT_H_INCLUDED\n\n#include <xrpl/basics/CountedObject.h>\n\n#include <xrpl/basics/Slice.h>\n\n#include <xrpl/basics/chrono.h>\n\n#include <xrpl/basics/contract.h>\n\n#include <xrpl/beast/utility/instrumentation.h>\n\n#include <xrpl/protocol/FeeUnits.h>\n\n#include <xrpl/protocol/HashPrefix.h>\n\n#include <xrpl/protocol/SOTemplate.h>\n\n#include <xrpl/protocol/STAmount.h>\n\n#include <xrpl/protocol/STBase.h>\n\n#include <xrpl/protocol/STCurrency.h>\n\n#include <xrpl/protocol/STIssue.h>\n\n#include <xrpl/protocol/STPathSet.h>\n\n#include <xrpl/protocol/STVector256.h>\n\n#include <xrpl/protocol/detail/STVar.h>\n\n#include <boost/iterator/transform_iterator.hpp>\n\n#include <optional>\n\n#include <stdexcept>\n\n#include <type_traits>\n\n#include <utility>\n\nnamespace ripple {\n\nclass STArray;\n\ninline void throwFieldNotFound(SField const& field) { Throw<std::runtime_error>(\"Field not found: \" + field.getName()); }",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/STObject.h.txt",
+            "namespaces": "",
+            "description": "This file defines the STObject class, a core data structure in the XRPL protocol for representing and manipulating serialized objects with fields of various types. STObject inherits from STBase and CountedObject, and manages a collection of fields (as STVar variants) according to an optional SOTemplate. It provides methods for field access, mutation, serialization, hashing, and JSON conversion, supporting both required and optional fields. The class uses proxy types (Proxy, ValueProxy, OptionalProxy) to enable type-safe and ergonomic field access and assignment, including support for arithmetic operations and optional semantics. The file also defines error handling for missing or invalid fields, and includes utility templates for field manipulation. The design emphasizes type safety, extensibility, and efficient serialization/deserialization for use in the XRP Ledger's protocol layer.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/proto/ripple.proto",
+        "content": "// token, iterations, target, challenge = issue demand for proof of work // token, response = give solution to proof of work // token, result = report result of pow\n\n//\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n/* Provides the current ephemeral key for a validator. */ message TMManifest { // A Manifest object in the Ripple serialization format. required bytes stobject = 1; }\n\nmessage TMManifests { repeated TMManifest list = 1;\n\n// The manifests sent when a peer first connects to another peer are `history`. optional bool history = 2 [deprecated=true]; }\n\n//",
+        "ai": null
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp",
+        "content": "if (!stringIsUint256Sized(packet.ledgerhash()))\n\n{\n\nfee_.update(Resource::feeMalformedRequest, \"ledger hash\");\n\nreturn;\n\n}\n\nreply.set_ledgerhash(packet.ledgerhash());\n\n}\n\nfee_.update( Resource::feeModerateBurdenPeer, \" received a get object by hash request\");\n\nfor (int i = 0; i < packet.objects_size(); ++i) { auto const& obj = packet.objects(i); if (obj.has_hash() && stringIsUint256Sized(obj.hash())) { uint256 const hash{obj.hash()};\n\nstd::uint32_t seq{obj.has_ledgerseq() ? obj.ledgerseq() : 0}; auto nodeObject{app_.getNodeStore().fetchNodeObject(hash, seq)}; if (nodeObject) { protocol::TMIndexedObject& newObj = *reply.add_objects(); newObj.set_hash(hash.begin(), hash.size()); newObj.set_data( &nodeObject->getData().front(), nodeObject->getData().size());\n\nif (obj.has_nodeid())\n\nnewObj.set_index(obj.nodeid());",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+            "namespaces": "",
+            "description": "This file implements the PeerImp class, which represents a peer connection in the XRPL (Ripple) overlay network. PeerImp manages the lifecycle and communication of a peer, including connection setup, message sending and receiving, protocol negotiation, resource usage tracking, and feature support. It handles various protocol messages (transactions, validations, proposals, ledger data, etc.), manages transaction and ledger queues, enforces resource limits, and supports features like transaction reduce-relay, ledger replay, and squelching. The class also tracks peer metrics (latency, bytes sent/received), manages peer status and tracking (converged/diverged), and interacts with other network components such as the job queue, ledger master, validators, and resource manager. The file includes logic for relaying messages, handling protocol errors, charging peers for resource usage, and maintaining peer state for network health and synchronization.",
+            "functions": []
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/nft.h",
+        "content": "#ifndef RIPPLE_PROTOCOL_NFT_H_INCLUDED\n\n#define RIPPLE_PROTOCOL_NFT_H_INCLUDED\n\n#include <xrpl/basics/base_uint.h>\n\n#include <xrpl/basics/tagged_integer.h>\n\n#include <xrpl/protocol/AccountID.h>\n\n#include <boost/endian/conversion.hpp>\n\n#include <cstdint>\n\n#include <cstring>\n\nnamespace ripple {\n\nnamespace nft {\n\nstruct TaxonTag { }; using Taxon = tagged_integer<std::uint32_t, TaxonTag>;\n\ninline Taxon\n\ntoTaxon(std::uint32_t i)\n\n{\n\nreturn static_cast<Taxon>(i);\n\n}\n\ninline std::uint32_t\n\ntoUInt32(Taxon t)\n\n{\n\nreturn static_cast<std::uint32_t>(t);\n\n}\n\nconstexpr std::uint16_t const flagBurnable = 0x0001; constexpr std::uint16_t const flagOnlyXRP = 0x0002; constexpr std::uint16_t const flagCreateTrustLines = 0x0004; constexpr std::uint16_t const flagTransferable = 0x0008; constexpr std::uint16_t const flagMutable = 0x0010;\n\ninline std::uint16_t\n\ngetFlags(uint256 const& id)\n\n{\n\nstd::uint16_t flags;\n\nmemcpy(&flags, id.begin(), 2);\n\nreturn boost::endian::big_to_native(flags);\n\n}",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/include/xrpl/protocol/nft.h.txt",
+            "namespaces": "",
+            "description": "This header file defines utility functions and types for handling NFTs (Non-Fungible Tokens) in the XRPL protocol. It introduces a Taxon type for categorizing NFTs, and provides functions to extract NFT properties from a 256-bit identifier, such as flags, transfer fee, serial number, taxon, and issuer. It also defines constants for NFT flags (burnable, only XRP, create trust lines, transferable, mutable) and includes a ciphering function for the taxon value based on the token sequence. The file relies on endian conversion and memory manipulation to parse NFT data from the identifier.",
+            "functions": [
+                "toTaxon",
+                "toUInt32",
+                "getFlags",
+                "getTransferFee",
+                "getSerial",
+                "cipheredTaxon",
+                "getTaxon",
+                "getIssuer"
+            ]
+        }
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/misc/NetworkOPs.h",
+        "content": "std::shared_ptr<ReadView const>& lpLedger,\n\nBook const& book,\n\nAccountID const& uTakerID,\n\nbool const bProof,\n\nunsigned int iLimit,\n\nJson::Value const& jvMarker,\n\nJson::Value& jvResult) = 0;\n\nvirtual bool\n\nprocessTrustedProposal(RCLCxPeerPos peerPos) = 0;\n\nvirtual bool recvValidation( std::shared_ptr<STValidation> const& val, std::string const& source) = 0;\n\nvirtual void mapComplete(std::shared_ptr<SHAMap> const& map, bool fromAcquire) = 0;\n\nvirtual bool beginConsensus( uint256 const& netLCL, std::unique_ptr<std::stringstream> const& clog) = 0; virtual void endConsensus(std::unique_ptr<std::stringstream> const& clog) = 0; virtual void setStandAlone() = 0; virtual void setStateTimer() = 0;\n\nvirtual void\n\nsetNeedNetworkLedger() = 0;\n\nvirtual void\n\nclearNeedNetworkLedger() = 0;\n\nvirtual bool\n\nisNeedNetworkLedger() = 0;\n\nvirtual bool\n\nisFull() = 0;\n\nvirtual void\n\nsetMode(OperatingMode om) = 0;\n\nvirtual bool\n\nisBlocked() = 0;\n\nvirtual bool\n\nisAmendmentBlocked() = 0;\n\nvirtual void",
+        "ai": {
+            "file_path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/misc/NetworkOPs.h.txt",
+            "namespaces": "",
+            "description": "This file defines the NetworkOPs interface for the XRPL (Ripple) server, which manages network operations, transaction processing, consensus, ledger publication, and server state. It includes the OperatingMode enum to represent server states (DISCONNECTED, CONNECTED, SYNCING, TRACKING, FULL) and declares a large set of pure virtual methods for submitting and processing transactions, handling consensus, managing ledger and validation information, publishing updates, and reporting server status. The file also provides a factory function to create a NetworkOPs instance with various dependencies. Several forward declarations for related classes (Peer, LedgerMaster, Transaction, ValidatorKeys, CanonicalTXSet) are included. The interface is designed for extensibility and integration with the rest of the XRPL server components.",
+            "functions": []
+        }
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "path": "src/xrpld/app/tx/detail/InvariantCheck.cpp.txt",
+        "function": "XRPBalanceChecks::visitEntry",
+        "description": "Inspects the before and after states of a ledger entry, specifically for account root entries, and checks if the XRP balance is valid (must be native, not negative, and not above the initial XRP supply). If any invalid balance is found, sets an internal flag to indicate a failed check."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/InvariantCheck.cpp.txt",
+        "function": "XRPBalanceChecks::finalize",
+        "description": "After all ledger entries have been visited for a transaction, this function checks if any invalid account XRP balances were detected. If so, it logs a fatal error and returns false to indicate the invariant was violated; otherwise, returns true."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/InvariantCheck.h.txt",
+        "function": "LedgerEntryTypesMatch::visitEntry",
+        "description": "Examines the before and after states of a ledger entry to ensure that the type of the ledger entry has not changed unexpectedly or that no invalid types have been added. Sets internal flags if a type mismatch or invalid type addition is detected."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/InvariantCheck.h.txt",
+        "function": "LedgerEntryTypesMatch::finalize",
+        "description": "After all entries are visited, checks if any type mismatches or invalid type additions were detected. Returns false if an invariant was violated, otherwise true."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/InvariantCheck.h.txt",
+        "function": "NoXRPTrustLines::visitEntry",
+        "description": "Checks each ledger entry to ensure that no trust lines for XRP are created or modified. Sets an internal flag if an XRP trust line is found."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/InvariantCheck.h.txt",
+        "function": "NoXRPTrustLines::finalize",
+        "description": "After visiting all entries, determines if any XRP trust lines were detected. Returns false if so, otherwise true."
+    },
+    {
+        "path": "src/xrpld/app/ledger/LedgerHistory.cpp.txt",
+        "function": "log_metadata_difference",
+        "description": "Compares the metadata of two ledgers for a given transaction, checking for differences in result codes, node changes, and indices. Logs detailed information about any mismatches found between the built and validated ledgers."
+    },
+    {
+        "path": "src/xrpld/app/ledger/LedgerHistory.cpp.txt",
+        "function": "log_one",
+        "description": "Logs the details of a single ledger entry (by key) from a specified ledger, indicating whether it is missing from the other ledger or differs in content. Used to help diagnose and report ledger mismatches during validation or consensus."
+    }
+]

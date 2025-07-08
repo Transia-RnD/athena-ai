@@ -466,9 +466,8 @@ Please provide detailed, technical responses with code examples when relevant.""
                 return response["answer"]
 
             except Exception as e:
-                if attempt == max_retries - 1:
-                    raise e
-                logger.warning(f"RAG attempt {attempt + 1} failed: {e}. Retrying...")
+                logger.error(f"RAG attempt failed: {e}. Retrying...")
+                raise e
 
         except Exception as e:
             logger.error(f"Error in RAG prompt v2: {e}")

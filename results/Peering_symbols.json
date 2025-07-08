@@ -1,0 +1,20 @@
+{
+    "symbols": [
+        "OverlayImpl::processRequest",
+        "OverlayImpl::getActivePeers",
+        "OverlayImpl::checkTracking",
+        "OverlayImpl::findPeerByShortID",
+        "OverlayImpl::findPeerByPublicKey",
+        "OverlayImpl::add_active",
+        "OverlayImpl::connect",
+        "OverlayImpl::add_active",
+        "OverlayImpl::getActivePeers(std::set<Peer::id_t> const&, std::size_t&, std::size_t&, std::size_t&) const",
+        "OverlayImpl::checkTracking(std::uint32_t)",
+        "OverlayImpl::findPeerByShortID(Peer::id_t const&) const",
+        "OverlayImpl::findPeerByPublicKey(PublicKey const&)",
+        "OverlayImpl::add_active(std::shared_ptr<PeerImp> const&)",
+        "OverlayImpl::connect(beast::IP::Endpoint const&)",
+        "PeerImp::run",
+        "PeerImp::checkTracking"
+    ]
+}

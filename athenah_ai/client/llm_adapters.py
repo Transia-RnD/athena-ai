@@ -41,8 +41,8 @@ class LLMConfig:
         "gpt-4-turbo": 4095,
         "gpt-4": 8191,
         "gpt-4.1": 32768,
-        "o1-mini": 100000,
-        "o1": 200000,
+        "o3-mini": 100000,
+        "o4": 200000,
     }
 
     # Anthropic Configuration

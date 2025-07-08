@@ -1,0 +1,72 @@
+[
+    {
+        "path": "src/xrpld/app/rdb/detail/RelationalDatabase.cpp.txt",
+        "function": "RelationalDatabase::init",
+        "description": "Initializes the relational database by checking configuration and selecting the backend (SQLite), then calls getSQLiteDatabase to create the database instance."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/SQLiteDatabase.cpp.txt",
+        "function": "getSQLiteDatabase",
+        "description": "Creates and returns a unique pointer to a SQLiteDatabaseImp instance, which manages ledger and transaction databases using SQLite."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/SQLiteDatabase.cpp.txt",
+        "function": "SQLiteDatabaseImp::SQLiteDatabaseImp",
+        "description": "Constructor for SQLiteDatabaseImp; sets up database connections and initializes ledger and transaction databases by calling makeLedgerDBs."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/SQLiteDatabase.cpp.txt",
+        "function": "makeLedgerDBs",
+        "description": "Creates and configures the ledger and transaction databases using detail::makeLedgerDBs, setting up database files, pragmas, and checkpointing."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/Node.cpp.txt",
+        "function": "detail::makeLedgerDBs",
+        "description": "Creates DatabaseCon objects for ledger and transaction databases, applies configuration, initializes tables and indexes, and returns the database connections."
+    },
+    {
+        "path": "src/xrpld/core/DatabaseCon.h.txt",
+        "function": "DatabaseCon",
+        "description": "Manages a thread-safe connection to a SQLite database, initializing the session with custom pragmas and SQL, and optionally sets up checkpointing for durability."
+    },
+    {
+        "path": "src/xrpld/core/DatabaseCon.h.txt",
+        "function": "setup_DatabaseCon",
+        "description": "Prepares the DatabaseCon::Setup struct with configuration options, file paths, and SQLite pragmas for database initialization."
+    },
+    {
+        "path": "src/xrpld/core/DatabaseCon.h.txt",
+        "function": "DatabaseCon::setupCheckpointing",
+        "description": "Initializes checkpointing for the database session using a job queue and logging, ensuring durability and periodic WAL checkpoints."
+    },
+    {
+        "path": "src/xrpld/app/main/DBInit.h.txt",
+        "function": "LgrDBInit, TxDBInit",
+        "description": "Defines the SQL schema and initialization statements for the ledger and transaction databases, including table and index creation."
+    },
+    {
+        "path": "src/xrpld/core/SociDB.h.txt",
+        "function": "open",
+        "description": "Opens a SOCI session to the SQLite database using the provided configuration and connection string."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/SQLiteDatabase.cpp.txt",
+        "function": "SQLiteDatabaseImp::* (various)",
+        "description": "Implements all database operations (e.g., getMinLedgerSeq, getMaxLedgerSeq, saveValidatedLedger, getLedgerInfoByIndex, getTxHistory, deleteBeforeLedgerSeq, etc.) by checking database existence, checking out a session, and delegating to detail namespace functions."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/Node.h.txt",
+        "function": "detail::* (various)",
+        "description": "Provides low-level functions for querying, saving, deleting, and paginating ledger and transaction data in the SQLite database, used by SQLiteDatabaseImp methods."
+    },
+    {
+        "path": "src/xrpld/core/SociDB.h.txt",
+        "function": "getKBUsedAll, getKBUsedDB",
+        "description": "Returns the memory usage of the entire SQLite process or a specific database, used for monitoring database space."
+    },
+    {
+        "path": "src/xrpld/app/rdb/backend/detail/SQLiteDatabase.cpp.txt",
+        "function": "closeLedgerDB, closeTransactionDB",
+        "description": "Closes the ledger or transaction database connections by resetting the internal DatabaseCon pointers."
+    }
+]

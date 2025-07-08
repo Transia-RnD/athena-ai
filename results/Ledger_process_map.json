@@ -1,0 +1,47 @@
+[
+    {
+        "path": "src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt",
+        "function": "LedgerMaster::findNewLedgersToPublish",
+        "description": "Determines which new ledgers need to be published by comparing the last published and last validated ledgers, and attempts to fetch or acquire any missing ledgers in the sequence."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/InboundLedgers.cpp.txt",
+        "function": "InboundLedgersImp::acquire",
+        "description": "Manages the acquisition of a ledger from the network by hash and sequence, creating or updating an InboundLedger object, and coordinating the retrieval of ledger data from peers."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/InboundLedger.cpp.txt",
+        "function": "InboundLedger::init",
+        "description": "Initializes the process of acquiring a ledger, setting up internal state, and beginning requests for ledger data from peers."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/InboundLedger.cpp.txt",
+        "function": "InboundLedger::gotData",
+        "description": "Processes incoming ledger data from peers, updating the acquisition state, and determining if more data is needed or if the ledger is complete."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/InboundLedger.cpp.txt",
+        "function": "InboundLedger::done",
+        "description": "Finalizes the acquisition process for a ledger, marks it as complete, and triggers storage or further processing depending on the acquisition reason."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt",
+        "function": "LedgerMaster::storeLedger",
+        "description": "Inserts a fully acquired and validated ledger into the ledger history, making it available for future queries and operations."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt",
+        "function": "LedgerMaster::checkAccept",
+        "description": "Checks if a newly acquired ledger has enough trusted validations to be considered validated, and if so, marks it as validated and full, and updates the current validated ledger pointer."
+    },
+    {
+        "path": "src/xrpld/app/ledger/LedgerHistory.cpp.txt",
+        "function": "LedgerHistory::insert",
+        "description": "Adds a ledger to the internal caches by hash and sequence, ensuring it is available for fast lookup and validation."
+    },
+    {
+        "path": "src/xrpld/app/ledger/Ledger.cpp.txt",
+        "function": "Ledger::setImmutable",
+        "description": "Marks the ledger and its underlying data structures as immutable, preventing further modification and ensuring consistency."
+    }
+]

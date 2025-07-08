@@ -15,4 +15,5 @@ credentials.json
 chatbot_data
 tool_data
 ai.log
-# /playgrounds
+/playgrounds/core_dev
+# /results

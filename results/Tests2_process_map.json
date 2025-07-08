@@ -1,0 +1,47 @@
+[
+    {
+        "path": "src/test/jtx/Env.cpp",
+        "function": "Env::Env",
+        "description": "Creates a simulated ledger environment for testing, initializing accounts, features, and protocol amendments as specified."
+    },
+    {
+        "path": "src/test/jtx/Account.cpp",
+        "function": "Account::Account",
+        "description": "Represents a ledger account in the test environment, allowing creation and manipulation of account objects."
+    },
+    {
+        "path": "src/test/jtx/fund.cpp",
+        "function": "fund",
+        "description": "Funds one or more accounts with a specified amount of XRP in the test environment."
+    },
+    {
+        "path": "src/test/jtx/trust.cpp",
+        "function": "trust",
+        "description": "Establishes a trust line between two accounts for a given IOU currency and limit."
+    },
+    {
+        "path": "src/test/jtx/pay.cpp",
+        "function": "pay",
+        "description": "Sends a payment from one account to another, specifying the amount and currency."
+    },
+    {
+        "path": "src/test/jtx/account_set.cpp",
+        "function": "account_set",
+        "description": "Sets account flags or properties for a given account in the test environment."
+    },
+    {
+        "path": "src/test/jtx/flags.cpp",
+        "function": "flags",
+        "description": "Checks or sets specific account flags for an account."
+    },
+    {
+        "path": "src/test/jtx/require.cpp",
+        "function": "require",
+        "description": "Asserts that the ledger state matches expected conditions, such as balances or flags, after transactions."
+    },
+    {
+        "path": "src/test/jtx/Env.cpp",
+        "function": "Env::close",
+        "description": "Advances the ledger, processing all submitted transactions and updating the ledger state."
+    }
+]

@@ -1,0 +1,102 @@
+[
+    {
+        "path": "src/xrpld/app/misc/NetworkOPs.cpp.txt",
+        "function": "beginConsensus",
+        "description": "Initializes the consensus process for a new ledger by gathering the previous ledger, updating the trusted validator set, and starting the consensus round with the current trusted and untrusted validators."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "startRound",
+        "description": "Begins a new consensus round by passing the previous ledger, trusted/untrusted validator sets, and other parameters to the consensus engine."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "startRound",
+        "description": "Sets up the internal state for a new consensus round, including the previous ledger, current trusted/untrusted nodes, and whether the node is proposing."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "Adaptor::preStartRound",
+        "description": "Determines if the node should validate in this round based on validator keys, ledger sequence, and network state; prepares for the round."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "timerEntry",
+        "description": "Advances the consensus process by handling time-based events, such as proposal timeouts and round progression."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "timerEntry",
+        "description": "Handles periodic consensus state updates, including proposal collection, dispute resolution, and checking for consensus progress or timeouts."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "peerProposal",
+        "description": "Processes incoming proposals from peers, updating the set of peer positions and triggering dispute creation if necessary."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "updateOurPositions",
+        "description": "Updates the local node's proposal based on peer input, transaction disputes, and consensus parameters."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "createDisputes",
+        "description": "Compares the local transaction set with those from peers to identify and track disputed transactions for consensus voting."
+    },
+    {
+        "path": "src/xrpld/consensus/Consensus.h.txt",
+        "function": "checkConsensus",
+        "description": "Evaluates whether consensus has been reached based on proposer counts, agreement levels, timing, and consensus thresholds."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "Adaptor::onForceAccept",
+        "description": "Finalizes the consensus round, builds the new ledger, applies transactions, and triggers validation and ledger publication."
+    },
+    {
+        "path": "src/xrpld/app/consensus/RCLConsensus.cpp.txt",
+        "function": "doAccept",
+        "description": "Builds the new last closed ledger from the consensus transaction set, applies any remaining transactions, and manages validation and ledger state updates."
+    },
+    {
+        "path": "src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt",
+        "function": "consensusBuilt",
+        "description": "Records the built ledger in history, checks for ledger acceptance, and coordinates further ledger processing."
+    },
+    {
+        "path": "src/xrpld/app/ledger/LedgerHistory.cpp.txt",
+        "function": "builtLedger",
+        "description": "Stores the newly built ledger and its consensus hash in the ledger history cache for future retrieval and validation."
+    },
+    {
+        "path": "src/xrpld/app/misc/NegativeUNLVote.cpp.txt",
+        "function": "doVoting",
+        "description": "Manages the voting process for the Negative UNL by scoring validator reliability, selecting candidates for disabling or re-enabling, and constructing transactions to modify the Negative UNL."
+    },
+    {
+        "path": "src/xrpld/app/misc/NegativeUNLVote.cpp.txt",
+        "function": "buildScoreTable",
+        "description": "Builds a table of validator reliability scores over a configurable interval using validation history."
+    },
+    {
+        "path": "src/xrpld/app/misc/NegativeUNLVote.cpp.txt",
+        "function": "findAllCandidates",
+        "description": "Identifies which validators are candidates for disabling (adding to Negative UNL) or re-enabling (removing from Negative UNL) based on their scores and protocol thresholds."
+    },
+    {
+        "path": "src/xrpld/app/misc/NegativeUNLVote.cpp.txt",
+        "function": "choose",
+        "description": "Deterministically selects a candidate from the list of possible validators to disable or re-enable."
+    },
+    {
+        "path": "src/xrpld/app/misc/NegativeUNLVote.cpp.txt",
+        "function": "addTx",
+        "description": "Constructs and adds a ttUNL_MODIFY transaction to the ledger's transaction set to enact a Negative UNL change."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/Change.cpp.txt",
+        "function": "applyUNLModify",
+        "description": "Validates and applies a ttUNL_MODIFY transaction, updating the Negative UNL in the ledger if all protocol rules are satisfied."
+    }
+]

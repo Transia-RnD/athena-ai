@@ -1,0 +1,23 @@
+{
+    "symbols": [
+        "OrderCandidates",
+        "OrderCandidates::operator()",
+        "MaybeTx",
+        "MaybeTx::feeLevel",
+        "MaybeTx::txID",
+        "MaybeTx::parentHashComp",
+        "CanonicalTXSet",
+        "CanonicalTXSet::insert",
+        "CanonicalTXSet::Key",
+        "CanonicalTXSet::Key::txId_",
+        "CanonicalTXSet::Key::seqProxy_",
+        "CanonicalTXSet::Key::account_",
+        "CanonicalTXSet::accountKey",
+        "LedgerMaster::applyHeldTransactions",
+        "LedgerMaster::popAcctTransaction",
+        "LedgerMaster::setBuildingLedger",
+        "LedgerMaster::haveLedger",
+        "LedgerMaster::clearLedger",
+        "LedgerMaster::isValidated"
+    ]
+}

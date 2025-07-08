@@ -1,0 +1,32 @@
+{
+    "symbols": [
+        "protocol::mtGET_OBJECTS",
+        "protocol::liBASE",
+        "protocol::TMProposeSet",
+        "protocol::TMValidation",
+        "protocol::TMLedgerData",
+        "protocol::TMGetLedger",
+        "protocol::TMTransaction",
+        "protocol::TMManifests",
+        "protocol::TMPing",
+        "protocol::TMCluster",
+        "protocol::TMEndpoints",
+        "protocol::mtMANIFESTS",
+        "protocol::mtPING",
+        "protocol::mtCLUSTER",
+        "protocol::mtENDPOINTS",
+        "protocol::mtTRANSACTION",
+        "protocol::mtGET_LEDGER",
+        "protocol::mtLEDGER_DATA",
+        "protocol::mtPROPOSE_LEDGER",
+        "protocol::nsCONNECTING",
+        "protocol::nsCONNECTED",
+        "protocol::nsMONITORING",
+        "protocol::nsVALIDATING",
+        "protocol::nsSHUTTING",
+        "protocol::neCLOSING_LEDGER",
+        "protocol::neACCEPTED_LEDGER",
+        "protocol::neSWITCHED_LEDGER",
+        "protocol::neLOST_SYNC"
+    ]
+}

@@ -1,0 +1,62 @@
+[
+    {
+        "path": "src/xrpld/app/main/Application.cpp.txt",
+        "function": "make_AmendmentTable",
+        "description": "Creates and initializes the AmendmentTable, loading supported, enabled, and vetoed amendments from configuration and database, ensuring database votes take precedence over config."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentTableImpl::AmendmentTableImpl",
+        "description": "Constructor that sets up the internal state, loads votes from the database, parses config, and initializes the amendment map with support/vote status for each amendment."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentTableImpl::persistVote",
+        "description": "Persists a vote (up, down, obsolete) for an amendment to the database, ensuring the latest vote is stored."
+    },
+    {
+        "path": "src/xrpld/app/rdb/detail/Wallet.cpp.txt",
+        "function": "voteAmendment",
+        "description": "Inserts or updates a row in the FeatureVotes table in the database to record a node's vote for a specific amendment."
+    },
+    {
+        "path": "src/xrpld/app/rdb/detail/Wallet.cpp.txt",
+        "function": "readAmendments",
+        "description": "Reads the latest votes for all amendments from the FeatureVotes table in the database and applies them to the AmendmentTable."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentTableImpl::doValidation",
+        "description": "Determines which amendments this node will announce support for in its validations, based on supported, enabled, and upvoted amendments."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentTableImpl::getDesired",
+        "description": "Returns the list of amendments this node desires to see enabled, as determined by doValidation."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentTableImpl::doVoting",
+        "description": "Tallies validator votes for amendments, determines which amendments have gained or lost majority, and returns actions (e.g., introduce pseudo-transactions) for the next ledger."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentSet::AmendmentSet",
+        "description": "Constructs a set of amendments with their vote counts and computes the majority threshold based on current rules and trusted validations."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentSet::passes",
+        "description": "Checks if a given amendment has enough votes to pass the majority threshold."
+    },
+    {
+        "path": "src/xrpld/app/misc/detail/AmendmentTable.cpp.txt",
+        "function": "AmendmentTableImpl::doValidatedLedger",
+        "description": "Updates the internal state of the AmendmentTable after a ledger is validated, enabling amendments and updating majority status as needed."
+    },
+    {
+        "path": "src/xrpld/app/tx/detail/Change.cpp.txt",
+        "function": "Change::applyAmendment",
+        "description": "Applies an amendment pseudo-transaction to the ledger, updating the enabled amendments list and majority status, and triggers activation logic if the amendment is enabled."
+    }
+]

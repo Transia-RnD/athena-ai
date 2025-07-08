@@ -1,0 +1,28 @@
+{
+    "symbols": [
+        "share(RCLCxPeerPos const& peerPos)",
+        "share(RCLCxTx const& tx)",
+        "acquireTxSet(RCLTxSet::ID const& setId)",
+        "hasOpenTransactions() const",
+        "proposersValidated(LedgerHash const& h) const",
+        "proposersFinished(RCLCxLedger const& ledger, LedgerHash const& h) const",
+        "propose(RCLCxPeerPos::Proposal const& proposal)",
+        "share(RCLTxSet const& txns)",
+        "getPrevLedger(uint256 ledgerID, RCLCxLedger const& ledger, ConsensusMode mode)",
+        "onModeChange(ConsensusMode before, ConsensusMode after)",
+        "onClose(RCLCxLedger const& ledger, NetClock::time_point const& closeTime, ConsensusMode mode)",
+        "onAccept(Result const& result, RCLCxLedger const& prevLedger, NetClock::duration const& closeResolution, ConsensusCloseTimes const& rawCloseTimes, ConsensusMode const& mode, Json::Value&& consensusJson, bool const validating)",
+        "onForceAccept(Result const& result, RCLCxLedger const& prevLedger)",
+        "RCLConsensus::gotTxSet(NetClock::time_point const& now, RCLTxSet const& txSet)",
+        "RCLConsensus::simulate(NetClock::time_point const& now, std::optional<std::chrono::milliseconds> consensusDelay)",
+        "RCLConsensus::peerProposal(NetClock::time_point const& now, RCLCxPeerPos const& newProposal)",
+        "RCLConsensus::Adaptor::preStartRound(RCLCxLedger const& prevLgr, hash_set<NodeID> const& nowTrusted)",
+        "RCLConsensus::Adaptor::share(RCLCxPeerPos const& peerPos)",
+        "timerEntry(NetClock::time_point const& now, std::unique_ptr<std::stringstream> const& clog = {})",
+        "gotTxSet(NetClock::time_point const& now, RCLTxSet const& txSet)",
+        "prevLedgerID() const",
+        "simulate(NetClock::time_point const& now, std::optional<std::chrono::milliseconds> consensusDelay)",
+        "peerProposal(NetClock::time_point const& now, RCLCxPeerPos const& newProposal)",
+        "parms() const"
+    ]
+}

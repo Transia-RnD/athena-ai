@@ -1,0 +1,22 @@
+[
+    {
+        "path": "include/xrpl/protocol/STObject.h.txt",
+        "function": "STObject",
+        "description": "STObject is a core data structure representing and managing serialized protocol objects with fields of various types. It supports construction from templates, serialization/deserialization, field access and mutation, and JSON conversion, enforcing field presence and order according to templates."
+    },
+    {
+        "path": "include/xrpl/protocol/STBase.h.txt",
+        "function": "STBase",
+        "description": "STBase is the polymorphic base class for all serializable types, providing interfaces for type identification, JSON conversion, serialization, equivalence checking, and default value checking. It enables flexible and type-safe handling of protocol fields and objects."
+    },
+    {
+        "path": "include/xrpl/protocol/detail/STVar.h.txt",
+        "function": "STVar",
+        "description": "STVar is a type-erased container for protocol objects derived from STBase, managing storage for these objects either in-place or on the heap. It provides constructors for various initialization scenarios, supports copy/move semantics, and enables pointer-like access to the contained object."
+    },
+    {
+        "path": "include/xrpl/protocol/STIssue.h.txt",
+        "function": "STIssue",
+        "description": "STIssue represents an 'issue' (asset or currency) in the protocol, encapsulating an Asset object and providing type-safe access and manipulation. It supports construction from various sources, serialization/deserialization, and comparison operations, ensuring consistency between asset types and their native status."
+    }
+]

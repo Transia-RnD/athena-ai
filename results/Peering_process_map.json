@@ -1,0 +1,72 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/OverlayImpl.cpp.txt",
+        "function": "OverlayImpl::connect",
+        "description": "Initiates an outbound peer connection by checking resource limits, requesting a new outbound slot from PeerFinder, creating a ConnectAttempt object, and starting the asynchronous connection process."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp.txt",
+        "function": "ConnectAttempt::run",
+        "description": "Begins the asynchronous process of connecting to a remote peer, including establishing a TCP connection, performing SSL handshake, and sending the initial HTTP upgrade request."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp.txt",
+        "function": "ConnectAttempt::processResponse",
+        "description": "Processes the HTTP response from the remote peer, negotiates protocol version, verifies the handshake and peer identity, and activates the peer if successful; otherwise, handles errors and closes the attempt."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/ConnectAttempt.cpp.txt",
+        "function": "OverlayImpl::add_active",
+        "description": "Adds a successfully connected and handshaked PeerImp to the set of active peers, updates internal maps, and starts the peer's protocol logic by calling run()."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::run",
+        "description": "Initializes the peer's protocol state, parses handshake data, sets up ledger tracking, and transitions to either doAccept (for inbound) or doProtocolStart (for outbound) to begin protocol message exchange."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::doAccept",
+        "description": "For inbound peers, completes the handshake by verifying the shared value, logs protocol and public key information, and prepares the peer for protocol message processing."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::doProtocolStart",
+        "description": "For outbound peers, completes protocol initialization and begins the main message processing loop."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::onMessageBegin",
+        "description": "Handles the start of an incoming protocol message, categorizes it, and updates resource usage and traffic metrics."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::onMessage",
+        "description": "Processes specific protocol messages (e.g., transactions, proposals, validations, endpoints, squelch, ping/pong), relays or squelches as needed, and updates peer state and resource usage."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/OverlayImpl.cpp.txt",
+        "function": "OverlayImpl::relay",
+        "description": "Relays protocol messages (proposals, validations, transactions) to selected peers, applying relay and squelch policies to prevent redundant propagation."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/Slot.h.txt",
+        "function": "Slot::update",
+        "description": "Updates the state of a peer slot based on message activity, manages transitions between Counting, Selected, and Squelched states, and enforces relay thresholds and squelch expiration."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/OverlayImpl.cpp.txt",
+        "function": "OverlayImpl::unsquelch",
+        "description": "Removes squelch from a peer for a given validator, allowing the peer to resume receiving relayed messages."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::close",
+        "description": "Closes the peer's socket, cancels timers, marks the peer as detaching, and notifies the overlay of the disconnection."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/overlay/detail/PeerImp.cpp.txt",
+        "function": "PeerImp::~PeerImp",
+        "description": "Destructor for PeerImp; cleans up resources, notifies overlay and PeerFinder of closure, and removes the peer from active sets."
+    }
+]
