@@ -1,0 +1,17 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/handlers/NoRippleCheck.cpp.txt",
+        "function": "fillTransaction",
+        "description": "Fills a transaction JSON object with the correct Sequence, Account, and Fee fields using the provided account ID, sequence number, and ledger fee information."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/handlers/NoRippleCheck.cpp.txt",
+        "function": "doNoRippleCheck",
+        "description": "Checks an account's 'no ripple' settings and trust lines, validates input parameters, retrieves account and trust line data from the ledger, identifies misconfigurations, and generates suggested transactions to fix issues if requested."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/detail/TransactionSign.cpp.txt",
+        "function": "getAutofillSequence",
+        "description": "Determines the correct sequence number for a transaction, considering whether a ticket sequence is present, and validates the Account field in the transaction JSON."
+    }
+]

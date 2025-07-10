@@ -1,39 +1,37 @@
-# Additional Information: `fetchNodeObject` Usage and Tests
+# NodeStore Initialization in XRPL (`Application.cpp` and `initNodeStore()`)
 
-## `fetchNodeObject` Functionality
+## Where NodeStore is Initialized
 
-The `fetchNodeObject` function is a core method in the NodeStore subsystem, responsible for retrieving a `NodeObject` from the cache or backend storage. Its main responsibilities and usage patterns are as follows:
+The NodeStore is initialized in the `Application.cpp` file, specifically within the `initNodeStore()` function.
 
-- **Cache Lookup:**  
-  The function first checks if the requested `NodeObject` (by hash) is present in the cache. If found and not marked as a dummy (`hotDUMMY`), it is returned immediately.
+## How NodeStore is Initialized
 
-- **Backend Fetch:**  
-  If the object is not in the cache, `fetchNodeObject` attempts to retrieve it from the configured backend (e.g., RocksDB, NuDB).  
-  - On successful fetch, the object is inserted into the cache.
-  - If the object is not found, a dummy object (`hotDUMMY`) is cached to mark the missing entry.
-  - If data corruption is detected, a fatal log is emitted.
-  - Unknown or backend-specific errors are logged with appropriate severity.
+- The `initNodeStore()` function is responsible for setting up the NodeStore database during application startup.
+- Within this function, the creation of the NodeStore database is performed by calling the `make_Database` function.
 
-- **Metrics and Reporting:**  
-  The function updates fetch statistics, including hit/miss counts and fetch durations, and reports these via the scheduler.
+### Relevant Code Location
 
-- **Thread Safety:**  
-  All cache and backend operations are protected to ensure thread safety.
+- **File:** `src/xrpld/app/main/Application.cpp`
+- **Function:** `initNodeStore()`
 
-### Example Usage in Code
+### Initialization Flow
 
-- The main `Database` interface exposes `fetchNodeObject` for use by higher-level components, such as SHAMap and ledger retrieval logic.
-- Both `DatabaseNodeImp` and `DatabaseRotatingImp` provide concrete implementations, handling single-backend and rotating-backend scenarios, respectively.
+1. **Configuration Loading:**  
+   The function loads the necessary configuration for the NodeStore from the application's configuration files.
 
-## Source Code References
+2. **Database Creation:**  
+   The function calls `make_Database`, which is responsible for creating an instance of the NodeStore database according to the configuration (such as backend type, path, cache settings, etc.).
 
-- [`DatabaseNodeImp.cpp` (fetchNodeObject implementation)](src/xrpld/nodestore/detail/DatabaseNodeImp.cpp.txt)
-- [`Database.cpp` (Database::fetchNodeObject)](src/xrpld/nodestore/detail/Database.cpp.txt)
-- [`DatabaseRotatingImp.cpp` (rotating backend fetch)](src/xrpld/nodestore/detail/DatabaseRotatingImp.cpp.txt)
+3. **Backend Instantiation:**  
+   The `make_Database` function internally uses the `Manager` and `Factory` classes to instantiate the appropriate backend (e.g., RocksDB, NuDB) as specified in the configuration.
 
-## Test Coverage
+4. **Opening the Database:**  
+   After creation, the database and its backend are opened and made ready for use by the rest of the application.
 
-- [`Backend_test.cpp` (NodeStore backend and fetchNodeObject tests)](/Users/darkmatter/projects/ledger-works/rippled/src/test/nodestore/Backend_test.cpp)
+### Supporting Evidence
+
+- The `initNodeStore()` function is present in `Application.cpp` and is responsible for NodeStore initialization.
+- The actual database is created via a call to `make_Database`, which uses the configuration to select and instantiate the correct backend.
 
 ---
 

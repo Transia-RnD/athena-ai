@@ -1,268 +1,252 @@
----
-
 # Consensus_Validations Functionality and Architecture: Comprehensive Lesson Plan
 
-This document provides a detailed, code-based breakdown of the Consensus_Validations subsystem in the XRPL (XRP Ledger) source code. It covers every aspect of Consensus_Validations, including its architecture, timing parameters, data structures, validation message creation and handling, trust management, validation tracking, ledger acceptance, mismatch detection, thread safety, error handling, inter-module relationships, and the Negative UNL voting process. All explanations are strictly grounded in the provided source code and documentation.
+This document provides a detailed, code-based breakdown of the Consensus_Validations functionality in the XRPL (XRP Ledger) source code. It covers every aspect of Consensus_Validations, including its architecture, data structures, validation message handling, trust management, sequence enforcement, ledger trie usage, expiration and querying, integration with consensus, and interactions with other subsystems. All explanations are strictly grounded in the provided source code and documentation.
 
 ---
 
 ## Table of Contents
 
 - [Consensus_Validations Overview](#consensus_validations-overview)
-- [Validation Timing Parameters (ValidationParms)](#validation-timing-parameters-validationparms)
-- [File and Module-Level Overviews](#file-and-module-level-overviews)
-- [Validation Message Creation and Broadcasting](#validation-message-creation-and-broadcasting)
-- [Validation Message Handling and Trust Management](#validation-message-handling-and-trust-management)
-- [Validation Tracking and Data Structures](#validation-tracking-and-data-structures)
-- [Enums and Flags](#enums-and-flags)
+- [Validation Message Structure: STValidation](#validation-message-structure-stvalidation)
+- [Validation Parameters and Timing](#validation-parameters-and-timing)
+- [Core Data Structures](#core-data-structures)
+  - [SeqEnforcer](#seqenforcer)
+  - [Validations Template Class](#validations-template-class)
+  - [Ledger Trie](#ledger-trie)
+- [Validation Lifecycle](#validation-lifecycle)
+  - [Receiving and Handling Validations](#receiving-and-handling-validations)
+  - [Trust and Untrust Management](#trust-and-untrust-management)
+  - [Validation Expiration and Freshness](#validation-expiration-and-freshness)
+  - [Sequence Number Enforcement](#sequence-number-enforcement)
+- [Ledger Support and Preferred Ledger Determination](#ledger-support-and-preferred-ledger-determination)
 - [Thread Safety and Concurrency](#thread-safety-and-concurrency)
-- [Error Handling and Edge Cases](#error-handling-and-edge-cases)
-- [Inter-Module Relationships](#inter-module-relationships)
-- [Negative UNL Voting Process](#negative-unl-voting-process)
+- [Adaptor Pattern and Integration](#adaptor-pattern-and-integration)
+- [Consensus Integration](#consensus-integration)
+- [Byzantine Behavior Detection](#byzantine-behavior-detection)
+- [Negative UNL and Amendment Voting](#negative-unl-and-amendment-voting)
 - [References to Source Code](#references-to-source-code)
 
 ---
 
 ## Consensus_Validations Overview
 
-**Purpose:**  
-Consensus_Validations is the subsystem responsible for managing the creation, distribution, reception, trust assessment, and tracking of validation messages in the XRPL consensus process. It ensures that only ledgers with sufficient trusted validations are accepted as validated, detects and diagnoses mismatches or byzantine behavior, and supports the Negative UNL mechanism for network reliability.
+Consensus_Validations in XRPL is responsible for managing, tracking, and enforcing the rules around validation messages (signed statements from validators attesting to a specific ledger as a result of consensus). It ensures that only valid, current, and trusted validations are considered for consensus, maintains historical and current validation sets, and provides mechanisms for trust management, sequence enforcement, and ledger ancestry tracking. The system is highly configurable and thread-safe, and is designed to be adaptable to different ledger and validation types via a template Adaptor.
+
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
 
 ---
 
-## Validation Timing Parameters (ValidationParms)
+## Validation Message Structure: STValidation
 
-The `ValidationParms` struct defines critical timing parameters that determine when a validation is considered "current," "stale," or "expired." These parameters directly impact consensus safety and liveness.
+- **STValidation** is the core class representing a validation message in the XRPL consensus protocol.
+- Inherits from `STObject` and `CountedObject<STValidation>`.
+- Encapsulates:
+  - Signing public key (`signingPubKey_`)
+  - Node ID (`nodeID_`)
+  - Sign and seen times (`signTime_`, `seenTime_`)
+  - Trust status (`mTrusted`)
+  - Signature validity cache (`mutable std::optional<bool> valid_`)
+- Provides methods for:
+  - Accessing ledger hash, consensus hash, signing/seen times, public key, node ID
+  - Checking validity (cryptographic signature verification), trust, and completeness
+  - Serializing and rendering the validation
+  - Setting trusted/untrusted status
+- Enforces secp256k1 keys and required fields.
+- Signature verification is performed on demand and cached.
+- The format of a validation includes required and optional fields such as flags, ledger hash, ledger sequence, signing time, signing public key, signature, consensus hash, amendments, load fee, and others.
 
-```cpp
-struct ValidationParms
-{
-    std::chrono::seconds validationCURRENT_WALL = std::chrono::minutes{5};
-    std::chrono::seconds validationCURRENT_LOCAL = std::chrono::minutes{3};
-    std::chrono::seconds validationCURRENT_EARLY = std::chrono::minutes{3};
-    std::chrono::seconds validationSET_EXPIRES = std::chrono::minutes{10};
-    std::chrono::seconds validationFRESHNESS = std::chrono::seconds{20};
-};
-```
-
-**Parameter Explanations:**
-
-- **validationCURRENT_WALL**:  
-  The maximum wall-clock time (5 minutes) that a validation is considered "current" relative to the network's global time. Validations older than this are considered stale and ignored for consensus.
-
-- **validationCURRENT_LOCAL**:  
-  The maximum local time (3 minutes) that a validation is considered "current" relative to the local node's clock. This helps mitigate local clock skew.
-
-- **validationCURRENT_EARLY**:  
-  The earliest time (3 minutes before now) that a validation is accepted. Prevents nodes from submitting validations too far in advance.
-
-- **validationSET_EXPIRES**:  
-  The duration (10 minutes) after which a set of validations is considered expired and can be purged from memory.
-
-- **validationFRESHNESS**:  
-  The interval (20 seconds) within which a validation is considered "fresh" for scoring and Negative UNL purposes.
-
-**Impact:**  
-These parameters are used in the `isCurrent()` function to determine if a validation should be considered for consensus, and in expiring old validations from memory.
+Source: [STValidation.h](include/xrpl/protocol/STValidation.h), [STValidation.cpp](src/libxrpl/protocol/STValidation.cpp)
 
 ---
 
-## File and Module-Level Overviews
+## Validation Parameters and Timing
 
-### `Validations.h`
+- **ValidationParms** struct defines timing and freshness parameters for validation management:
+  - `validationCURRENT_WALL`: Maximum wall time a validation is considered current (default: 5 minutes)
+  - `validationCURRENT_LOCAL`: Maximum local time a validation is considered current (default: 3 minutes)
+  - `validationCURRENT_EARLY`: How early a validation can be considered (default: 3 minutes)
+  - `validationSET_EXPIRES`: How long a validation set is kept (default: 10 minutes)
+  - `validationFRESHNESS`: How fresh a validation must be (default: 20 seconds)
+- These parameters are used to determine if a validation is "current" and to expire old validations.
 
-Defines core data structures and logic for managing and tracking validations in the XRPL consensus process. Introduces configuration parameters (`ValidationParms`), a `SeqEnforcer` utility for sequence number rules, and the main `Validations` template class. The class manages current and historical validations, enforces sequence rules, tracks trusted/untrusted validators, and maintains a ledger trie for efficient consensus operations. Thread safety is ensured via mutexes.
-
-### `RCLValidations.h`
-
-Defines classes and interfaces for handling ledger validations in the Ripple Consensus Layer (RCL). Main classes include `RCLValidation` (wraps a single validation), `RCLValidatedLedger` (represents a validated ledger and its ancestry), and `RCLValidationsAdaptor` (adapts the application context for use with the generic `Validations` framework). Also declares the `handleNewValidation` function.
-
-### `STValidation.h` / `STValidation.cpp`
-
-Defines and implements the `STValidation` class, representing a validation message in the XRP Ledger consensus protocol. Encapsulates information about a validation, such as the signing public key, node ID, sign and seen times, and trust status. Provides methods for signature verification, serialization, and field access.
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
 
 ---
 
-## Validation Message Creation and Broadcasting
+## Core Data Structures
 
-### `RCLConsensus::Adaptor::validate`
+### SeqEnforcer
 
-**Functionality:**
-- Creates, signs, and broadcasts a validation message for a newly built ledger.
-- Ensures the validation time is strictly increasing.
-- Only operates if the node is configured as a validator.
-- Sets required and optional fields on the validation message, including ledger hash, consensus hash, sequence, flags, and amendment/fee voting fields.
-- Serializes the validation and adds it to the hash router for suppression.
-- Processes the validation locally via `handleNewValidation`.
-- Broadcasts the validation to peers and publishes it to local subscribers.
+- **SeqEnforcer** is a utility for enforcing sequence number rules for validations.
+- Tracks the largest sequence number seen and the time it was seen.
+- Ensures that only validations with increasing sequence numbers are accepted from a given validator, and resets if the set expires.
+- Used to prevent replay or out-of-order validations.
 
----
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
 
-## Validation Message Handling and Trust Management
+### Validations Template Class
 
-### `handleNewValidation`
+- **Validations** is a template class parameterized by an Adaptor, which defines types and methods for the specific ledger and validation types.
+- Manages:
+  - **Current validations**: `hash_map<NodeID, Validation> current_`
+  - **Historical validations by ledger**: `aged_unordered_map<ID, hash_map<NodeID, Validation>> byLedger_`
+  - **Historical validations by sequence**: `aged_unordered_map<Seq, hash_map<NodeID, Validation>> bySequence_`
+  - **Sequence enforcement**: `SeqEnforcer<Seq> localSeqEnforcer_` and `hash_map<NodeID, SeqEnforcer<Seq>> seqEnforcers_`
+  - **Ledger trie**: For efficient ancestry and branch support queries
+- Provides methods for:
+  - Adding, expiring, and querying validations
+  - Enforcing sequence rules
+  - Tracking trusted/untrusted validators
+  - Determining preferred ledgers for consensus
+  - Thread safety via mutexes
 
-**Functionality:**
-- Processes a new validation message (`STValidation`) received by the server.
-- Extracts the signer's public key, ledger hash, and sequence number.
-- Looks up the master key for the signing key in the trusted validator list.
-- If the validation is not already trusted and the master key is found, marks the validation as trusted.
-- Adds the validation to the `Validations` set, receiving a status (`ValStatus`).
-- If the validation is "current" and from a trusted validator, calls `LedgerMaster::checkAccept` to check if the ledger should be accepted as validated.
-- If the validation is not "current" (stale, badSeq, multiple, or conflicting), logs byzantine or misbehavior, including conflicting or multiple validations from the same validator.
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
 
----
+### Ledger Trie
 
-## Validation Tracking and Data Structures
+- **LedgerTrie** is used to efficiently track ledger ancestry and support for different ledger branches.
+- Allows for quick determination of branch support, tip support, and preferred ledger selection.
+- Used in methods such as `getPreferred` and `branchSupport`.
 
-### `Validations` Template Class
-
-**Functionality:**
-- Manages current and historical validations, enforces validation sequence rules, tracks trusted/untrusted validators, and maintains a ledger trie for efficient consensus operations.
-- Data structures:
-  - `current_`: Map of nodeID to latest validation.
-  - `byLedger_`: Aged unordered map of ledger ID to (nodeID, validation) pairs.
-  - `bySequence_`: Aged unordered map of sequence number to (nodeID, validation) pairs.
-  - `SeqEnforcer`: Enforces sequence number rules per node.
-- Thread safety is ensured via mutexes.
-
-### `SeqEnforcer`
-
-- Ensures that a node cannot submit validations with regressed or duplicate sequence numbers.
-- If a sequence is not valid (e.g., too old, duplicate, or regressed), the validation is rejected with `ValStatus::badSeq`.
-
-### Trusted Validation Queries
-
-- `Validations::currentTrusted`: Returns a vector of all current, trusted, and full validations.
-- `Validations::getTrustedForLedger`: Returns a vector of trusted, full validations for a specific ledger and sequence number.
+Source: [LedgerTrie.h](src/xrpld/consensus/LedgerTrie.h)
 
 ---
 
-## Enums and Flags
+## Validation Lifecycle
 
-### `ValStatus` (Validation Status Codes)
+### Receiving and Handling Validations
 
-```cpp
-enum class ValStatus {
-    current,      // Validation is accepted and current.
-    stale,        // Validation is too old or not timely.
-    badSeq,       // Sequence number is invalid for this node.
-    multiple,     // Node submitted multiple validations for the same ledger/sequence.
-    conflicting   // Node submitted conflicting validations for the same sequence.
-};
-```
-**Usage:**  
-Returned by the `add()` method in `Validations` to indicate the result of adding a validation.
+- Validations are received from peers or generated locally.
+- Deserialized into `STValidation` objects.
+- Handled via `handleNewValidation`, which:
+  - Determines trust status (using validator list)
+  - Sets trusted/untrusted status on the validation
+  - Adds the validation to the `Validations` set (using `add`)
+  - Detects byzantine behavior (conflicting or multiple validations)
+  - Triggers ledger acceptance if the validation is trusted and not bypassed
 
-### `BypassAccept`
+Source: [RCLValidations.cpp](src/xrpld/app/consensus/RCLValidations.cpp)
 
-```cpp
-enum class BypassAccept : bool { no = false, yes };
-```
-**Usage:**  
-Indicates whether to bypass certain acceptance checks when processing a validation (e.g., for testing or special operational modes).
+### Trust and Untrust Management
 
-### Validation Flags
+- Trust is determined by the validator list (`ValidatorList`).
+- Trusted validations are those from keys in the trusted validator set.
+- Trust status is set on the `STValidation` object and propagated to the `Validations` set.
+- Trust changes are handled via `trustChanged`, which updates the set of trusted/untrusted validators and notifies other subsystems (e.g., AmendmentTable).
 
-- `vfFullValidation`: Indicates that the validation is a full validation (not a partial/proposal).
-- `vfFullyCanonicalSig`: Indicates that the signature is fully canonical.
+Source: [ValidatorList.h](src/xrpld/app/misc/ValidatorList.h), [RCLValidations.cpp](src/xrpld/app/consensus/RCLValidations.cpp)
+
+### Validation Expiration and Freshness
+
+- Validations are considered "current" if their sign and seen times are within the configured windows (`isCurrent`).
+- Expired validations are removed from the current set and historical maps.
+- Freshness is enforced to prevent replay or stale validations from affecting consensus.
+
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
+
+### Sequence Number Enforcement
+
+- Each validator's sequence number is tracked via `SeqEnforcer`.
+- Only validations with increasing sequence numbers are accepted.
+- Prevents replay attacks and ensures only the latest validation from each validator is considered.
+
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
+
+---
+
+## Ledger Support and Preferred Ledger Determination
+
+- The system tracks which ledgers are supported by which validators using the ledger trie and validation sets.
+- Methods:
+  - `numTrustedForLedger`: Counts trusted, full validations for a given ledger
+  - `getTrustedForLedger`: Returns trusted, full validations for a given ledger and sequence
+  - `getPreferred`: Determines the preferred ledger for consensus based on branch support and ancestry
+  - `branchSupport`: Calculates the number of validators supporting a given ledger branch
+- Used to determine if a supermajority supports a ledger, which is required for consensus.
+
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
 
 ---
 
 ## Thread Safety and Concurrency
 
-- All shared data structures in `Validations` (such as `current_`, `byLedger_`, `bySequence_`) are protected by mutexes.
-- All public methods that modify or access shared state acquire the appropriate lock.
-- Iteration over validation sets is performed under lock to avoid race conditions.
-- The `isValid()` method in `STValidation` caches its result, so repeated calls are safe and efficient.
-- The `ValidatorList` and related classes also use mutexes or shared locks for thread safety.
+- All shared state in the `Validations` class is protected by a mutex (`mutable Mutex mutex_`).
+- All methods that modify or access shared state acquire the mutex.
+- Designed for safe concurrent access from multiple threads.
+
+Source: [Validations.h](src/xrpld/consensus/Validations.h)
 
 ---
 
-## Error Handling and Edge Cases
+## Adaptor Pattern and Integration
 
-- **Non-current Validations:**  
-  Validations outside the `validationCURRENT_WALL` or `validationCURRENT_LOCAL` windows are ignored and not counted in consensus.
+- The `Validations` class is parameterized by an Adaptor, which defines:
+  - Types for Validation, Ledger, ID, Seq, NodeID, NodeKey
+  - Methods for acquiring ledgers, getting the current time, and logging
+- The `RCLValidationsAdaptor` adapts the application context for use with the generic `Validations` framework.
+- This allows the validation logic to be reused with different ledger and validation types.
 
-- **Sequence Enforcement Failures:**  
-  If a validator submits validations with non-increasing sequence numbers, the newer validation is ignored, and the validator may be flagged as misbehaving.
-
-- **Conflicting/Multiple Validations:**  
-  If a validator submits multiple validations for the same ledger sequence but with different hashes, only the first is accepted; subsequent conflicting validations are logged as byzantine behavior.
-
-- **Exceptions and Assertions:**  
-  - `isValid()` in `STValidation` asserts that the key type is `secp256k1` and may trigger an assertion failure if the key type is invalid.
-  - Other methods may use `XRPL_ASSERT` to enforce invariants; violations indicate programming errors or data corruption.
-
-- **Error Logging:**  
-  All byzantine or misbehavior cases are logged, including the raw serialized validation for forensic analysis.
+Source: [RCLValidations.h](src/xrpld/app/consensus/RCLValidations.h)
 
 ---
 
-## Inter-Module Relationships
+## Consensus Integration
 
-- **Validations:**  
-  Central repository for all received validations. Manages timing, status, and scoring.
+- The consensus engine queries the `Validations` set to determine:
+  - The number of trusted validations for a ledger
+  - The preferred ledger for the next round
+  - The set of laggards (validators not up to date)
+- Validations are used to trigger ledger acceptance when a quorum is reached.
+- The consensus process relies on the validation set to determine if consensus has been reached and which ledger is authoritative.
 
-- **RCLValidationsAdaptor:**  
-  Adapts the generic validation logic to the specifics of the Ripple Consensus Ledger (RCL), including ledger structure and transaction sets.
-
-- **LedgerTrie:**  
-  Used to organize and traverse the set of validated ledgers, supporting efficient lookup and ancestry queries.
-
-- **LedgerMaster:**  
-  Coordinates the current ledger state, tracks the validated ledger, and interacts with the validation module to determine consensus.
-
-- **ValidatorList:**  
-  Maintains the list of trusted validators, their public keys, and associated metadata. Used to filter and score incoming validations.
-
-**Consensus Process Flow:**
-1. Validators submit signed validations.
-2. `Validations` module receives and verifies them.
-3. `LedgerTrie` organizes the validated ledgers.
-4. `LedgerMaster` uses the results to advance the ledger.
-5. `ValidatorList` scores and tracks validator participation.
+Source: [Consensus.h](src/xrpld/consensus/Consensus.h), [RCLConsensus.cpp](src/xrpld/app/consensus/RCLConsensus.cpp), [LedgerMaster.cpp](src/xrpld/app/ledger/detail/LedgerMaster.cpp)
 
 ---
 
-## Negative UNL Voting Process
+## Byzantine Behavior Detection
 
-**Purpose:**  
-The Negative UNL (Unique Node List) mechanism allows the network to temporarily disable unreliable validators, improving consensus reliability.
+- The system detects and logs byzantine behavior:
+  - **Conflicting validations**: A validator sends validations for different ledgers at the same sequence
+  - **Multiple validations**: A validator sends multiple validations for the same ledger
+- Detected in `handleNewValidation` and logged with details for further analysis.
 
-**Validation History Usage:**  
-The `Validations` module tracks the freshness and frequency of validations from each validator using the `validationFRESHNESS` parameter.
+Source: [RCLValidations.cpp](src/xrpld/app/consensus/RCLValidations.cpp)
 
-**Scoring Validators:**  
-Validators are scored based on how often they submit fresh validations within the `validationFRESHNESS` window, using a score table built over a configurable interval (e.g., `FLAG_LEDGER_INTERVAL`).
+---
 
-**Candidate Selection:**  
-- **Disabling:** Validators with low scores (i.e., missing validations) are candidates for disabling.
-- **Re-enabling:** Disabled validators that resume submitting fresh validations are candidates for re-enabling.
+## Negative UNL and Amendment Voting
 
-**Thresholds and Logic:**  
-- A validator is considered for disabling if it fails to submit fresh validations for a configurable number of rounds.
-- Re-enabling occurs when a disabled validator consistently submits fresh validations again.
-- The Negative UNL does not exceed protocol-defined limits, and new validators are not disabled prematurely.
+- The validation set is used to score validator reliability for Negative UNL voting.
+- The Negative UNL mechanism temporarily disables unreliable validators based on their validation history.
+- Amendment voting uses the set of trusted validations to determine which amendments have sufficient support to be enabled.
 
-**Impact on Consensus:**  
-The Negative UNL is factored into quorum calculations, ensuring that consensus can be reached even if some validators are temporarily offline or unreliable.
+Source: [NegativeUNLVote.cpp](src/xrpld/app/misc/NegativeUNLVote.cpp), [AmendmentTable.h](src/xrpld/app/misc/AmendmentTable.h)
 
 ---
 
 ## References to Source Code
 
-- [src/xrpld/consensus/Validations.h.txt](src/xrpld/consensus/Validations.h.txt)
-- [src/xrpld/app/consensus/RCLValidations.h.txt](src/xrpld/app/consensus/RCLValidations.h.txt)
-- [src/xrpld/app/consensus/RCLValidations.cpp.txt](src/xrpld/app/consensus/RCLValidations.cpp.txt)
-- [src/libxrpl/protocol/STValidation.cpp.txt](src/libxrpl/protocol/STValidation.cpp.txt)
-- [include/xrpl/protocol/STValidation.h.txt](include/xrpl/protocol/STValidation.h.txt)
-- [src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt](src/xrpld/app/ledger/detail/LedgerMaster.cpp.txt)
-- [src/xrpld/app/ledger/LedgerHistory.cpp.txt](src/xrpld/app/ledger/LedgerHistory.cpp.txt)
-- [src/xrpld/app/ledger/LedgerHistory.h.txt](src/xrpld/app/ledger/LedgerHistory.h.txt)
-- [src/xrpld/app/misc/ValidatorList.h.txt](src/xrpld/app/misc/ValidatorList.h.txt)
-- [src/xrpld/app/misc/NegativeUNLVote.cpp.txt](src/xrpld/app/misc/NegativeUNLVote.cpp.txt)
+- [Validations.h](src/xrpld/consensus/Validations.h)
+- [LedgerTrie.h](src/xrpld/consensus/LedgerTrie.h)
+- [RCLValidations.h](src/xrpld/app/consensus/RCLValidations.h)
+- [RCLValidations.cpp](src/xrpld/app/consensus/RCLValidations.cpp)
+- [STValidation.h](include/xrpl/protocol/STValidation.h)
+- [STValidation.cpp](src/libxrpl/protocol/STValidation.cpp)
+- [ValidatorList.h](src/xrpld/app/misc/ValidatorList.h)
+- [NegativeUNLVote.cpp](src/xrpld/app/misc/NegativeUNLVote.cpp)
+- [AmendmentTable.h](src/xrpld/app/misc/AmendmentTable.h)
+- [Consensus.h](src/xrpld/consensus/Consensus.h)
+- [RCLConsensus.cpp](src/xrpld/app/consensus/RCLConsensus.cpp)
+- [LedgerMaster.cpp](src/xrpld/app/ledger/detail/LedgerMaster.cpp)
+- [LedgerHistory.cpp](src/xrpld/app/ledger/LedgerHistory.cpp)
 
 ---
 
-**Every statement and explanation in this lesson plan is directly supported by the provided source code and documentation. No assumptions or extrapolations have been made.**
+**Notes:**
+- Only "full" validations (those with the `vfFullValidation` flag) are counted for consensus and amendment/Negative UNL voting.
+- "Trusted" validators are those in the current trusted validator set; "listed" validators are known but not trusted.
+- Handling of untrusted validation messages (relay, suppression) is managed elsewhere in the codebase.
+
+---
+
+**All statements above are directly supported by the provided source code and documentation.**

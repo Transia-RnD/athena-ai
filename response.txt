@@ -1,0 +1,1 @@
+The answer is B) Only the first is accepted; others are ignored. If a validator submits multiple validations for the same ledger sequence, only the first validation is accepted, while additional ones are dropped as conflicting.

@@ -16,25 +16,21 @@ def main():
 
     ai_source: AthenahClient = AthenahClient(
         "id",
-        provider="anthropic",
+        # provider="anthropic",
+        provider="openai",
         model_group="dist",
         custom_model=ATHENAH_CLIENT_NAME,
         version="v1",
-        model_name=AGENT_MODEL,
+        # model_name="claude-4-sonnet-20250514",
+        model_name="o3-mini",
+        temperature=1,
         best_of=3,
     )
     system_prompt: str = """
-Create a workshop lesson plan based on the following system prompt:
-
-```
-🧪 Lab 1: Setup rippled build to be a validator. Create keys, add token and sync.(Discarded validations. Listen to the validation stream.)
-```
 """
-    response = ai_source.agent_prompt(
-        "Workshop Creator",
-        "Create a workshop lesson plan based on the provided system prompt.",
-        system_prompt,
-    )
+    user_input: str = """
+"""
+    response = ai_source.rag_prompt_v2(system_prompt, user_input)
     print(response)
     # write to a file
     with open("response.txt", "w") as f:

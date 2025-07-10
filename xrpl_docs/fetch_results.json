@@ -1,0 +1,236 @@
+{
+  "https://xrpl.org/docs/concepts/networks-and-servers/peer-protocol": {
+    "category": "networks-and-servers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/networks-and-servers/peer-protocol.md",
+    "github_path": "concepts/networks-and-servers/peer-protocol.md",
+    "available": true,
+    "summary": "html: peer-protocol.html parent: networks-and-servers.html seo: description: The peer protocol specifies the language rippled servers speak to each other. labels: - Core Server - Blockchain",
+    "content_length": 15168,
+    "saved_file": "xrpl_docs/networks-and-servers/concepts_networks-and-servers_peer-protocol.md"
+  },
+  "https://xrpl.org/docs/concepts/networks-and-servers/transaction-censorship-detection": {
+    "category": "networks-and-servers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/networks-and-servers/transaction-censorship-detection.md",
+    "github_path": "concepts/networks-and-servers/transaction-censorship-detection.md",
+    "available": true,
+    "summary": "html: transaction-censorship-detection.html parent: networks-and-servers.html seo: description: XRP Ledger provides an automated transaction censorship detector that is available on all rippled servers.",
+    "content_length": 5246,
+    "saved_file": "xrpl_docs/networks-and-servers/concepts_networks-and-servers_transaction-censorship-detection.md"
+  },
+  "https://xrpl.org/docs/concepts/networks-and-servers/parallel-networks": {
+    "category": "networks-and-servers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/networks-and-servers/parallel-networks.md",
+    "github_path": "concepts/networks-and-servers/parallel-networks.md",
+    "available": true,
+    "summary": "html: parallel-networks.html parent: networks-and-servers.html seo: description: Understand how test networks and alternate ledger chains relate to the production XRP Ledger. labels: - Blockchain",
+    "content_length": 4762,
+    "saved_file": "xrpl_docs/networks-and-servers/concepts_networks-and-servers_parallel-networks.md"
+  },
+  "https://xrpl.org/docs/concepts/networks-and-servers/amendments": {
+    "category": "networks-and-servers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/networks-and-servers/amendments.md",
+    "github_path": "concepts/networks-and-servers/amendments.md",
+    "available": true,
+    "summary": "html: amendments.html parent: networks-and-servers.html seo: description: Amendments represent new features or other changes to transaction processing. Validators coordinate through consensus to apply these upgrades to the XRP Ledger in an orderly fashion.",
+    "content_length": 6672,
+    "saved_file": "xrpl_docs/networks-and-servers/concepts_networks-and-servers_amendments.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/index": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/index.md",
+    "github_path": "concepts/consensus-protocol/index.md",
+    "available": true,
+    "summary": "html: consensus.html parent: concepts.html seo: description: Consensus is how new blocks of transactions get confirmed by the XRP Ledger blockchain. labels: - Blockchain top_nav_grouping: Popular Pages",
+    "content_length": 7814,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_index.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/consensus-structure": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/consensus-structure.md",
+    "github_path": "concepts/consensus-protocol/consensus-structure.md",
+    "available": true,
+    "summary": "html: consensus-structure.html parent: consensus.html seo: description: Understand the role of consensus in the XRP Ledger. labels: - Blockchain",
+    "content_length": 24246,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_consensus-structure.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/consensus-protections": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/consensus-protections.md",
+    "github_path": "concepts/consensus-protocol/consensus-protections.md",
+    "available": true,
+    "summary": "html: consensus-protections.html parent: consensus.html seo: description: Learn how the XRP Ledger Consensus Protocol is protected against various problems and attacks that may occur in a decentralized financial system.",
+    "content_length": 8318,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_consensus-protections.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/unl": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/unl.md",
+    "github_path": "concepts/consensus-protocol/unl.md",
+    "available": true,
+    "summary": "A _unique node list_ (UNL) is a server's list of validators that it trusts not to collude. Every XRP Ledger server is configured with a UNL, which determines which validation votes it listens to and which votes it throws out during the consensus process. By design, each entry in a UNL should represe...",
+    "content_length": 6051,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_unl.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/invariant-checking": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/invariant-checking.md",
+    "github_path": "concepts/consensus-protocol/invariant-checking.md",
+    "available": true,
+    "summary": "html: invariant-checking.html parent: consensus.html seo: description: Understand what invariant checking is, why it exists, how it works, and what invariant checks are active. labels: - Blockchain - Security",
+    "content_length": 8404,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_invariant-checking.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/fee-voting": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/fee-voting.md",
+    "github_path": "concepts/consensus-protocol/fee-voting.md",
+    "available": true,
+    "summary": "seo: description: How validators vote on fees (transaction cost and reserve requirements). labels: - Fees - XRP",
+    "content_length": 7486,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_fee-voting.md"
+  },
+  "https://xrpl.org/docs/concepts/consensus-protocol/negative-unl": {
+    "category": "consensus-protocol",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/consensus-protocol/negative-unl.md",
+    "github_path": "concepts/consensus-protocol/negative-unl.md",
+    "available": true,
+    "summary": "html: negative-unl.html parent: consensus.html seo: description: Understand how Negative UNL improves the ledger's resilience during partial outages. labels: - Blockchain",
+    "content_length": 18222,
+    "saved_file": "xrpl_docs/consensus-protocol/concepts_consensus-protocol_negative-unl.md"
+  },
+  "https://xrpl.org/docs/concepts/ledgers/index": {
+    "category": "ledgers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/ledgers/index.md",
+    "github_path": "concepts/ledgers/index.md",
+    "available": true,
+    "summary": "html: ledgers.html parent: concepts.html seo: description: Ledgers are the data structure that holds data in the shared XRP Ledger network. A chain of ledgers records the history of transactions and state changes.",
+    "content_length": 2516,
+    "saved_file": "xrpl_docs/ledgers/concepts_ledgers_index.md"
+  },
+  "https://xrpl.org/docs/concepts/ledgers/ledger-structure": {
+    "category": "ledgers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/ledgers/ledger-structure.md",
+    "github_path": "concepts/ledgers/ledger-structure.md",
+    "available": true,
+    "summary": "html: ledger-structure.html parent: ledgers.html seo: description: A closer look at the elements of an individual ledger block.",
+    "content_length": 6906,
+    "saved_file": "xrpl_docs/ledgers/concepts_ledgers_ledger-structure.md"
+  },
+  "https://xrpl.org/docs/concepts/ledgers/open-closed-validated-ledgers": {
+    "category": "ledgers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/ledgers/open-closed-validated-ledgers.md",
+    "github_path": "concepts/ledgers/open-closed-validated-ledgers.md",
+    "available": true,
+    "summary": "html: open-closed-validated-ledgers.html parent: ledgers.html seo: description: Ledger objects have one of three states — open, closed, or validated. labels: - Blockchain",
+    "content_length": 3002,
+    "saved_file": "xrpl_docs/ledgers/concepts_ledgers_open-closed-validated-ledgers.md"
+  },
+  "https://xrpl.org/docs/concepts/ledgers/ledger-close-times": {
+    "category": "ledgers",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/ledgers/ledger-close-times.md",
+    "github_path": "concepts/ledgers/ledger-close-times.md",
+    "available": true,
+    "summary": "html: ledger-close-times.html parent: ledgers.html seo: description: How the XRP Ledger calculates a unique close time value for each ledger version. labels: - Blockchain",
+    "content_length": 3594,
+    "saved_file": "xrpl_docs/ledgers/concepts_ledgers_ledger-close-times.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/index": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/index.md",
+    "github_path": "concepts/transactions/index.md",
+    "available": true,
+    "summary": "html: transactions.html parent: concepts.html seo: description: Transactions are the only way to change the XRP Ledger. Understand what forms they take and how to use them. labels: - Payments - Transaction Sending",
+    "content_length": 11952,
+    "saved_file": "xrpl_docs/transactions/concepts_transactions_index.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/fees": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/fees.md",
+    "github_path": "concepts/transactions/fees.md",
+    "available": true,
+    "summary": "html: fees.html parent: transactions.html seo: description: Learn about the types of fees allowed by the XRP Ledger, including neutral fees (payable to no one) that protect the ledger against abuse, as well as fees that users can collect from each other.",
+    "content_length": 2653,
+    "saved_file": "xrpl_docs/transactions/concepts_transactions_fees.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/reliable-transaction-submission": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/reliable-transaction-submission.md",
+    "github_path": "concepts/transactions/reliable-transaction-submission.md",
+    "available": true,
+    "summary": "html: reliable-transaction-submission.html parent: transactions.html seo: description: Build a system that can submit transactions to the XRP Ledger and get their final results safely and quickly. labels:",
+    "content_length": 33949,
+    "saved_file": "xrpl_docs/transactions/concepts_transactions_reliable-transaction-submission.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/secure-signing": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/secure-signing.md",
+    "github_path": "concepts/transactions/secure-signing.md",
+    "available": true,
+    "summary": "html: secure-signing.html parent: transactions.html seo: description: Set up an environment where you can submit transactions securely. labels: - Security - Development",
+    "content_length": 10439,
+    "saved_file": "xrpl_docs/transactions/concepts_transactions_secure-signing.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/transaction-cost": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/transaction-cost.md",
+    "github_path": "concepts/transactions/transaction-cost.md",
+    "available": true,
+    "summary": "html: transaction-cost.html parent: transactions.html seo: description: The transaction cost is a small amount of XRP destroyed to send a transaction, which protects the ledger from spam. Learn how the transaction cost applies.",
+    "content_length": 15994,
+    "saved_file": "xrpl_docs/transactions/concepts_transactions_transaction-cost.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/transaction-queue": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/transaction-queue.md",
+    "github_path": "concepts/transactions/transaction-queue.md",
+    "available": true,
+    "summary": "html: transaction-queue.html parent: transactions.html seo: description: Transactions can be queued before being processed. labels: - Transaction Sending",
+    "content_length": 8405,
+    "saved_file": "xrpl_docs/transactions/concepts_transactions_transaction-queue.md"
+  },
+  "https://xrpl.org/docs/concepts/transactions/finality-of-results": {
+    "category": "transactions",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/transactions/finality-of-results.md",
+    "github_path": "concepts/transactions/finality-of-results.md",
+    "available": false,
+    "summary": "Content not available",
+    "content_length": 0,
+    "saved_file": null
+  },
+  "https://xrpl.org/docs/concepts/accounts/index": {
+    "category": "accounts",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/accounts/index.md",
+    "github_path": "concepts/accounts/index.md",
+    "available": true,
+    "summary": "html: accounts.html parent: concepts.html seo: description: Learn about accounts in the XRP Ledger. Accounts can send transactions and hold XRP. labels: - Accounts - Payments",
+    "content_length": 4897,
+    "saved_file": "xrpl_docs/accounts/concepts_accounts_index.md"
+  },
+  "https://xrpl.org/docs/concepts/accounts/addresses": {
+    "category": "accounts",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/accounts/addresses.md",
+    "github_path": "concepts/accounts/addresses.md",
+    "available": true,
+    "summary": "html: addresses.html parent: accounts.html seo: description: Addresses uniquely identify XRP Ledger accounts, using base58 format. labels: - Accounts",
+    "content_length": 6409,
+    "saved_file": "xrpl_docs/accounts/concepts_accounts_addresses.md"
+  },
+  "https://xrpl.org/docs/concepts/accounts/reserves": {
+    "category": "accounts",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/accounts/reserves.md",
+    "github_path": "concepts/accounts/reserves.md",
+    "available": true,
+    "summary": "html: reserves.html parent: accounts.html seo: description: XRP Ledger accounts require a reserve of XRP to reduce spam in ledger data. labels: - Fees - Accounts top_nav_grouping: Popular Pages",
+    "content_length": 7891,
+    "saved_file": "xrpl_docs/accounts/concepts_accounts_reserves.md"
+  },
+  "https://xrpl.org/docs/concepts/accounts/cryptographic-keys": {
+    "category": "accounts",
+    "github_url": "https://github.com/XRPLF/xrpl-dev-portal/blob/master/docs/concepts/accounts/cryptographic-keys.md",
+    "github_path": "concepts/accounts/cryptographic-keys.md",
+    "available": true,
+    "summary": "html: cryptographic-keys.html parent: accounts.html seo: description: Use cryptographic keys to approve transactions so the XRP Ledger can execute them. labels: - Smart Contracts - Security",
+    "content_length": 23822,
+    "saved_file": "xrpl_docs/accounts/concepts_accounts_cryptographic-keys.md"
+  }
+}

@@ -20,6 +20,8 @@ This document provides a detailed, code-driven breakdown of the XRPL NodeStore s
 - [NodeStore in Application Lifecycle](#nodestore-in-application-lifecycle)
 - [Limits: NodeObject and Batch Sizes](#limits-nodeobject-and-batch-sizes)
 - [Error Handling and Status Codes](#error-handling-and-status-codes)
+- [Resource Usage](#resource-usage)
+- [fetchNodeObject](#fetchnodeobject)
 - [References](#references)
 
 ---
@@ -28,7 +30,7 @@ This document provides a detailed, code-driven breakdown of the XRPL NodeStore s
 
 The NodeStore subsystem provides a persistent storage interface for `NodeObject`s, which are the primary representation of ledger entries in XRPL. All ledger entries are stored as `NodeObject`s, which must be persisted between launches. If a `NodeObject` is not in memory, it is retrieved from the database.
 
-Source: [/src/xrpld/nodestore/README.md]
+Source: [/https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/README.md]
 
 ---
 
@@ -83,7 +85,7 @@ The NodeStore supports multiple backend types, selectable at runtime via the `[n
 | Memory          | For testing   | In-memory only, non-persistent          |
 | none            | For testing   | No-op backend, disables storage         |
 
-Source: [/src/xrpld/nodestore/README.md], backend factory implementations
+Source: [/https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/README.md], backend factory implementations
 
 ### Configuration Parameters
 
@@ -294,29 +296,127 @@ Source: [Types.h]
 
 ---
 
-## References
+## fetchNodeObject
 
-- [NodeObject.h](src/xrpld/nodestore/NodeObject.h.txt)
-- [NodeObject.cpp](src/xrpld/nodestore/detail/NodeObject.cpp.txt)
-- [Backend.h](src/xrpld/nodestore/Backend.h.txt)
-- [Database.h](src/xrpld/nodestore/Database.h.txt)
-- [DatabaseNodeImp.h](src/xrpld/nodestore/detail/DatabaseNodeImp.h.txt)
-- [DatabaseNodeImp.cpp](src/xrpld/nodestore/detail/DatabaseNodeImp.cpp.txt)
-- [DatabaseRotatingImp.h](src/xrpld/nodestore/detail/DatabaseRotatingImp.h.txt)
-- [DatabaseRotatingImp.cpp](src/xrpld/nodestore/detail/DatabaseRotatingImp.cpp.txt)
-- [Manager.h](src/xrpld/nodestore/Manager.h.txt)
-- [Factory.h](src/xrpld/nodestore/Factory.h.txt)
-- [EncodedBlob.h](src/xrpld/nodestore/detail/EncodedBlob.h.txt)
-- [DecodedBlob.h](src/xrpld/nodestore/detail/DecodedBlob.h.txt)
-- [DecodedBlob.cpp](src/xrpld/nodestore/detail/DecodedBlob.cpp.txt)
-- [Types.h](src/xrpld/nodestore/Types.h.txt)
-- [README.md](src/xrpld/nodestore/README.md)
-- [SHAMapStore.h/.cpp](src/xrpld/app/misc/SHAMapStore.h.txt, src/xrpld/app/misc/SHAMapStoreImp.cpp.txt)
-- [Application.cpp](src/xrpld/app/main/Application.cpp.txt)
-- [NodeFamily.h](src/xrpld/shamap/NodeFamily.h.txt)
+### Summary
+
+`fetchNodeObject` is a core method of the NodeStore `Database` interface, responsible for retrieving a `NodeObject` (ledger entry) by its hash from the cache or backend storage. It is used by higher-level components such as SHAMap and ledger retrieval logic to access persisted ledger data.
+
+### Function Signature
+
+```cpp
+std::shared_ptr<NodeObject> fetchNodeObject(
+    uint256 const& hash,
+    std::uint32_t ledgerSeq = 0,
+    FetchType fetchType = FetchType::synchronous,
+    bool duplicate = false
+);
+```
+
+#### Parameters
+
+- **hash** (`uint256 const&`):  
+  The 256-bit hash identifying the `NodeObject` to fetch.
+
+- **ledgerSeq** (`std::uint32_t`, optional):  
+  The ledger sequence number associated with the fetch. Used for metrics and reporting; not required for all backends.
+
+- **fetchType** (`FetchType`, optional):  
+  Specifies the type of fetch operation.  
+  - `FetchType::synchronous`: Perform a blocking fetch (default).
+  - `FetchType::async`: Used for asynchronous prefetching (see `asyncFetch`).
+
+- **duplicate** (`bool`, optional):  
+  If `true`, and the object is found in an archive or secondary backend, it will be duplicated (stored) in the writable backend. Used in rotating backend scenarios.
+
+#### Return Value
+
+- Returns a `std::shared_ptr<NodeObject>` if the object is found and valid.
+- Returns `nullptr` if the object is not found or is a dummy/missing entry.
+
+### Fetch Flow and Behavior
+
+1. **Cache Lookup**:  
+   - Checks if the requested `NodeObject` is present in the cache.
+   - If found and not a dummy (`hotDUMMY`), returns it immediately.
+   - If found and is a dummy, returns `nullptr`.
+
+2. **Backend Lookup**:  
+   - If not in cache, attempts to fetch from the backend(s):
+     - For single-backend (`DatabaseNodeImp`): fetches from the configured backend.
+     - For rotating-backend (`DatabaseRotatingImp`): tries the writable backend first, then the archive backend.
+   - If found in the archive and `duplicate` is `true`, stores the object in the writable backend.
+
+3. **Dummy Object Handling**:  
+   - If the object is not found, a dummy object (`hotDUMMY`) may be cached to mark the missing entry.
+
+4. **Error Handling**:  
+   - If data corruption is detected, a fatal log is emitted.
+   - Unknown or backend-specific errors are logged with appropriate severity.
+   - If an exception occurs during backend fetch, it is logged and rethrown.
+
+5. **Metrics and Reporting**:  
+   - Updates fetch statistics: hit/miss counts, fetch sizes, and durations.
+   - Reports fetch events to the scheduler for monitoring.
+
+6. **Thread Safety**:  
+   - All cache and backend operations are protected by mutexes to ensure thread safety.
+   - In `DatabaseRotatingImp`, a mutex guards access to both writable and archive backends.
+
+### Side Effects
+
+- May update the cache with found or dummy objects.
+- May store (duplicate) objects in the writable backend (if `duplicate` is `true` and found in archive).
+- Updates fetch statistics and reports to the scheduler.
+
+### Error Handling
+
+- Returns `nullptr` if the object is not found or is a dummy.
+- Sets `fetchReport.wasFound` to indicate if the object was found (internal).
+- Logs fatal errors for data corruption and warnings for unknown backend errors.
+
+### Related Functions
+
+- **asyncFetch**:  
+  Initiates an asynchronous fetch of a `NodeObject`.
+- **store**:  
+  Stores a single `NodeObject` in the backend.
+- **storeBatch**:  
+  Stores a batch of `NodeObject`s in the backend.
+
+### Example Usage
+
+- Used by SHAMap, ledger retrieval, and other components to access persisted ledger entries.
+- Both `DatabaseNodeImp` (single-backend) and `DatabaseRotatingImp` (rotating-backend) provide concrete implementations.
+
+### Test Coverage
+
+- See `Backend_test.cpp` for tests covering backend and `fetchNodeObject` behavior.
 
 ---
 
 **All statements above are directly supported by the provided code and documentation. No assumptions or extrapolations have been made.**
+
+---
+
+## References
+
+- [NodeObject.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/NodeObject.h)
+- [NodeObject.cpp](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/NodeObject.cpp)
+- [Backend.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/Backend.h)
+- [Database.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/Database.h)
+- [DatabaseNodeImp.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/DatabaseNodeImp.h)
+- [DatabaseNodeImp.cpp](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/DatabaseNodeImp.cpp)
+- [DatabaseRotatingImp.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/DatabaseRotatingImp.h)
+- [DatabaseRotatingImp.cpp](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/DatabaseRotatingImp.cpp)
+- [Manager.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/Manager.h)
+- [Factory.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/Factory.h)
+- [EncodedBlob.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/EncodedBlob.h)
+- [DecodedBlob.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/DecodedBlob.h)
+- [DecodedBlob.cpp](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/detail/DecodedBlob.cpp)
+- [Types.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/Types.h)
+- [README.md](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/nodestore/README.md)
+- [SHAMapStore.h/.cpp](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/app/misc/SHAMapStore.h, https://github.com/XRPLF/rippled/blob/develop/src/xrpld/app/misc/SHAMapStoreImp.cpp)
+- [Application.cpp](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/app/main/Application.cpp)
+- [NodeFamily.h](https://github.com/XRPLF/rippled/blob/develop/src/xrpld/shamap/NodeFamily.h)
 ```
-If further detail is needed on any of these points, the referenced code files and README.md provide the necessary information.

@@ -1,100 +1,98 @@
-# fetchNodeObject
+---
 
-## Summary
+# NodeStore Initialization in XRPL
 
-`fetchNodeObject` is a core method of the NodeStore `Database` interface, responsible for retrieving a `NodeObject` (ledger entry) by its hash from the cache or backend storage. It is used by higher-level components such as SHAMap and ledger retrieval logic to access persisted ledger data.
+## Introduction
 
-## Function Signature
+The **NodeStore** is a persistent key-value database used by the XRPL server to store all ledger entries as `NodeObject`s. Each `NodeObject` consists of:
+- **Type**: An enumeration indicating the kind of data (ledger header, transaction, account node, transaction node).
+- **Hash**: A 256-bit hash uniquely identifying the object.
+- **Data**: A variable-length blob containing the serialized payload.
 
-```cpp
-std::shared_ptr<NodeObject> fetchNodeObject(
-    uint256 const& hash,
-    std::uint32_t ledgerSeq = 0,
-    FetchType fetchType = FetchType::synchronous,
-    bool duplicate = false
-);
-```
+All ledger entries are stored as `NodeObject`s and must be persisted between launches. If a `NodeObject` is not in memory, it is retrieved from the NodeStore database.
 
-### Parameters
+**NodeObject Storage Format:**
+- Bytes 0...7: unused
+- Byte 8: type (NodeObjectType enumeration)
+- Bytes 9...end: data (body of the object)
 
-- **hash** (`uint256 const&`):  
-  The 256-bit hash identifying the `NodeObject` to fetch.
+## Where NodeStore is Initialized
 
-- **ledgerSeq** (`std::uint32_t`, optional):  
-  The ledger sequence number associated with the fetch. Used for metrics and reporting; not required for all backends.
+NodeStore initialization occurs in two main places:
+- **`src/xrpld/app/main/Application.cpp`**: The `initNodeStore()` function is responsible for initializing the NodeStore during application startup.
+- **`src/xrpld/app/misc/SHAMapStoreImp.cpp` / `SHAMapStoreImp.h`**: The `SHAMapStoreImp` class manages the NodeStore lifecycle, including support for online deletion (rotating databases).
 
-- **fetchType** (`FetchType`, optional):  
-  Specifies the type of fetch operation.  
-  - `FetchType::synchronous`: Perform a blocking fetch (default).
-  - `FetchType::async`: Used for asynchronous prefetching (see `asyncFetch`).
+## How NodeStore is Initialized
 
-- **duplicate** (`bool`, optional):  
-  If `true`, and the object is found in an archive or secondary backend, it will be duplicated (stored) in the writable backend. Used in rotating backend scenarios.
+### 1. Configuration Loading
 
-### Return Value
+- The NodeStore configuration is loaded from the `[node_db]` section of the server's configuration file.
+- This section specifies the backend type (e.g., `RocksDB`, `NuDB`, `Memory`, `none`, `SQLite`), the storage path, and other options such as cache size and compression.
 
-- Returns a `std::shared_ptr<NodeObject>` if the object is found and valid.
-- Returns `nullptr` if the object is not found or is a dummy/missing entry.
+  **Example:**
+  ```
+  [node_db]
+  type=RocksDB
+  path=rocksdb
+  compression=1
+  ```
 
-## Fetch Flow and Behavior
+### 2. Database Creation
 
-1. **Cache Lookup**:  
-   - Checks if the requested `NodeObject` is present in the cache.
-   - If found and not a dummy (`hotDUMMY`), returns it immediately.
-   - If found and is a dummy, returns `nullptr`.
+- The `initNodeStore()` function (in `Application.cpp`) or `SHAMapStoreImp::makeNodeStore()` (for online deletion) calls `NodeStore::Manager::instance().make_Database(...)` to create the NodeStore database.
+- The `make_Database` function uses the configuration to select and instantiate the correct backend via the `Manager` and `Factory` classes.
 
-2. **Backend Lookup**:  
-   - If not in cache, attempts to fetch from the backend(s):
-     - For single-backend (`DatabaseNodeImp`): fetches from the configured backend.
-     - For rotating-backend (`DatabaseRotatingImp`): tries the writable backend first, then the archive backend.
-   - If found in the archive and `duplicate` is `true`, stores the object in the writable backend.
+### 3. Backend Instantiation
 
-3. **Dummy Object Handling**:  
-   - If the object is not found, a dummy object (`hotDUMMY`) may be cached to mark the missing entry.
+- The `Manager` maintains a registry of available backend `Factory` objects.
+- The selected `Factory` creates an instance of the appropriate `Backend` (e.g., `RocksDBBackend`, `NuDBBackend`, `MemoryBackend`, `NullBackend`, `SQLiteBackend`).
+- The backend is opened and made ready for use.
 
-4. **Error Handling**:  
-   - If data corruption is detected, a fatal log is emitted.
-   - Unknown or backend-specific errors are logged with appropriate severity.
-   - If an exception occurs during backend fetch, it is logged and rethrown.
+### 4. Database Types
 
-5. **Metrics and Reporting**:  
-   - Updates fetch statistics: hit/miss counts, fetch sizes, and durations.
-   - Reports fetch events to the scheduler for monitoring.
+- **Standard NodeStore**: Uses a single backend for all data. Created by `make_Database`, which returns a `DatabaseNodeImp` instance.
+- **Rotating NodeStore**: Used when online deletion is enabled. Manages two backends (writable and archive) and rotates them as old data is deleted. Created by `SHAMapStoreImp::makeNodeStore`, which returns a `DatabaseRotatingImp` instance.
 
-6. **Thread Safety**:  
-   - All cache and backend operations are protected by mutexes to ensure thread safety.
-   - In `DatabaseRotatingImp`, a mutex guards access to both writable and archive backends.
+### 5. Cache Configuration
 
-## Side Effects
+- The NodeStore uses an in-memory cache to speed up access to frequently used `NodeObject`s.
+- Cache size and age can be configured via the `[node_db]` section (e.g., `cache_size`, `cache_age`).
+- If not specified, defaults are taken from the application configuration.
 
-- May update the cache with found or dummy objects.
-- May store (duplicate) objects in the writable backend (if `duplicate` is `true` and found in archive).
-- Updates fetch statistics and reports to the scheduler.
+### 6. Opening the Database
 
-## Error Handling
+- After creation, the database and its backend are opened and made ready for use by the rest of the application.
+- The NodeStore is then used by various subsystems (e.g., ledger, SHAMap, transaction processing) to store and retrieve ledger data.
 
-- Returns `nullptr` if the object is not found or is a dummy.
-- Sets `fetchReport.wasFound` to indicate if the object was found (internal).
-- Logs fatal errors for data corruption and warnings for unknown backend errors.
+## Available Backends
 
-## Related Functions
+The following backends are supported (specified by the `type` parameter in `[node_db]`):
 
-- **asyncFetch**:  
-  Initiates an asynchronous fetch of a `NodeObject`.
-- **store**:  
-  Stores a single `NodeObject` in the backend.
-- **storeBatch**:  
-  Stores a batch of `NodeObject`s in the backend.
+- **RocksDB**: Facebook's RocksDB, recommended for production.
+- **NuDB**: A high-performance, append-only key-value store.
+- **Memory**: In-memory backend, for testing only (no persistence).
+- **none**: Null backend, disables storage (for testing).
+- **SQLite**: Uses SQLite for storage (not recommended for production).
+- **HyperLevelDB**: Improved LevelDB (preferred over LevelDB).
+- **LevelDB**: Google's LevelDB (deprecated).
 
-## Example Usage
+Each backend may have additional options (see the backend's documentation for details).
 
-- Used by SHAMap, ledger retrieval, and other components to access persisted ledger entries.
-- Both `DatabaseNodeImp` (single-backend) and `DatabaseRotatingImp` (rotating-backend) provide concrete implementations.
+## NodeObject Structure
 
-## Test Coverage
+A `NodeObject` is stored in the following format:
+- Bytes 0...7: unused
+- Byte 8: type (NodeObjectType enumeration)
+- Bytes 9...end: data (body of the object)
 
-- See `Backend_test.cpp` for tests covering backend and `fetchNodeObject` behavior.
+## Supporting Evidence
+
+- The `initNodeStore()` function in `Application.cpp` is responsible for NodeStore initialization.
+- The `make_Database` function uses the configuration to select and instantiate the correct backend via the `Manager` and `Factory` classes.
+- The `SHAMapStoreImp` class manages rotating NodeStore databases for online deletion.
+- The NodeStore implementation provides an abstract `Backend` interface, allowing different key/value databases to be chosen at runtime.
+- All statements above are directly supported by the provided code and documentation.
 
 ---
 
-**All statements above are directly supported by the provided code and documentation. No assumptions or extrapolations have been made.**
+**No assumptions or extrapolations have been made. All information is directly supported by the provided documentation and code.**
