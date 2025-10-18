@@ -20,7 +20,6 @@ from langchain.agents import (
 from langchain.chains import RetrievalQA
 from langchain.memory import ConversationBufferMemory
 from langchain_core.documents import Document
-from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 
 from .llm_adapters import LLMProvider, LLMFactory, BaseLLMAdapter

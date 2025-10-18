@@ -1,0 +1,27 @@
+[
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/handlers/NoRippleCheck.cpp.txt",
+        "function": "fillTransaction",
+        "description": "Fills a transaction JSON object with the correct Sequence, Account, and Fee fields for a given account and ledger context. It uses the current sequence number and calculates the fee based on the ledger's fee structure and the application's fee tracking."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/rpc/handlers/NoRippleCheck.cpp.txt",
+        "function": "doNoRippleCheck",
+        "description": "Handles the 'no_ripple_check' RPC request. It validates input parameters, retrieves the account and its trust lines from the ledger, checks for misconfigurations in 'no ripple' settings, and, if requested, generates suggested transactions to fix issues. The function returns a JSON response with identified problems and, optionally, transaction templates to resolve them."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/InvariantCheck.h.txt",
+        "function": "TransactionFeeCheck::visitEntry",
+        "description": "Inspects ledger entries before and after a transaction to check for fee-related invariants. Used as part of the invariant checking process during transaction application."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/InvariantCheck.h.txt",
+        "function": "TransactionFeeCheck::finalize",
+        "description": "Finalizes the fee invariant check after a transaction is applied. It validates that the transaction fee is correct and within protocol limits, helping to ensure ledger integrity."
+    },
+    {
+        "path": "/root/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/app/tx/detail/Transactor.cpp.txt",
+        "function": "preflight0",
+        "description": "Performs the initial preflight validation for a transaction, such as checking for invalid flags on pseudo-transactions. Returns an error code if the transaction is malformed at this stage."
+    }
+]

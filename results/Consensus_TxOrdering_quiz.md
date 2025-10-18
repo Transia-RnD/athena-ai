@@ -1,63 +1,80 @@
-# Consensus_TXOrdering Comprehensive Quiz
+Comprehensive Homework on Consensus_TXOrdering Functionality
 
-## Instructions
-Answer the following questions based on the lesson plan on Consensus_TXOrdering. Make sure to review each section carefully. The quiz mixes multiple choice and true/false questions. Write your answers in the space provided and check your responses against the answer key at the end.
+This homework assignment is designed to test your understanding of the Consensus_TXOrdering functionalities in the XRPL source code. The quiz covers topics such as canonical transaction ordering, dispute management, state determination during consensus, TxQ ordering, blockers/retries, and supporting classes.
 
----
+1. Multiple Choice: In the context of the Consensus_TXOrdering functionality, which of the following is used as the first component of the full sort key in the CanonicalTXSet?
 
-## Questions
+   A) Transaction Fee Level  
+   B) Salted Account Key  
+   C) Transaction Sequence Number  
+   D) Transaction ID  
 
-1. Which of the following is the first component used to form the full sort key in the CanonicalTXSet ordering?  
-   A. Transaction ID  
-   B. Sequence Proxy  
-   C. Salted Account Key  
-   D. Fee Level  
+   Answer: B) Salted Account Key
 
-2. True or False: In the CanonicalTXSet, if two transactions have the same salted account key and sequence proxy, the one with the higher transaction ID will be ordered first.
+2. True/False: In the CanonicalTXSet ordering process, if two transactions have identical salted account keys and sequence proxies, the transaction with the higher transaction ID (lexicographically) is placed first.
 
-3. When a transaction is inserted into the CanonicalTXSet, under what condition can an existing transaction be replaced?  
-   A. The new transaction has a lower fee.  
-   B. The new transaction is from a different account.  
-   C. The new transaction is a valid replacement (e.g., with a higher fee) for the same account and sequence.  
-   D. The transaction IDs are different even if all other parameters match.
+   Answer: False. The transaction with the lower (lexicographically) transaction ID is ordered first.
 
-4. True or False: The purpose of the salted account key in the ordering process is to enhance security against manipulation by ensuring a non-predictable order.
+3. Multiple Choice: What is the primary purpose of applying a random salt when generating a salted account key in building the transaction ordering?
 
-5. In the context of consensus, what is a DisputedTx?  
-   A. A transaction that has been finalized and applied to the ledger.  
-   B. A transaction that is under review because it appears in one node’s set but not in another’s.  
-   C. A transaction that is automatically rejected due to low fees.  
-   D. A transaction that is held in the TxQ due to per-account limits.
+   A) To increase transaction fees  
+   B) To prevent ordering manipulation by accounts  
+   C) To accelerate processing speed  
+   D) To merge transactions from different accounts  
 
-6. True or False: If a DisputedTx does not receive a change in votes after a configurable number of rounds, it is considered stalled.
+   Answer: B) To prevent ordering manipulation by accounts
 
-7. Which of the following best describes the role of the checkConsensus function?  
-   A. It orders transactions based on fee level exclusively.  
-   B. It determines the consensus state using parameters such as proposers, vote counts, timeouts, and stalled conditions.  
-   C. It resets the transaction queue when consensus fails.  
-   D. It manages the retry logic for blocked transactions.
+4. True/False: When a transaction is inserted into the CanonicalTXSet, if a transaction with the same account and sequence already exists, the new transaction will always replace the old one.
 
-8. True or False: In the TxQ ordering process, transactions from the same account may be blocked if a preceding transaction (blocker) has not been resolved.
+   Answer: False. The new transaction replaces the old one only if it is a valid replacement (for example, if it has a higher fee or meets other criteria).
 
-9. When building the CanonicalTXSet for consensus, what interaction does it have with the TxQ?  
-   A. It replaces all transactions in the TxQ regardless of block status.  
-   B. It ignores fee levels from the TxQ.  
-   C. It pulls eligible transactions in a canonical order and leaves blocked or ineligible ones in the TxQ.  
-   D. It only accepts transactions with the lowest fee levels.
+5. Multiple Choice: Which source file would you reference to understand the detailed implementation of preparing the transaction set and proposal in the consensus process?
 
-10. True or False: The consensus process described uses both threshold-based decision-making and a fallback mechanism if consensus is stalled or expired.
+   A) txq_order.cpp  
+   B) RCLConsensus.cpp.txt  
+   C) ConsensusTypes.h.txt  
+   D) CanonicalTXSet.h.txt  
 
----
+   Answer: B) RCLConsensus.cpp.txt
 
-## Answer Key
+6. True/False: The DisputedTx class plays a key role in tracking peer votes on transactions and helps in determining whether a transaction should be accepted, rejected, or considered stalled during consensus.
 
-1. C  
-2. False (the lower lexicographical transaction ID is taken as a tie-breaker)  
-3. C  
-4. True  
-5. B  
+   Answer: True
+
+7. Multiple Choice: In the consensus state determination process, which of the following is NOT a return state of the checkConsensus function?
+
+   A) No  
+   B) Yes  
+   C) MovedOn  
+   D) Rejected  
+
+   Answer: D) Rejected
+
+8. True/False: In the TxQ ordering, if two transactions have equal fee levels, a XOR between the transaction ID and the parent hash comparator is used as a tie-breaker.
+
+   Answer: True
+
+9. Multiple Choice: What is the role of the "blocker" in the context of transaction queue (TxQ) management?
+
+   A) It promotes faster transactions from high-fee accounts.  
+   B) It prevents subsequent transactions from being processed until the prior blocking transaction is resolved.  
+   C) It is used to re-calculate transaction fees dynamically.  
+   D) It sorts transactions alphabetically by account ID.  
+
+   Answer: B) It prevents subsequent transactions from being processed until the prior blocking transaction is resolved.
+
+10. True/False: According to the lesson, a consensus round may be declared as "Expired" if it takes too long, based on predefined timeouts such as ledgerMIN_CONSENSUS, ledgerMAX_CONSENSUS, and ledgerABANDON_CONSENSUS.
+
+    Answer: True
+
+Answers:
+1. B) Salted Account Key  
+2. False  
+3. B) To prevent ordering manipulation by accounts  
+4. False  
+5. B) RCLConsensus.cpp.txt  
 6. True  
-7. B  
+7. D) Rejected  
 8. True  
-9. C  
+9. B) It prevents subsequent transactions from being processed until the prior blocking transaction is resolved.  
 10. True

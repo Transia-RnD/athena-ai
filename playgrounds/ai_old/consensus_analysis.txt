@@ -1,0 +1,16 @@
+---
+
+**Steps & Files:**
+
+**Files to Change in `/src/xrpld/consensus/`:**
+- Consensus.h/cpp: Add thread pool, mutex/atomic protection, parallel validation/processing.
+- ConsensusParms.h: Add thread pool/work queue/max concurrent transaction parameters.
+- ConsensusTypes.h: Add atomic parallel metrics, thread-safe timer.
+- DisputedTx.h: Make vote state fully thread-safe (mutex+atomic).
+
+**Sample/Scaffolded Code Changes (see above for code):**
+- Thread pool and parallel process logic are introduced in Consensus.h/.cpp.
+- All mutable/critical shared state is protected via mutex/atomic in all classes (esp. DisputedTx).
+- Parameters for concurrency are in ConsensusParms.h.
+
+This structure enables the consensus process to safely and efficiently process thousands or hundreds of thousands of transactions in parallel. Actual application-class integration (e.g., RCLConsensus) and more granular parallel transaction logic would extend these primitives using the same thread-safe patterns.

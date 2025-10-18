@@ -1,0 +1,94 @@
+**Recommended Implementation for Nested Contract State Visibility**
+
+1. **Thread-local Transaction Data Cache**  
+   You already have:
+   ```cpp
+   thread_local std::shared_ptr<TransactionDataCache> g_currentTxCache;
+
+   class TransactionCacheScope {
+   public:
+       TransactionCacheScope() {
+           oldCache_ = g_currentTxCache;
+           g_currentTxCache = std::make_shared<TransactionDataCache>();
+       }
+       ~TransactionCacheScope() {
+           g_currentTxCache = oldCache_;
+       }
+       std::shared_ptr<TransactionDataCache> cache() const {
+           return g_currentTxCache;
+       }
+   private:
+       std::shared_ptr<TransactionDataCache> oldCache_;
+   };
+   ```
+
+2. **Ensure All Contract Data Access Uses the Cache**  
+   Update your get/set data functions to always check `g_currentTxCache` first:
+   ```cpp
+   inline std::optional<std::reference_wrapper<std::pair<bool, STJson> const>>
+   getDataCache(ContractContext& contractCtx, ripple::AccountID const& account)
+   {
+       if (g_currentTxCache) {
+           JLOG(j_.debug()) << "Using transaction-local cache for account: " << account;
+           auto result = g_currentTxCache->get(account);
+           if (result) return result;
+       }
+       JLOG(j_.debug()) << "Falling back to openView for account: " << account;
+       return contractCtx.applyCtx.openView().getDataCache(account);
+   }
+
+   inline void
+   setDataCache(ContractContext& contractCtx, ripple::AccountID const& account, STJson const& data)
+   {
+       if (g_currentTxCache) {
+           JLOG(j_.debug()) << "Setting transaction-local cache for account: " << account;
+           g_currentTxCache->set(account, data);
+           return;
+       }
+       JLOG(j_.debug()) << "Setting openView for account: " << account;
+       contractCtx.applyCtx.openView().setDataCache(account, data);
+   }
+   ```
+
+3. **Share the Cache Across Nested Calls**  
+   In your contract execution entry point (e.g., `ContractCall::doApply()`), wrap the execution in a `TransactionCacheScope`. This ensures all nested calls share the same cache:
+   ```cpp
+   TER ContractCall::doApply() {
+       TransactionCacheScope cacheScope; // Ensures all nested calls share the same cache
+
+       // ... existing contract execution code ...
+   }
+   ```
+
+4. **Commit or Discard the Working Set**  
+   After the outermost contract call completes successfully, commit the cache to the ledger. If any call fails, discard the cache (handled by `TransactionCacheScope` destructor).
+   ```cpp
+   if (re.has_value() && re.value().result >= 0) {
+       // Commit cache to ledger
+       if (g_currentTxCache) {
+           for (const auto& [account, data] : g_currentTxCache->all()) {
+               contract::finalizeContractData(contractCtx.applyCtx, account, data, ctx_.tx.getTransactionID());
+           }
+       }
+       // ... rest of success handling ...
+   } else {
+       // On failure, cache is discarded by TransactionCacheScope destructor
+   }
+   ```
+
+5. **WASM Host Functions**  
+   Ensure all WASM host functions for contract data access (get/set) use these updated functions, so they always operate on the transaction-local cache.
+
+6. **Logging**  
+   Add logging in your get/set functions to verify that the correct cache is being used (as shown above).
+
+---
+
+**Summary:**  
+- All contract data access (get/set) in WASM host functions must use the thread-local transaction cache.
+- Wrap contract execution in `TransactionCacheScope` so nested calls share the same cache.
+- Commit the cache to the ledger only after the outermost call completes successfully.
+- Discard the cache if any call fails (handled by scope).
+- Add logging to verify correct cache usage.
+
+This pattern matches best practices from Ethereum and CosmWasm and will ensure state changes are immediately visible to all nested contract calls within the same transaction.

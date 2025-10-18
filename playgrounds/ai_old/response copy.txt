@@ -1,0 +1,27 @@
+```cpp
+// Add new result type similar to NotTEC
+enum class DoApplyResult : TER {
+    // Only allow tec and tes codes
+};
+
+// Wrapper function to convert non-claiming results
+TER convertToClaimingResult(TER result) {
+    if (isTecClaim(result) || isTesSuccess(result)) {
+        return result;
+    }
+    // Convert non-claiming results to appropriate tec
+    return tecFAILED_PROCESSING; // or appropriate tec code
+}
+
+// Modified doApply signature
+DoApplyResult Transactor::doApply() {
+    TER result = internalDoApply(); // existing logic
+    return static_cast<DoApplyResult>(convertToClaimingResult(result));
+}
+
+// Wrapper for payment engine and other helper functions
+TER paymentEngineWrapper(/* params */) {
+    TER result = paymentEngine(/* params */);
+    return convertToClaimingResult(result);
+}
+```

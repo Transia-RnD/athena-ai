@@ -1,0 +1,158 @@
+```cpp
+// Guard.h - Extract transaction types from WASM contract for XRPL
+
+#pragma once
+
+#include <vector>
+#include <cstdint>
+#include <optional>
+#include <set>
+
+// Helper: Parse unsigned LEB128 from WASM binary
+inline uint64_t parseLeb128(const std::vector<uint8_t>& buf, int& i) {
+    uint64_t val = 0, shift = 0;
+    while (i < (int)buf.size()) {
+        uint8_t b = buf[i++];
+        val |= (uint64_t)(b & 0x7F) << shift;
+        if (!(b & 0x80)) break;
+        shift += 7;
+    }
+    return val;
+}
+
+// Helper: Find the function index of "build_txn" in the import section
+inline std::optional<int> findBuildTxnFuncIdx(const std::vector<uint8_t>& wasm) {
+    int i = 8; // skip WASM header
+    while (i < (int)wasm.size()) {
+        uint8_t section = wasm[i++];
+        uint64_t section_len = parseLeb128(wasm, i);
+        int section_end = i + section_len;
+        if (section == 2) { // import section
+            uint64_t import_count = parseLeb128(wasm, i);
+            int func_idx = 0;
+            for (uint64_t j = 0; j < import_count; ++j) {
+                uint64_t mod_len = parseLeb128(wasm, i);
+                std::string mod((const char*)&wasm[i], mod_len);
+                i += mod_len;
+                uint64_t name_len = parseLeb128(wasm, i);
+                std::string name((const char*)&wasm[i], name_len);
+                i += name_len;
+                uint8_t kind = wasm[i++];
+                if (kind == 0x00) { // function import
+                    parseLeb128(wasm, i); // type index
+                    if (mod == "env" && name == "build_txn")
+                        return func_idx;
+                    ++func_idx;
+                } else if (kind == 0x01 || kind == 0x02 || kind == 0x03) {
+                    // table/memory/global import, skip type
+                    parseLeb128(wasm, i);
+                }
+            }
+        }
+        i = section_end;
+    }
+    return std::nullopt;
+}
+
+// Main function: Extract all transaction types passed to build_txn
+inline std::vector<int32_t> preflightContractWasm(const std::vector<uint8_t>& wasm) {
+    std::set<int32_t> txn_types;
+    auto build_txn_idx_opt = findBuildTxnFuncIdx(wasm);
+    if (!build_txn_idx_opt) return {};
+    int build_txn_idx = *build_txn_idx_opt;
+
+    // Find code section
+    int i = 8;
+    while (i < (int)wasm.size()) {
+        uint8_t section = wasm[i++];
+        uint64_t section_len = parseLeb128(wasm, i);
+        int section_end = i + section_len;
+        if (section == 10) { // code section
+            uint64_t func_count = parseLeb128(wasm, i);
+            for (uint64_t f = 0; f < func_count; ++f) {
+                uint64_t body_size = parseLeb128(wasm, i);
+                int body_end = i + body_size;
+                uint64_t local_count = parseLeb128(wasm, i);
+                for (uint64_t l = 0; l < local_count; ++l) {
+                    parseLeb128(wasm, i); // count
+                    ++i; // type
+                }
+                // Now at function code
+                int pc = i;
+                while (pc < body_end) {
+                    uint8_t opcode = wasm[pc++];
+                    if (opcode == 0x41) { // i32.const
+                        int32_t val = 0;
+                        int shift = 0, b;
+                        do {
+                            b = wasm[pc++];
+                            val |= (b & 0x7F) << shift;
+                            shift += 7;
+                        } while (b & 0x80);
+                        // Look ahead for call opcode
+                        int save_pc = pc;
+                        if (pc < body_end && wasm[pc] == 0x10) { // call
+                            ++pc;
+                            uint64_t func_idx = parseLeb128(wasm, pc);
+                            if ((int)func_idx == build_txn_idx) {
+                                txn_types.insert(val);
+                            }
+                        }
+                        pc = save_pc;
+                    } else if (opcode == 0x10) { // call
+                        parseLeb128(wasm, pc);
+                    } else if (opcode == 0x0B) { // end
+                        break;
+                    } else if (opcode >= 0x20 && opcode <= 0x24) { // local.get/set/tee/global.get/set
+                        parseLeb128(wasm, pc);
+                    } else if (opcode == 0x0C || opcode == 0x0D) { // br, br_if
+                        parseLeb128(wasm, pc);
+                    } else if (opcode == 0x0E) { // br_table
+                        uint64_t n = parseLeb128(wasm, pc);
+                        for (uint64_t k = 0; k < n + 1; ++k)
+                            parseLeb128(wasm, pc);
+                    } else if (opcode == 0x02 || opcode == 0x03 || opcode == 0x04) { // block/loop/if
+                        ++pc; // blocktype
+                    } else if (opcode == 0x05) { // else
+                        // nothing
+                    } else if (opcode == 0x0F) { // return
+                        // nothing
+                    } else if (opcode == 0x11) { // call_indirect
+                        parseLeb128(wasm, pc);
+                        ++pc;
+                    } else if (opcode == 0x1A || opcode == 0x1B) { // drop/select
+                        // nothing
+                    } else if (opcode == 0x1C) { // select t*
+                        uint64_t n = parseLeb128(wasm, pc);
+                        for (uint64_t k = 0; k < n; ++k) ++pc;
+                    } else if (opcode == 0xFC) { // prefix
+                        parseLeb128(wasm, pc);
+                        // skip memarg or other
+                        while (pc < body_end && (wasm[pc] & 0x80)) ++pc;
+                        if (pc < body_end) ++pc;
+                    } else if (opcode == 0xFD) { // vector op
+                        parseLeb128(wasm, pc);
+                        // skip memarg or other
+                        while (pc < body_end && (wasm[pc] & 0x80)) ++pc;
+                        if (pc < body_end) ++pc;
+                    } else {
+                        // skip fixed size immediates for known opcodes
+                        static const std::set<uint8_t> f32 = {0x43};
+                        static const std::set<uint8_t> f64 = {0x44};
+                        if (f32.count(opcode)) pc += 4;
+                        else if (f64.count(opcode)) pc += 8;
+                        // else: do nothing
+                    }
+                }
+                i = body_end;
+            }
+        }
+        i = section_end;
+    }
+    return std::vector<int32_t>(txn_types.begin(), txn_types.end());
+}
+```
+
+This header provides a function `preflightContractWasm` that, given a WASM binary, returns a vector of all transaction types (as int32_t) passed to `build_txn` calls. It parses the import section to find the function index of `build_txn`, then scans the code section for all `i32.const` followed by a call to `build_txn`, collecting the constants as transaction types.
+
+You can include this header and use `preflightContractWasm(wasm_bytes)` to get the set of transaction types used in the contract.

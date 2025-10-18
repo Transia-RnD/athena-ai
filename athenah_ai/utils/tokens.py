@@ -14,7 +14,7 @@ def get_token_total(prompt: str) -> int:
 
     openai_model = OPENAI_API_MODEL
     encoding = tiktoken.encoding_for_model(openai_model)
-    print(
-        "\033[37m" + str(len(encoding.encode(prompt))) + " tokens\033[0m" + " in prompt"
-    )
+    # print(
+    #     "\033[37m" + str(len(encoding.encode(prompt))) + " tokens\033[0m" + " in prompt"
+    # )
     return len(encoding.encode(prompt))

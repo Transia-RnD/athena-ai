@@ -53,34 +53,39 @@ def main():
     from athenah_ai.utils.fs import get_files_in_dir
     from typing import List, Any
 
-    dirs: List[str] = [
-        # "src/xrpld/app/consensus",
-        # "src/xrpld/consensus",
-        "src/xrpld/ledger",
-        "src/xrpld/app/ledger",
-    ]
-    files: List[Any] = []
-    for dir in dirs:
-        files.extend(get_files_in_dir(root_path, dir, None))
+    # dirs: List[str] = [
+    #     # "src/xrpld/app/consensus",
+    #     # "src/xrpld/consensus",
+    #     "src/xrpld/ledger",
+    #     "src/xrpld/app/ledger",
+    # ]
+    # files: List[Any] = []
+    # for dir in dirs:
+    #     files.extend(get_files_in_dir(root_path, dir, None))
 
     # ai_source: AthenahClient = AthenahClient(
     #     "id", model_name=AGENT_MODEL, best_of=3, temperature=0
     # )
     ai_source: AthenahClient = AthenahClient(
         "id",
-        provider="anthropic",
-        model_name="claude-4-sonnet-20250514",
+        # provider="anthropic",
+        provider="openai",
+        # provider="xai",
+        model_group="dist",
+        custom_model=ATHENAH_CLIENT_NAME,
+        version="v1",
+        # model_name="claude-4-sonnet-20250514",
+        model_name="gpt-4.1",
+        # model_name="grok-4",
+        temperature=1,
         best_of=3,
-        temperature=0,
     )
 
     system_prompt: str = f"""
-        Context: {files}
-        Consensus Planned Changes:
+    """
 
-        Based on the provided consensus code, here are the files that would need changes and the modifications required to enable multithreaded and parallel transaction processing:
-
-## Files to Modify:
+    user_input: str = """
+We need to make consensus a parallel process. We want to be able to process transactions in parallel and reach consensus on them. We want to be able to process 1000's or 100k transactions in a single ledger.
 
 ### 1. `src/xrpld/consensus/Consensus.h`
 
@@ -170,47 +175,15 @@ def main():
 - Modify validation expiration to work with concurrent access
 - Add parallel ledger acquisition and validation
 
-## Key Implementation Steps:
+List the steps and the files we need to change. Then finally write the changes and return the code. The code must be valid. Use the consensus files.
 
-### Step 1: Thread Pool Infrastructure
-- Add configurable thread pool to consensus classes
-- Implement work queue system for transaction processing
-- Add thread-safe job scheduling and completion tracking
+/Users/darkmatter/projects/transia/athena-ai/dist/rippled-ai-core/rippled-ai-core-source/src/xrpld/consensus
 
-### Step 2: Parallel Transaction Processing
-- Modify transaction set operations to be parallelizable
-- Implement concurrent transaction validation
-- Add parallel dispute resolution processing
 
-### Step 3: Synchronization Mechanisms
-- Add appropriate mutex protection for shared state
-- Implement atomic operations for counters and flags
-- Add synchronization barriers between consensus phases
-
-### Step 4: Lock-Free Optimizations
-- Implement lock-free data structures for high-frequency operations
-- Add atomic reference counting for shared objects
-- Use compare-and-swap operations for state updates
-
-### Step 5: Coordination and Ordering
-- Ensure deterministic ordering despite parallel processing
-- Add coordination mechanisms for phase transitions
-- Implement proper cleanup and resource management for threads
-
-### Step 6: Performance Monitoring
-- Add metrics for parallel processing efficiency
-- Implement load balancing across worker threads
-- Add monitoring for thread contention and bottlenecks
-
-The main challenge will be maintaining consensus determinism while allowing parallel processing, requiring careful synchronization and ordering guarantees throughout the system.
-    """
-
-    user_input: str = """
-With the above changes to consensus do we also need to update the ledger processing included in the files?
-
-- Do not return code, just the file that would change and the changes that would be made.
 """
-    response = ai_source.base_prompt(system_prompt, user_input)
+    response = ai_source.agent_prompt(
+        "Consensus Developer", "Consensus Coder", system_prompt + user_input
+    )
     with open("consensus_analysis.txt", "w") as f:
         f.write(response)
 

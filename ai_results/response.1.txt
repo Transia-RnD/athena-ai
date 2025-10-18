@@ -1,0 +1,130 @@
+The core of your question is: If you use the OpenViewSandbox pattern where a child sandbox is constructed from the parent sandbox's view (which itself is a sandbox, not the base view), will the child see the uncommitted changes of the parent? And is this safe and correct for your use case (emitted transactions seeing parent context)?
+
+Let's analyze the code and the OpenView/OpenViewSandbox relationship in detail.
+
+---
+
+### 1. How OpenViewSandbox Works
+
+From the code:
+
+```cpp
+class OpenViewSandbox
+{
+private:
+    OpenView& parent_;
+    std::unique_ptr<OpenView> sandbox_;
+public:
+    OpenViewSandbox(OpenView& parent)
+        : parent_(parent)
+        , sandbox_(std::make_unique<OpenView>(batch_view, parent))
+    {
+    }
+    // ...
+    void commit()
+    {
+        sandbox_->apply(parent_);
+        sandbox_ = std::make_unique<OpenView>(batch_view, parent_);
+    }
+    // ...
+    OpenView const& view() const { return *sandbox_; }
+    OpenView& view() { return *sandbox_; }
+};
+```
+
+- The `OpenViewSandbox` holds a reference to its parent view (which can be another sandbox's view).
+- When you create a child sandbox, you pass in the parent sandbox's current view.
+- The child sandbox is a new `OpenView` layered on top of the parent.
+
+### 2. Layering and Visibility
+
+- When you create a child sandbox with `OpenViewSandbox childSandbox(&parentSandbox.view());`, the child is layered on top of the parent.
+- The child sees all changes in the parent sandbox **at the time of creation** (because the parent view is passed in).
+- Any further changes in the parent after the child is created are **not** visible to the child (unless you re-create the child).
+- The child can make its own changes, which are not visible to the parent until `child.commit()` is called.
+
+### 3. Committing
+
+- When you call `child.commit()`, the child's changes are applied to the parent.
+- When you call `parent.commit()`, the parent's (now possibly including the child's) changes are applied to its own parent (could be the base view).
+
+### 4. Is the Child's View "Live"?
+
+- The child is constructed with a snapshot of the parent at the time of construction.
+- The child does **not** see further changes in the parent after construction.
+- If you want the child to see the latest parent state, you must create the child after all parent changes are made.
+
+### 5. Is This Safe?
+
+- Yes, this is a standard "layered view" or "sandbox" pattern.
+- It is safe as long as you always commit children before parents, and never expose the base view until all sandboxes are committed.
+- This allows atomic rollback: if any child or parent fails, you can discard changes at any level.
+
+---
+
+## Direct Answer to Your Question
+
+> But if the parent didn't commit then the child would see uncommitted changes?
+
+**Yes, the child will see the uncommitted changes that were present in the parent at the time the child was created.**  
+- The child is layered on top of the parent sandbox's current state.
+- Any changes made in the parent **after** the child is created are not visible to the child.
+
+**If you want the child to see all parent changes, make sure to create the child after all relevant parent changes are made.**
+
+---
+
+## Example
+
+```cpp
+OpenView baseView = ...;
+OpenViewSandbox parentSandbox(baseView);
+
+// Parent makes some changes
+parentSandbox.rawInsert(...);
+
+// Now create child, which sees parent's uncommitted changes
+OpenViewSandbox childSandbox(parentSandbox.view());
+
+// Child can see parent's changes
+assert(childSandbox.view().read(...)); // Should see the inserted item
+
+// Child makes its own changes
+childSandbox.rawInsert(...);
+
+// Commit child to parent
+childSandbox.commit();
+
+// Commit parent to base
+parentSandbox.commit();
+```
+
+---
+
+## Summary Table
+
+| Action                        | Sees Parent Changes?         | When Committed?      |
+|-------------------------------|------------------------------|----------------------|
+| ContractCall #1 (parent)      | Yes (its own view)           | At end of call       |
+| Emitted txn (ContractCall #2) | Yes (parent's uncommitted,   | At end of call       |
+|                               | at time of creation)         |                      |
+
+---
+
+## Recommendations
+
+- **This pattern is correct for your use case.** Emitted transactions (child sandboxes) will see the context of the parent, including uncommitted changes, as long as you create the child after making those changes in the parent.
+- **Be careful with timing:** If you make more changes in the parent after creating the child, the child will not see them.
+- **Commit order:** Always commit children before parents.
+
+---
+
+## References
+
+- [OpenViewSandbox.h](#)
+- [OpenView.h](#)
+
+---
+
+Final Answer:  
+Yes, with the OpenViewSandbox pattern, a child sandbox created from the parent sandbox's view will see all uncommitted changes present in the parent at the time of the child's creation. This is because the child is layered on top of the parent sandbox's current state. However, any further changes in the parent after the child is created will not be visible to the child. This pattern is safe and standard for composable, atomic contract execution, as long as you always commit children before parents and do not expose the base view until all sandboxes are committed.

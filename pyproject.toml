@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "athenah-ai"
-version = "0.0.21"
+version = "1.0.1"
 description = ""
 authors = ["Denis Angell <dangell@transia.co>"]
 
@@ -8,18 +8,19 @@ authors = ["Denis Angell <dangell@transia.co>"]
 python = "^3.10.6"
 unstructured = {extras = ["local-inference"], version = "^0.6.2"}
 openai = "^1.35.10"
-tiktoken = "^0.8.0"
+tiktoken = "^0.11.0"
 faiss-cpu = "^1.8.0.post1"
 tabulate = "^0.9.0"
 google-cloud-storage = "^2.18.0"
-langchain = "^0.3.13"
-langchain-experimental = "^0.3.3"
-langchain-openai = "^0.2.13"
+langchain = "^0.3.27"
+langchain-experimental = "^0.3.4"
+langchain-openai = "^0.3.33"
 langchainhub = "^0.1.21"
-langgraph = "^0.2.60"
+langgraph = "^0.6.8"
 scikit-learn = "^1.6.0"
 anthropic = "^0.57.1"
 langchain-anthropic = "^0.3.17"
+langchain-xai = "^0.2.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"

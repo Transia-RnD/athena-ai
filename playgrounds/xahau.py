@@ -18,12 +18,12 @@ def main():
 
     ai_source: AthenahClient = AthenahClient(
         "id",
-        provider="openai",
+        provider="xai",
         model_group="dist",
         custom_model=ATHENAH_CLIENT_NAME,
         version="v1",
-        model_name="o3-mini",
-        temperature=1,
+        model_name="grok-3-mini",
+        temperature=0,
         best_of=3,
     )
     system_prompt: str = """
@@ -1065,30 +1065,9 @@ getRWDBDatabase(Application& app, Config const& config, JobQueue& jobQueue)
 """
 
     user_input: str = """
-```
-std::optional<LedgerIndex>
-    getTransactionsMinLedgerSeq() override
-    {
-        std::cout << "getTransactionsMinLedgerSeq called" << std::endl;
-        if (!useTxTables_)
-            return {};
-
-        std::shared_lock<std::shared_mutex> lock(mutex_);
-        if (transactionMap_.empty())
-            return std::nullopt;
-        return transactionMap_.begin()->second.second->getLgrSeq();
-    }
-```
-
-The above needs to be updated
-
-The issue you identified: If transactionMap_.begin()->second.second (the TxMeta shared_ptr) is null, then calling ->getLgrSeq() on it will cause a segfault.
-An additional issue: Even if the TxMeta pointer isn't null, the code assumes that transactionMap_ is ordered by ledger sequence, but std::map<uint256, AccountTx> is ordered by transaction hash (uint256), not by ledger sequence. So transactionMap_.begin() gives you the first transaction by hash order, not necessarily the one with the minimum ledger sequence.
-
-return the corrected getTransactionsMinLedgerSeq function.
-
+I'm getting a segfault and its only when they run this code. Where is there a dereference of a null pointer?
 """
-    response = ai_source.rag_prompt_v2(system_prompt, user_input)
+    response = ai_source.base_prompt(system_prompt, user_input)
     print(response)
     # write to a file
     with open("response.txt", "w") as f:

@@ -1,1 +1,43 @@
-The answer is B) Only the first is accepted; others are ignored. If a validator submits multiple validations for the same ledger sequence, only the first validation is accepted, while additional ones are dropped as conflicting.
+```json
+{
+  "ltMPTOKEN_ISSUANCE": {
+    "fields": {
+      "sfIssuer": 20,
+      "sfSequence": 4,
+      "sfTransferFee": 4,
+      "sfOwnerNode": 8,
+      "sfAssetScale": 1,
+      "sfOutstandingAmount": 48,
+      "sfPreviousTxnID": 32,
+      "sfPreviousTxnLgrSeq": 4,
+      "sfMutableFlags": 4
+    },
+    "optional_fields": {
+      "sfMaximumAmount": 48,
+      "sfLockedAmount": 48,
+      "sfMPTokenMetadata": "variable",
+      "sfDomainID": "variable"
+    },
+    "total_minimum_bytes": 125,
+    "total_with_all_optionals": "221 + variable"
+  },
+  "ltMPTOKEN": {
+    "fields": {
+      "sfAccount": 20,
+      "sfMPTokenIssuanceID": 32,
+      "sfMPTAmount": 48,
+      "sfOwnerNode": 8,
+      "sfPreviousTxnID": 32,
+      "sfPreviousTxnLgrSeq": 4
+    },
+    "optional_fields": {
+      "sfLockedAmount": 48
+    },
+    "total_minimum_bytes": 144,
+    "total_with_all_optionals": 192
+  }
+}
+```
+
+- "total_minimum_bytes" is the sum of required/default fields.
+- "total_with_all_optionals" is the sum if all optional fields are present (excluding variable-length fields, which are noted as "variable").

@@ -7,5 +7,5 @@
     "editor.wordWrapColumn": 86,
     "editor.formatOnSave": true
   },
-  "cmake.sourceDirectory": "/Users/darkmatter/projects/transia/athena-ai/dist/rippled/rippled-source",
+  "cmake.sourceDirectory": "/Users/darkmatter/projects/transia/athena-ai/dist/rippled-ai-consensus/rippled-ai-consensus-source",
 }
