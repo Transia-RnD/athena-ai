@@ -1,0 +1,166 @@
+{
+  "file_path": "src/ripple/tx/impl/apply.cpp",
+  "description": "Transaction application with validation code paths",
+  "language": "cpp",
+  "functions": [
+    {
+      "name": "apply",
+      "args": ["tx"],
+      "lineno": 42
+    },
+    {
+      "name": "validateTx",
+      "args": ["tx"],
+      "lineno": 55
+    }
+  ],
+  "classes": [
+    {
+      "name": "STTx",
+      "args": ["Json::Value"],
+      "lineno": 15
+    }
+  ],
+  "namespaces": [
+    {
+      "name": "ripple",
+      "lineno": 10
+    }
+  ],
+  "args": [],
+  "language_patterns": {
+    "raii_usage": [
+      {
+        "type": "smart_pointer",
+        "pointer_type": "std::unique_ptr",
+        "audit_implication": "No manual delete needed, no null checks after construction",
+        "false_positive_risk": "Missing null check, memory leak"
+      }
+    ],
+    "template_validation": [
+      {
+        "type": "namespace_accessor",
+        "namespace": "jss",
+        "pattern": "jss::FieldName",
+        "validates": "Field access implies template validation",
+        "audit_implication": "Field guaranteed valid by framework",
+        "false_positive_risk": "Missing field validation"
+      }
+    ],
+    "exception_patterns": [
+      {
+        "type": "exception_throwing",
+        "pattern": "throw statement",
+        "audit_implication": "Errors reported via exceptions, not return codes",
+        "false_positive_risk": "Missing error return value"
+      }
+    ],
+    "namespace_accessors": [
+      {
+        "namespace": "jss",
+        "meaning": "JSON String constants - indicates template validation",
+        "audit_implication": "Fields accessed via this namespace are framework-validated",
+        "false_positive_risk": "Missing validation for framework-managed fields"
+      }
+    ],
+    "smart_pointers": [
+      {
+        "type": "unique_ptr",
+        "ownership": "exclusive",
+        "null_check_needed": false,
+        "cleanup_needed": false,
+        "audit_note": "Cannot be null after construction, auto cleanup",
+        "false_positive_risk": "Missing null check or manual delete"
+      }
+    ]
+  },
+  "validations": [
+    {
+      "field": "Fee",
+      "validated_by": "json_template::constructor",
+      "location": "STTx::STTx(Json::Value const&)",
+      "validation_type": "format",
+      "error_thrown": "parse_error",
+      "validates": ["non-empty", "numeric", "positive"],
+      "confidence": 0.95
+    },
+    {
+      "field": "Amount",
+      "validated_by": "json_template::constructor",
+      "location": "STTx::STTx(Json::Value const&)",
+      "validation_type": "format",
+      "error_thrown": "parse_error",
+      "validates": ["valid amount format", "non-negative"],
+      "confidence": 0.90
+    }
+  ],
+  "validation_architecture": {
+    "framework": "json_template",
+    "validation_layer": "entry_point",
+    "auto_validated_fields": ["Fee", "Amount", "Destination", "Sequence"]
+  },
+  "false_positive_patterns": [
+    {
+      "issue_pattern": "Missing validation for Fee",
+      "why_false_positive": "json_template validates Fee automatically",
+      "detection_keywords": ["Fee", "validation", "missing", "check"],
+      "confidence": 0.90,
+      "applies_to": ["validation", "input_validation"],
+      "evidence": "Field Fee validated by json_template"
+    },
+    {
+      "issue_pattern": "Missing null check for std::unique_ptr",
+      "why_false_positive": "RAII smart pointers guarantee initialization",
+      "detection_keywords": ["null", "nullptr", "check", "std::unique_ptr"],
+      "confidence": 0.90,
+      "applies_to": ["null_check", "memory_safety"],
+      "evidence": "Code uses std::unique_ptr"
+    },
+    {
+      "issue_pattern": "Missing error return value",
+      "why_false_positive": "Function uses exceptions for error reporting, not return codes",
+      "detection_keywords": ["error", "return", "value", "check"],
+      "confidence": 0.80,
+      "applies_to": ["error_handling"],
+      "evidence": "Code uses throw statements"
+    }
+  ],
+  "code_paths": [
+    {
+      "entry_point": "applyTransaction",
+      "call_chain": ["applyTransaction", "validateTx", "STTx::STTx", "json_template::validate"],
+      "purpose": "Validates transaction before applying to ledger",
+      "validation_points": ["STTx::STTx validates all fields via json_template"]
+    },
+    {
+      "entry_point": "doApply",
+      "call_chain": ["doApply", "applyTransaction", "validateTx"],
+      "purpose": "Apply transaction with full validation chain",
+      "validation_points": ["All validations occur in validateTx → STTx::STTx"]
+    }
+  ],
+  "data_flows": [
+    {
+      "field": "Fee",
+      "origin": "JSON transaction input from network",
+      "flow": ["JSON input", "STTx::STTx constructor", "validate", "applyTransaction", "ledger update"],
+      "transformations": ["Parsed as Json::Value", "Validated for non-empty/numeric", "Converted to Amount type"],
+      "validated_at": "STTx::STTx constructor"
+    },
+    {
+      "field": "Amount",
+      "origin": "JSON transaction input from network",
+      "flow": ["JSON input", "STTx::STTx constructor", "validate", "applyTransaction", "account balance update"],
+      "transformations": ["Parsed as Json::Value", "Validated for format", "Converted to Amount type"],
+      "validated_at": "STTx::STTx constructor"
+    },
+    {
+      "field": "Destination",
+      "origin": "JSON transaction input from network",
+      "flow": ["JSON input", "STTx::STTx constructor", "validate", "applyTransaction", "account lookup"],
+      "transformations": ["Parsed as Json::Value", "Validated for valid address format", "Converted to AccountID"],
+      "validated_at": "STTx::STTx constructor"
+    }
+  ],
+  "test_coverage_notes": "Tests exist in TxTest.cpp covering basic Fee/Amount validation. Edge cases tested: zero Fee (rejected), negative Amount (rejected), missing Destination (rejected). NOT tested: very large Fee values, Fee overflow scenarios. Test coverage: ~80% of validation paths."
+}

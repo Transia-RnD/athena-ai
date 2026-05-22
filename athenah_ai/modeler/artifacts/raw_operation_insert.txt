@@ -1,0 +1,73 @@
+Now I have the complete picture. The `find` helper returns `(loc, pos)` where `pos = loc.span.diff(ledger)` — the first mismatch seq clamped to `[loc.span_start, loc.span_end]`. The `insert` body then computes `prefix / oldSuffix / newSuffix` from `(loc, pos)` and branches on their presence.
+
+```json
+{
+  "name": "insert",
+  "transition_rules": [
+    {
+      "op": "find",
+      "bind": "loc",
+      "mode": "longest_prefix",
+      "of": "ledger"
+    },
+    {
+      "op": "let",
+      "bind": "diff_seq",
+      "expr": "min(loc.span_end, ledger.tip_seq + 1)"
+    },
+    {
+      "op": "split",
+      "node": "loc",
+      "at": "diff_seq",
+      "bind_new": "suf_node"
+    },
+    {
+      "op": "new_node",
+      "bind": "new_leaf",
+      "span_start": "diff_seq",
+      "span_end": "ledger.tip_seq + 1",
+      "tipSupport": 0
+    },
+    {
+      "op": "attach",
+      "child": "new_leaf",
+      "parent": "loc"
+    },
+    {
+      "op": "let",
+      "bind": "inc_node",
+      "expr": "new_leaf if diff_seq <= ledger.tip_seq else loc"
+    },
+    {
+      "op": "add_tip",
+      "node": "inc_node",
+      "delta": "count"
+    },
+    {
+      "op": "add_branch_path",
+      "node": "inc_node",
+      "delta": "count"
+    },
+    {
+      "op": "map_add",
+      "map": "seqSupport",
+      "key": "ledger.tip_seq",
+      "delta": "count"
+    }
+  ]
+}
+```
+
+**Step-by-step rationale:**
+
+| Step | Code line(s) | Semantics |
+|---|---|---|
+| `find longest_prefix` | `auto [loc, diffSeq] = find(ledger)` | Walk from root; descend into the child whose `span.diff(ledger) > pos` until no child extends the match; bind the deepest such node as `loc`. |
+| `let diff_seq` | implicit from `find` return value | `min(loc.span_end, ledger.tip_seq+1)` — exact for the exact-match, extension, and shorter-ledger cases; represents the upper bound for the mid-span diverge case. |
+| `split loc at diff_seq` | `if (oldSuffix)` block (lines 452–476) | When `diff_seq < loc.span_end`: carve the suffix `[diff_seq, loc.span_end)` into `suf_node`, which inherits `loc`'s `tipSupport`, `branchSupport`, and children (all re-parented); truncate `loc.span` to `[loc.span_start, diff_seq)`; set `loc.tipSupport = 0`; attach `suf_node` to `loc`. No-op when `diff_seq == loc.span_end`. |
+| `new_node new_leaf` | `if (newSuffix)` block (lines 477–492) | When `diff_seq <= ledger.tip_seq` (i.e. `span_start < span_end`): allocate a fresh node for the diverging tail of the new ledger. No-op (zero-length span) when `diff_seq == ledger.tip_seq + 1`. |
+| `attach new_leaf → loc` | `loc->children.push_back(...)` | Makes `new_leaf` a child of `loc` (sibling of `suf_node` when both were created). No-op when `new_leaf` is None. |
+| `let inc_node` | `incNode = newNode.get()` vs default `incNode = loc` | Select the node whose `tipSupport` gets the increment: `new_leaf` if the ledger extends beyond `loc`'s span, `loc` itself for exact-match or split-with-no-extension. |
+| `add_tip inc_node` | `incNode->tipSupport += count` | Increment tip support on the target node. |
+| `add_branch_path inc_node` | `while(incNode) { incNode->branchSupport += count; incNode = incNode->parent; }` | Walk the full ancestor chain from `inc_node` to the root, incrementing `branchSupport` at each node. |
+| `map_add seqSupport` | `seqSupport[ledger.seq()] += count` | Keep the `seqSupport` aggregate in sync. |

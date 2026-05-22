@@ -1,0 +1,8 @@
+The `empty()` function body is a single boolean expression — a trivial query. No trie walk or multi-step logic is involved.
+
+```json
+{
+  "name": "empty",
+  "result_expr": "root is None or root.branchSupport == 0"
+}
+```

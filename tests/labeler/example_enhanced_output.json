@@ -1,0 +1,72 @@
+{
+  "file_path": "src/ripple/json/json_template.cpp",
+  "description": "JSON template validation engine for XRPL transactions",
+  "language": "cpp",
+  "functions": [
+    {
+      "name": "validate",
+      "args": ["json_value"],
+      "lineno": 42
+    }
+  ],
+  "classes": [
+    {
+      "name": "STTx",
+      "args": ["Json::Value"],
+      "lineno": 15
+    }
+  ],
+  "namespaces": [
+    {
+      "name": "ripple",
+      "lineno": 10
+    }
+  ],
+  "args": [],
+  "language_patterns": {
+    "raii_usage": [
+      {
+        "type": "smart_pointer",
+        "pointer_type": "std::unique_ptr",
+        "audit_implication": "No manual delete needed, no null checks after construction",
+        "false_positive_risk": "Missing null check, memory leak"
+      }
+    ],
+    "template_validation": [
+      {
+        "type": "namespace_accessor",
+        "namespace": "jss",
+        "pattern": "jss::FieldName",
+        "validates": "Field access implies template validation",
+        "audit_implication": "Field guaranteed valid by framework",
+        "false_positive_risk": "Missing field validation"
+      }
+    ],
+    "exception_patterns": [
+      {
+        "type": "exception_throwing",
+        "pattern": "throw statement",
+        "audit_implication": "Errors reported via exceptions, not return codes",
+        "false_positive_risk": "Missing error return value"
+      }
+    ],
+    "namespace_accessors": [
+      {
+        "namespace": "jss",
+        "meaning": "JSON String constants - indicates template validation",
+        "audit_implication": "Fields accessed via this namespace are framework-validated",
+        "false_positive_risk": "Missing validation for framework-managed fields"
+      }
+    ],
+    "smart_pointers": [
+      {
+        "type": "unique_ptr",
+        "ownership": "exclusive",
+        "null_check_needed": false,
+        "cleanup_needed": false,
+        "audit_note": "Cannot be null after construction, auto cleanup",
+        "false_positive_risk": "Missing null check or manual delete"
+      }
+    ]
+  }
+}

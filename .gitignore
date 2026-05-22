@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+
+# Secrets — never commit
+.env
+.env.*
+!.env.sample
+credentials*.json
+*.pem
+*.key
+
+# Logs
+*.log
+ai.log
+
+# Local development scratch — anything in here stays out of the public repo
+local/
+tasks/
+workflow/
+playgrounds/
+old/
+workspace/
+workflow/
+chatbot_data/
+tool_data/
+doc-coverage*
+bot-*/
+
+# IDE
+.idea/
+*.swp

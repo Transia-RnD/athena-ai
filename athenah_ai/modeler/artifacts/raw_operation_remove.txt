@@ -1,0 +1,61 @@
+Now I have everything I need. Let me trace the full algorithm:
+
+1. `findByLedgerID(ledger)` — O(n) walk of all nodes, exact tip-ID match → `loc`
+2. Guard: if `loc` is null or `loc.tipSupport == 0` → return `False`
+3. Cap: `actual_count = min(count, loc.tipSupport)`
+4. Decrement `loc.tipSupport` by `actual_count`
+5. Decrement `seqSupport[ledger.seq()]` by `actual_count`; erase key if result is 0
+6. Walk ancestor chain from `loc` to root, decrement `branchSupport` by `actual_count` at every node
+7. Compression loop (from `loc` upward while `tipSupport == 0` and not root):
+   - 0 children → erase node from parent, advance to parent
+   - 1 child → merge spans (`merge(loc.span, child.span)` = span with min start and higher-seq ledger), re-parent child to `loc.parent`, erase `loc`, advance to parent
+   - 2+ children → break
+8. Return `True`
+
+```json
+{
+  "name": "remove",
+  "transition_rules": [
+    {
+      "op": "find",
+      "bind": "loc",
+      "mode": "exact",
+      "of": "ledger"
+    },
+    {
+      "op": "guard_return",
+      "cond": "loc is None or loc.tipSupport == 0",
+      "expr": "False"
+    },
+    {
+      "op": "let",
+      "bind": "actual_count",
+      "expr": "min(count, loc.tipSupport)"
+    },
+    {
+      "op": "add_tip",
+      "delta": "-actual_count",
+      "node": "loc"
+    },
+    {
+      "op": "map_add",
+      "delta": "-actual_count",
+      "key": "ledger.seq()",
+      "map": "seqSupport"
+    },
+    {
+      "op": "add_branch_path",
+      "delta": "-actual_count",
+      "node": "loc"
+    },
+    {
+      "op": "compress",
+      "node": "loc"
+    },
+    {
+      "op": "ret",
+      "expr": "True"
+    }
+  ]
+}
+```

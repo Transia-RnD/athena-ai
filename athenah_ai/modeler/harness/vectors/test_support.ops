@@ -1,0 +1,35 @@
+# Transcribed verbatim from rippled src/test/consensus/LedgerTrie_test.cpp
+# testSupport(). The C++ trace_dumper run on this file IS the fidelity oracle
+# (it emits the real tipSupport/branchSupport at every step); the Python model
+# must reproduce it byte-for-byte. Genesis ledger == "".
+tip a
+tip axy
+branch a
+branch axy
+insert abc
+tip a
+tip ab
+tip abc
+tip abcd
+branch a
+branch ab
+branch abc
+branch abcd
+insert abe
+tip a
+tip ab
+tip abc
+tip abe
+branch a
+branch ab
+branch abc
+branch abe
+remove abc
+tip a
+tip ab
+tip abc
+tip abe
+branch a
+branch ab
+branch abc
+branch abe

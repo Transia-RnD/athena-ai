@@ -1,0 +1,68 @@
+The function performs a full DFS over all nodes, checking four distinct invariants before comparing a locally-built `expectedSeqSupport` map against the state-var `seqSupport`. It's a complex query (trie walk) returning `bool`. Mapping each check to closed `let`/`guard_return`/`ret` steps:
+
+```json
+{
+  "name": "checkInvariants",
+  "transition_rules": [
+    {
+      "op": "let",
+      "bind": "compression_ok",
+      "expr": "all(len(n.children) >= 2 for n in nodes() if n != root and n.tipSupport == 0)"
+    },
+    {
+      "op": "guard_return",
+      "cond": "not compression_ok",
+      "expr": "False"
+    },
+    {
+      "op": "let",
+      "bind": "parent_ok",
+      "expr": "all(c.parent == n for n in nodes() for c in n.children)"
+    },
+    {
+      "op": "guard_return",
+      "cond": "not parent_ok",
+      "expr": "False"
+    },
+    {
+      "op": "let",
+      "bind": "branch_ok",
+      "expr": "all(n.branchSupport == n.tipSupport + sum(c.branchSupport for c in n.children) for n in nodes())"
+    },
+    {
+      "op": "guard_return",
+      "cond": "not branch_ok",
+      "expr": "False"
+    },
+    {
+      "op": "let",
+      "bind": "seq_keys_ok",
+      "expr": "all(any(n.tipSupport != 0 and n.tip_seq == seq for n in nodes()) for seq in seqSupport)"
+    },
+    {
+      "op": "guard_return",
+      "cond": "not seq_keys_ok",
+      "expr": "False"
+    },
+    {
+      "op": "let",
+      "bind": "seq_vals_ok",
+      "expr": "all(get(seqSupport, n.tip_seq, 0) == sum(m.tipSupport for m in nodes() if m.tipSupport != 0 and m.tip_seq == n.tip_seq) for n in nodes() if n.tipSupport != 0)"
+    },
+    {
+      "op": "ret",
+      "expr": "seq_vals_ok"
+    }
+  ]
+}
+```
+
+**Mapping of each step to source lines:**
+
+| Step | Source lines | Invariant checked |
+|---|---|---|
+| `compression_ok` | 793–794 | Non-root node with `tipSupport==0` must have ≥ 2 children (compression rule) |
+| `parent_ok` | 803–804 | Every child's `parent` back-pointer must equal the current node |
+| `branch_ok` | 797,806,809–810 | `branchSupport == tipSupport + Σ(child.branchSupport)` for every node |
+| `seq_keys_ok` | 812 (LHS of `==`) | `seqSupport` contains no key that has no corresponding live trie node with `tipSupport != 0` |
+| `seq_vals_ok` | 799, 812 | Each `seqSupport[tip_seq]` equals the aggregate `tipSupport` of all nodes whose `tip_seq` matches, mirroring the `expectedSeqSupport` accumulation at `span.end() − 1` |

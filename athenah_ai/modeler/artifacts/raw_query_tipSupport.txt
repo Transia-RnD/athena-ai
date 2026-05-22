@@ -1,0 +1,49 @@
+Now I have everything needed. The `tipSupport` query body is:
+
+```cpp
+std::uint32_t tipSupport(Ledger const& ledger) const {
+    if (auto const* loc = findByLedgerID(ledger))
+        return loc->tipSupport;
+    return 0;
+}
+```
+
+And its only helper `findByLedgerID` performs an O(n) recursive DFS over *all* trie nodes, matching the node whose `span.tip().id` equals `ledger.id()` — i.e., an **exact** trie search, not a prefix descent. This makes it a complex query (trie walk), not a trivial closed expression.
+
+```json
+{
+  "name": "tipSupport",
+  "params": [
+    {"name": "ledger", "type": "ledger"}
+  ],
+  "returns": "uint",
+  "description": "Return the number of current tip-support votes for exactly this ledger, or 0 if no trie node's span tip matches it.",
+  "transition_rules": [
+    {
+      "op": "find",
+      "bind": "loc",
+      "mode": "exact",
+      "of": "ledger"
+    },
+    {
+      "op": "guard_return",
+      "cond": "loc is None",
+      "expr": "0"
+    },
+    {
+      "op": "ret",
+      "expr": "loc.tipSupport"
+    }
+  ]
+}
+```
+
+**Rationale for each step:**
+
+| Step | Maps to implementation |
+|------|----------------------|
+| `find(exact, ledger) → loc` | `findByLedgerID(ledger)` — recursive DFS over all `nodes(root)` until `n.span_end == ledger`; returns `None` when no node matches |
+| `guard_return(loc is None, 0)` | `if (!loc) return nullptr` then outer `return 0` |
+| `ret(loc.tipSupport)` | `return loc->tipSupport` |
+
+The `find` mode `exact` faithfully encodes the `findByLedgerID` algorithm: it searches the full trie (not a prefix descent) and succeeds only when the node's span tip is an exact ledger-ID match. No state is mutated; this is a pure read of `root`.

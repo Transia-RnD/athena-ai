@@ -1,0 +1,407 @@
+{
+  "component": "LedgerTrie",
+  "state_vars": [
+    {
+      "name": "root",
+      "type": "tree",
+      "initial": {
+        "span_start": 0,
+        "span_end": 1,
+        "tipSupport": 0,
+        "branchSupport": 0,
+        "children": [],
+        "parent": null
+      },
+      "description": "Root of the compressed ancestry trie; always present (genesis node, span=[0,1)); root is exempt from the single-child compression rule"
+    },
+    {
+      "name": "seqSupport",
+      "type": "map",
+      "initial": {},
+      "description": "Maps each ledger sequence number to the aggregate tipSupport of all trie nodes whose tip_seq equals that sequence number; maintained in sync with node tipSupport values"
+    }
+  ],
+  "operations": [
+    {
+      "name": "insert",
+      "params": [
+        {
+          "name": "ledger",
+          "type": "ledger"
+        },
+        {
+          "name": "count",
+          "type": "uint"
+        }
+      ],
+      "returns": "void",
+      "preconditions": [],
+      "description": "Find the node with the longest-common-prefix span for ledger (via find()); split that node's span into a prefix node and an oldSuffix child if the span extends past the divergence point; append a newSuffix child for the ledger's remaining ancestry if any; increment tipSupport on the insertion-point node by count and propagate branchSupport increments up all ancestors; increment seqSupport[ledger.seq] by count",
+      "transition_rules": [
+        {
+          "op": "find",
+          "bind": "loc",
+          "mode": "longest_prefix",
+          "of": "ledger"
+        },
+        {
+          "op": "let",
+          "bind": "diff_seq",
+          "expr": "min(loc.span_end, ledger.tip_seq + 1)"
+        },
+        {
+          "op": "split",
+          "node": "loc",
+          "at": "diff_seq",
+          "bind_new": "suf_node"
+        },
+        {
+          "op": "new_node",
+          "bind": "new_leaf",
+          "span_start": "diff_seq",
+          "span_end": "ledger.tip_seq + 1",
+          "tipSupport": 0
+        },
+        {
+          "op": "attach",
+          "child": "new_leaf",
+          "parent": "loc"
+        },
+        {
+          "op": "let",
+          "bind": "inc_node",
+          "expr": "new_leaf if diff_seq <= ledger.tip_seq else loc"
+        },
+        {
+          "op": "add_tip",
+          "node": "inc_node",
+          "delta": "count"
+        },
+        {
+          "op": "add_branch_path",
+          "node": "inc_node",
+          "delta": "count"
+        },
+        {
+          "op": "map_add",
+          "map": "seqSupport",
+          "key": "ledger.tip_seq",
+          "delta": "count"
+        }
+      ]
+    },
+    {
+      "name": "remove",
+      "params": [
+        {
+          "name": "ledger",
+          "type": "ledger"
+        },
+        {
+          "name": "count",
+          "type": "uint"
+        }
+      ],
+      "returns": "bool",
+      "preconditions": [],
+      "description": "Find the node with an exact tip-ID match for ledger (O(n) DFS); return false if not found or tipSupport==0; decrement tipSupport (clamped to existing support) and propagate branchSupport decrements up all ancestors; update seqSupport; then compress: while the affected node has tipSupport==0 and is not root, erase it if it has no children, or merge it with its sole child by unioning their spans, repeating up toward root",
+      "transition_rules": [
+        {
+          "op": "find",
+          "bind": "loc",
+          "mode": "exact",
+          "of": "ledger"
+        },
+        {
+          "op": "guard_return",
+          "cond": "loc is None or loc.tipSupport == 0",
+          "expr": "False"
+        },
+        {
+          "op": "let",
+          "bind": "actual_count",
+          "expr": "min(count, loc.tipSupport)"
+        },
+        {
+          "op": "add_tip",
+          "delta": "-actual_count",
+          "node": "loc"
+        },
+        {
+          "op": "map_add",
+          "delta": "-actual_count",
+          "key": "ledger.seq()",
+          "map": "seqSupport"
+        },
+        {
+          "op": "add_branch_path",
+          "delta": "-actual_count",
+          "node": "loc"
+        },
+        {
+          "op": "compress",
+          "node": "loc"
+        },
+        {
+          "op": "ret",
+          "expr": "True"
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "name": "tipSupport",
+      "params": [
+        {
+          "name": "ledger",
+          "type": "ledger"
+        }
+      ],
+      "returns": "uint",
+      "description": "Return the tipSupport of the node whose span tip ID matches ledger exactly, or 0 if no such node exists",
+      "transition_rules": [
+        {
+          "op": "find",
+          "bind": "loc",
+          "mode": "exact",
+          "of": "ledger"
+        },
+        {
+          "op": "guard_return",
+          "cond": "loc is None",
+          "expr": "0"
+        },
+        {
+          "op": "ret",
+          "expr": "loc.tipSupport"
+        }
+      ]
+    },
+    {
+      "name": "branchSupport",
+      "params": [
+        {
+          "name": "ledger",
+          "type": "ledger"
+        }
+      ],
+      "returns": "uint",
+      "description": "Return the branchSupport of the node that exactly matches ledger's tip ID; if no exact match, return the branchSupport of the deepest node for which ledger is a proper ancestry prefix (diffSeq > ledger.seq and ledger.seq < node.span_end); return 0 if neither condition holds",
+      "transition_rules": [
+        {
+          "op": "find",
+          "bind": "loc_exact",
+          "mode": "exact",
+          "of": "ledger"
+        },
+        {
+          "op": "guard_return",
+          "cond": "loc_exact is not None",
+          "expr": "loc_exact.branchSupport"
+        },
+        {
+          "op": "find",
+          "bind": "loc_lp",
+          "mode": "longest_prefix",
+          "of": "ledger"
+        },
+        {
+          "op": "guard_return",
+          "cond": "not (ledger.tip_seq < loc_lp.span_end)",
+          "expr": "0"
+        },
+        {
+          "op": "ret",
+          "expr": "loc_lp.branchSupport"
+        }
+      ]
+    },
+    {
+      "name": "getPreferred",
+      "params": [
+        {
+          "name": "largestIssued",
+          "type": "seq"
+        }
+      ],
+      "returns": "optional",
+      "description": "Walk the trie from root accumulating uncommitted support from seqSupport for sequence numbers below max(nextSeq, largestIssued); within each node's span advance while branchSupport > uncommitted absorbing seqSupport entries; stop inside a span and return that sub-span's tip if advancement stalls; at span end pick the child with greatest branchSupport (tie-broken by span startID, with the tie-holder getting +1 margin) and continue only if margin > uncommitted; return the current node's span tip when no child wins or the trie is empty",
+      "transition_rules": [
+        {
+          "op": "guard_return",
+          "cond": "root.branchSupport == 0",
+          "expr": "None"
+        },
+        {
+          "op": "walk",
+          "bind": "curr",
+          "start": "root",
+          "while": "len(curr.children) > 0 and sum(get(seqSupport, k) for k in sorted(seqSupport) if k < max(curr.span_start + 1, largestIssued)) < curr.branchSupport and sum(get(seqSupport, k) for k in sorted(seqSupport) if k < curr.span_end) < curr.branchSupport and (sum(get(seqSupport, k) for k in sorted(seqSupport) if k < curr.span_end) == 0 or sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[0].branchSupport - (sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[1].branchSupport if len(curr.children) > 1 else 0) + (1 if len(curr.children) > 1 and sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[0].span_start > sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[1].span_start else 0) > sum(get(seqSupport, k) for k in sorted(seqSupport) if k < curr.span_end))",
+          "choose": "sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[0]"
+        },
+        {
+          "op": "let",
+          "bind": "U_entry",
+          "expr": "sum(get(seqSupport, k) for k in sorted(seqSupport) if k < max(curr.span_start + 1, largestIssued))"
+        },
+        {
+          "op": "let",
+          "bind": "stop_seq",
+          "expr": "curr.span_start if U_entry >= curr.branchSupport else min((k for k in sorted(seqSupport) if k >= max(curr.span_start + 1, largestIssued) and k < curr.span_end and sum(get(seqSupport, j) for j in sorted(seqSupport) if j <= k) >= curr.branchSupport), default=None)"
+        },
+        {
+          "op": "guard_return",
+          "cond": "stop_seq is not None",
+          "expr": "stop_seq"
+        },
+        {
+          "op": "ret",
+          "expr": "curr.tip_seq"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "params": [],
+      "returns": "bool",
+      "description": "Return true iff root is absent or root.branchSupport == 0",
+      "result_expr": "root is None or root.branchSupport == 0"
+    },
+    {
+      "name": "getJson",
+      "params": [],
+      "returns": "map",
+      "description": "Return JSON object containing the recursive node tree under key 'trie' and the seqSupport map under key 'seq_support'",
+      "transition_rules": [
+        {
+          "op": "let",
+          "bind": "reachable",
+          "expr": "nodes(root)"
+        },
+        {
+          "op": "let",
+          "bind": "node_map",
+          "expr": "{n: {'span_start': n.span_start, 'span_end': n.span_end, 'tip_seq': n.tip_seq, 'tipSupport': n.tipSupport, 'branchSupport': n.branchSupport, 'children': n.children} for n in reachable}"
+        },
+        {
+          "op": "ret",
+          "expr": "{'trie': node_map[root], 'seq_support': seqSupport}"
+        }
+      ]
+    },
+    {
+      "name": "checkInvariants",
+      "params": [],
+      "returns": "bool",
+      "description": "DFS over all nodes verifying the four structural invariants; rebuilds expectedSeqSupport from node tipSupport values and compares against seqSupport",
+      "transition_rules": [
+        {
+          "op": "let",
+          "bind": "compression_ok",
+          "expr": "all(len(n.children) >= 2 for n in nodes() if n != root and n.tipSupport == 0)"
+        },
+        {
+          "op": "guard_return",
+          "cond": "not compression_ok",
+          "expr": "False"
+        },
+        {
+          "op": "let",
+          "bind": "parent_ok",
+          "expr": "all(c.parent == n for n in nodes() for c in n.children)"
+        },
+        {
+          "op": "guard_return",
+          "cond": "not parent_ok",
+          "expr": "False"
+        },
+        {
+          "op": "let",
+          "bind": "branch_ok",
+          "expr": "all(n.branchSupport == n.tipSupport + sum(c.branchSupport for c in n.children) for n in nodes())"
+        },
+        {
+          "op": "guard_return",
+          "cond": "not branch_ok",
+          "expr": "False"
+        },
+        {
+          "op": "let",
+          "bind": "seq_keys_ok",
+          "expr": "all(any(n.tipSupport != 0 and n.tip_seq == seq for n in nodes()) for seq in seqSupport)"
+        },
+        {
+          "op": "guard_return",
+          "cond": "not seq_keys_ok",
+          "expr": "False"
+        },
+        {
+          "op": "let",
+          "bind": "seq_vals_ok",
+          "expr": "all(get(seqSupport, n.tip_seq, 0) == sum(m.tipSupport for m in nodes() if m.tipSupport != 0 and m.tip_seq == n.tip_seq) for n in nodes() if n.tipSupport != 0)"
+        },
+        {
+          "op": "ret",
+          "expr": "seq_vals_ok"
+        }
+      ]
+    },
+    {
+      "name": "dump",
+      "params": [],
+      "returns": "void",
+      "description": "Write an indented ASCII representation of the trie to an output stream for debugging",
+      "transition_rules": [
+        {
+          "op": "let",
+          "bind": "dfs_order",
+          "expr": "sorted(nodes, key=lambda n: len(ancestors(n)))"
+        },
+        {
+          "op": "ret",
+          "expr": "dfs_order"
+        }
+      ]
+    }
+  ],
+  "invariants": [
+    {
+      "name": "compression",
+      "predicate": "all(n.tipSupport > 0 or len(n.children) >= 2 for n in nodes if n != root)",
+      "description": "Every non-root node with zero tipSupport must have at least two children; a zero-tip-support node with exactly one child would be redundant and must be merged with that child"
+    },
+    {
+      "name": "branch_support_accounting",
+      "predicate": "all(n.branchSupport == n.tipSupport + sum(c.branchSupport for c in n.children) for n in nodes)",
+      "description": "Every node's branchSupport equals its own tipSupport plus the sum of its immediate children's branchSupport values"
+    },
+    {
+      "name": "parent_pointer_consistency",
+      "predicate": "all(all(c.parent == n for c in n.children) for n in nodes)",
+      "description": "For every node, each child's parent pointer must refer back to that node"
+    },
+    {
+      "name": "seq_support_consistency",
+      "predicate": "all(sum(n.tipSupport for n in nodes if n.tip_seq == s) == seqSupport[s] for s in seqSupport) and all(n.tipSupport == 0 or n.tip_seq in seqSupport for n in nodes)",
+      "description": "seqSupport[s] must equal the total tipSupport of all nodes whose tip_seq is s; every node with positive tipSupport must have its tip_seq present as a key in seqSupport"
+    }
+  ],
+  "safety_properties": [
+    {
+      "name": "preferred_requires_strict_margin",
+      "kind": "safety",
+      "statement": "getPreferred descends from a node to a child only when that child's margin over the second-best child (adjusted by the tie-breaking startID bonus) strictly exceeds the accumulated uncommitted support at that sequence number, preventing premature commitment to a minority branch"
+    },
+    {
+      "name": "trie_remains_compressed_after_remove",
+      "kind": "safety",
+      "statement": "After every remove operation the compression invariant holds: no non-root node with zero tipSupport has exactly one child; such nodes are eagerly merged or erased during the post-decrement cleanup walk"
+    },
+    {
+      "name": "support_counts_non_negative",
+      "kind": "safety",
+      "statement": "tipSupport and branchSupport of every node are always non-negative; remove clamps the decrement to min(count, loc->tipSupport) before applying it, so underflow cannot occur"
+    }
+  ]
+}

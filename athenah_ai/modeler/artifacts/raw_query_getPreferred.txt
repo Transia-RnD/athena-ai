@@ -1,0 +1,38 @@
+```json
+{
+  "name": "getPreferred",
+  "transition_rules": [
+    {
+      "op": "guard_return",
+      "cond": "root.branchSupport == 0",
+      "expr": "None"
+    },
+    {
+      "op": "walk",
+      "bind": "curr",
+      "start": "root",
+      "while": "len(curr.children) > 0 and sum(get(seqSupport, k) for k in sorted(seqSupport) if k < max(curr.span_start + 1, largestIssued)) < curr.branchSupport and sum(get(seqSupport, k) for k in sorted(seqSupport) if k < curr.span_end) < curr.branchSupport and (sum(get(seqSupport, k) for k in sorted(seqSupport) if k < curr.span_end) == 0 or sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[0].branchSupport - (sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[1].branchSupport if len(curr.children) > 1 else 0) + (1 if len(curr.children) > 1 and sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[0].span_start > sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[1].span_start else 0) > sum(get(seqSupport, k) for k in sorted(seqSupport) if k < curr.span_end))",
+      "choose": "sorted(curr.children, key=lambda c: (c.branchSupport, c.span_start), reverse=True)[0]"
+    },
+    {
+      "op": "let",
+      "bind": "U_entry",
+      "expr": "sum(get(seqSupport, k) for k in sorted(seqSupport) if k < max(curr.span_start + 1, largestIssued))"
+    },
+    {
+      "op": "let",
+      "bind": "stop_seq",
+      "expr": "curr.span_start if U_entry >= curr.branchSupport else min((k for k in sorted(seqSupport) if k >= max(curr.span_start + 1, largestIssued) and k < curr.span_end and sum(get(seqSupport, j) for j in sorted(seqSupport) if j <= k) >= curr.branchSupport), default=None)"
+    },
+    {
+      "op": "guard_return",
+      "cond": "stop_seq is not None",
+      "expr": "stop_seq"
+    },
+    {
+      "op": "ret",
+      "expr": "curr.tip_seq"
+    }
+  ]
+}
+```

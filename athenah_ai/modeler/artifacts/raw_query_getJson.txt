@@ -1,0 +1,28 @@
+Both function bodies are now clear. Let me analyze the full algorithm:
+
+- **`LedgerTrie::getJson()`** (lines 765–773): delegates to `root->getJson()`, then iterates `seqSupport` into a flat string-keyed JSON object.
+- **`Node::getJson()`** (lines 222–241): reads `span_start`, `span_end`, `tip_seq` (= `span.tip().seq` = `span_end - 1`), `tipSupport`, `branchSupport`, then recursively calls `child->getJson()` for every child — full DFS of the trie subtree.
+
+The complete recursive descent over `nodes(root)` is captured in two `let` steps: the first materialises the reachable set, the second binds each node to its attribute tuple (with `n.children` preserved as node references, so the model checker can recursively expand the tree); `seqSupport` is read directly from state. Closure is satisfied for every name.
+
+```json
+{
+  "name": "getJson",
+  "transition_rules": [
+    {
+      "op": "let",
+      "bind": "reachable",
+      "expr": "nodes(root)"
+    },
+    {
+      "op": "let",
+      "bind": "node_map",
+      "expr": "{n: {'span_start': n.span_start, 'span_end': n.span_end, 'tip_seq': n.tip_seq, 'tipSupport': n.tipSupport, 'branchSupport': n.branchSupport, 'children': n.children} for n in reachable}"
+    },
+    {
+      "op": "ret",
+      "expr": "{'trie': node_map[root], 'seq_support': seqSupport}"
+    }
+  ]
+}
+```

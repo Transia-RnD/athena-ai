@@ -1,0 +1,30 @@
+Now I have the complete picture of both functions. Let me analyse the algorithm carefully before emitting the model:
+
+- `dump(o)` → calls `dumpImpl(o, root, 0)` — single entry point, no state mutation.
+- `dumpImpl(o, curr, offset)` → if `curr` is non-null: (a) emit padding+`|-` when `offset > 0`, (b) serialise `curr` to string `ss`, write it + newline, (c) for each child in `curr.children` (in list order), recurse with `offset′ = offset + 1 + len(ss) + 2`. This is a **recursive pre-order DFS** over all reachable nodes.
+
+Key formal observations:
+- Visits every node in `nodes` exactly once.
+- Pre-order invariant: every ancestor of node `n` is emitted before `n` (`len(ancestors(n))` is the DFS depth, ensuring parent-before-child).
+- Sibling ordering follows the `children` list order.
+- No mutation of `root` or `seqSupport`.
+- The `offset` accumulates `1 + len(str(parent)) + 2` per ancestor level; string length of a node is not a formal state variable, so this is abstracted in the model.
+
+Because `nodes` yields all reachable nodes and `ancestors(n)` captures the ancestor chain, the complete DFS pre-order can be formally expressed in two steps:
+
+```json
+{
+  "name": "dump",
+  "transition_rules": [
+    {
+      "op": "let",
+      "bind": "dfs_order",
+      "expr": "sorted(nodes, key=lambda n: len(ancestors(n)))"
+    },
+    {
+      "op": "ret",
+      "expr": "dfs_order"
+    }
+  ]
+}
+```

@@ -1,0 +1,18 @@
+# Smoke vector: mirrors the start of LedgerTrie_test.cpp testInsert/testSupport.
+# Genesis insert/remove round-trip:
+insert GENESIS
+remove GENESIS
+# Build a fork: abc vs abe share prefix "ab".
+insert abc
+tip abc
+branch a
+insert abe
+branch a
+branch ab
+tip abc
+remove abc
+branch a
+# Preferred ledger across the remaining branch.
+insert abe
+pref 0
+pref 3

@@ -1,0 +1,7 @@
+# Transcribed from LedgerTrie_test.cpp testInsert(): genesis + abc
+# insert/remove round-trips. trace_dumper records empty() + checkInvariants()
+# after every step, which covers the BEAST_EXPECT(t.empty()) assertions.
+insert GENESIS
+remove GENESIS
+insert abc
+remove abc

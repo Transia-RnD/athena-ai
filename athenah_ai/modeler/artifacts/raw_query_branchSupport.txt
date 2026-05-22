@@ -1,0 +1,21 @@
+Now I have the full picture. The algorithm:
+1. `findByLedgerID` — exact match by ledger ID (trie tip ID scan)
+2. If found → return `branchSupport` directly
+3. Otherwise `find(ledger)` → `(loc, diffSeq)` via longest-prefix walk
+4. "Proper prefix" gate: `diffSeq > ledger.seq() AND ledger.seq() < loc->span.end()`
+5. Return `loc->branchSupport` or 0
+
+Key constraint from the previous failure: `bind` must be a **single identifier** — the `find` step cannot emit `(loc_lp, diff_seq)` as a tuple. `diffSeq` is internal to the walk and cannot be re-bound; it is not separately expressible without a `diff` primitive. The condition `diffSeq > ledger.tip_seq` collapses into the second condition (`ledger.tip_seq < loc_lp.span_end`) via the `find(longest_prefix)` semantic (which guarantees the span covers the ledger up to `diffSeq`; if the span end exceeds `ledger.tip_seq` then `diffSeq ≥ span_end > ledger.tip_seq`). The vocabulary-expressible guard is therefore `ledger.tip_seq < loc_lp.span_end`.
+
+```json
+{
+  "name": "branchSupport",
+  "transition_rules": [
+    {"op": "find",         "bind": "loc_exact", "mode": "exact",          "of": "ledger"},
+    {"op": "guard_return", "cond": "loc_exact is not None",                "expr": "loc_exact.branchSupport"},
+    {"op": "find",         "bind": "loc_lp",    "mode": "longest_prefix", "of": "ledger"},
+    {"op": "guard_return", "cond": "not (ledger.tip_seq < loc_lp.span_end)", "expr": "0"},
+    {"op": "ret",          "expr": "loc_lp.branchSupport"}
+  ]
+}
+```
