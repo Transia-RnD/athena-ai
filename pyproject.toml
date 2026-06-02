@@ -18,7 +18,7 @@ cachetools = "^5.3.0"
 # Pin exact versions
 langchain = "1.1.0"
 langchain-core = "1.1.0"
-langgraph = "1.0.4"
+langgraph = "1.0.6"
 langgraph-prebuilt = "1.0.5"
 langsmith = "0.4.38"
 langchain-community = "0.4.1"
