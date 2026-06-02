@@ -25,7 +25,7 @@ langchain-community = "0.4.1"
 langchain-openai = "1.1.0"
 langchain-anthropic = "1.2.0"
 langchain-xai = "1.1.0"
-chromadb = "^1.3.7"
+chromadb = "^1.5.9"
 claude-agent-sdk = "^0.1.58"
 
 # Hybrid RAG: AST parsing + Knowledge Graph (multi-language)
