@@ -13,7 +13,7 @@ tabulate = "^0.9.0"
 google-cloud-storage = "^3.4.0"
 python-dotenv = "^1.2.1"
 anthropic = "^0.75.0"
-cachetools = "^5.3.0"
+cachetools = "^7.1.4"
 
 # Pin exact versions
 langchain = "1.1.0"
