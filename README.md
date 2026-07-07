@@ -150,7 +150,12 @@ python -m athenah_ai.atlas render               # write full ATLAS.md
 python -m athenah_ai.atlas render --claude-md   # emit generated CLAUDE.md
 python -m athenah_ai.atlas teach --edge can_write identity:github/x org:y
 python -m athenah_ai.atlas why identity:github/x   # provenance of any fact
+python -m athenah_ai.atlas sync                    # re-render all consumers
 ```
+
+`teach` and `scan` auto-sync every configured consumer (global CLAUDE.md,
+ATLAS.md, downstream repo copies — see `AtlasConfig.sync_targets`) when run
+against the default facts dir; sandboxed facts dirs skip it unless `--sync`.
 
 Seed inventory: `athenah_ai/atlas/seeds/taught.yaml`
 (`teach --import` it once, then `scan`).

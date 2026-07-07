@@ -51,13 +51,14 @@ class CliTestCase(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.facts_dir, ignore_errors=True)
 
-    def _run(self, *args):
+    def _run(self, *args, env=None):
         return subprocess.run(
             [sys.executable, "-m", "athenah_ai.atlas", *args],
             capture_output=True,
             text=True,
             cwd=REPO_ROOT,
-            env={**os.environ, "ATHENA_ATLAS_FACTS_DIR": self.facts_dir},
+            env={**os.environ, "ATHENA_ATLAS_FACTS_DIR": self.facts_dir,
+                 **(env or {})},
             timeout=60,
         )
 
@@ -103,6 +104,55 @@ class TestTeachShowWhy(CliTestCase):
             "org:nope",
         )
         self.assertEqual(proc.returncode, 1)
+
+
+class TestSync(CliTestCase):
+    def _targets_env(self):
+        atlas_out = os.path.join(self.facts_dir, "out", "ATLAS.md")
+        claude_out = os.path.join(self.facts_dir, "out", "CLAUDE.md")
+        env = {
+            "ATHENA_ATLAS_SYNC_TARGETS":
+                f"atlas:{atlas_out},claude-md:{claude_out}",
+        }
+        return env, atlas_out, claude_out
+
+    def test_sync_writes_all_targets(self):
+        env, atlas_out, claude_out = self._targets_env()
+        proc = self._run("sync", env=env)
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        with open(atlas_out) as f:
+            self.assertIn("# ATLAS", f.read())
+        with open(claude_out) as f:
+            self.assertIn("AUTO-GENERATED", f.read())
+
+    def test_sync_unknown_format_fails(self):
+        bogus = os.path.join(self.facts_dir, "out", "X.md")
+        proc = self._run(
+            "sync", env={"ATHENA_ATLAS_SYNC_TARGETS": f"bogus:{bogus}"}
+        )
+        self.assertEqual(proc.returncode, 1)
+        self.assertFalse(os.path.exists(bogus))
+
+    def test_teach_on_custom_facts_dir_does_not_autosync(self):
+        # facts dir is overridden (a sandbox) -> teach must NOT touch targets
+        env, atlas_out, claude_out = self._targets_env()
+        proc = self._run(
+            "teach", "--node", "org", "org:xrplf", "XRPLF", env=env
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertFalse(os.path.exists(atlas_out))
+        self.assertFalse(os.path.exists(claude_out))
+
+    def test_teach_sync_flag_forces_sync(self):
+        env, atlas_out, claude_out = self._targets_env()
+        proc = self._run(
+            "teach", "--node", "org", "org:xrplf", "XRPLF", "--sync",
+            env=env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        with open(atlas_out) as f:
+            self.assertIn("XRPLF", f.read())
+        self.assertTrue(os.path.exists(claude_out))
 
 
 class TestRenderAndContext(CliTestCase):

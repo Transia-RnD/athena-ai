@@ -250,6 +250,30 @@ class AtlasConfig:
     # Default output path for the rendered ATLAS.md
     render_out: str = "~/.athenah/atlas/ATLAS.md"
 
+    # Comma-separated sync targets, each "<format>:<path>" where format is
+    # "atlas" or "claude-md". `sync` (and auto-sync after teach/scan on the
+    # default facts dir) re-renders every target.
+    sync_targets: str = (
+        "claude-md:~/.claude/CLAUDE.md,"
+        "atlas:~/.athenah/atlas/ATLAS.md,"
+        "atlas:~/projects/transia/sage-ai/.claude/knowledge/ATLAS.md"
+    )
+
+    def sync_targets_list(self) -> list:
+        """Return sync_targets parsed into (format, path) tuples.
+
+        Returns:
+            list: Tuples of (format, expanded path).
+        """
+        targets = []
+        for entry in self.sync_targets.split(","):
+            entry = entry.strip()
+            if not entry:
+                continue
+            fmt, _, path = entry.partition(":")
+            targets.append((fmt.strip(), os.path.expanduser(path.strip())))
+        return targets
+
     def scan_roots_list(self) -> list:
         """Return scan_roots split into a list of paths.
 

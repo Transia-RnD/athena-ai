@@ -8,8 +8,13 @@ Commands:
     why        explain the edges touching a node, with provenance
     context    print the scoped bootstrap for a working directory
     render     write ATLAS.md (or emit the generated CLAUDE.md)
+    sync       re-render every configured consumer (CLAUDE.md, ATLAS.md...)
     show       print one node and its neighbors
     validate   check all facts; exit 1 on errors
+
+teach and scan auto-sync when operating on the default facts dir; a
+--facts-dir/env override is treated as a sandbox and skips it
+(force with --sync, suppress with --no-sync).
 """
 
 import argparse
@@ -48,6 +53,35 @@ def _parse_attrs(pairs) -> dict:
     return attrs
 
 
+def _sync_targets(args: argparse.Namespace) -> int:
+    from athenah_ai.config import config
+
+    targets = config.atlas.sync_targets_list()
+    renderers = {"atlas": render_atlas, "claude-md": render_claude_md}
+    for fmt, _ in targets:
+        if fmt not in renderers:
+            print(f"ERROR: unknown sync target format '{fmt}'",
+                  file=sys.stderr)
+            return 1
+    graph = _graph(args)
+    for fmt, out in targets:
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with open(out, "w") as f:
+            f.write(renderers[fmt](graph))
+        print(f"synced {out}")
+    return 0
+
+
+def _should_autosync(args: argparse.Namespace) -> bool:
+    if getattr(args, "sync", None) is not None:
+        return args.sync
+    from athenah_ai.config import AtlasConfig, config
+
+    default_dir = AtlasConfig.__dataclass_fields__["facts_dir"].default
+    facts_dir = args.facts_dir or config.atlas.facts_dir
+    return os.path.expanduser(facts_dir) == default_dir
+
+
 def cmd_scan(args: argparse.Namespace) -> int:
     from athenah_ai.config import config
 
@@ -61,6 +95,8 @@ def cmd_scan(args: argparse.Namespace) -> int:
     nodes, edges = scanner.run(_store(args), roots)
     print(f"scanned {len(nodes)} nodes, {len(edges)} edges "
           f"from roots: {', '.join(roots)}")
+    if _should_autosync(args):
+        return _sync_targets(args)
     return 0
 
 
@@ -90,22 +126,30 @@ def _teach_import(store: FactStore, path: str) -> int:
 def cmd_teach(args: argparse.Namespace) -> int:
     store = _store(args)
     if args.import_file:
-        return _teach_import(store, args.import_file)
-    if args.node:
+        result = _teach_import(store, args.import_file)
+    elif args.node:
         kind, node_id, name = args.node
         store.teach_node(Node(
             id=node_id, kind=kind, name=name, provenance="taught",
             notes=args.note or "", attrs=_parse_attrs(args.attr),
         ))
         print(f"taught node {node_id}")
-        return 0
-    kind, src, dst = args.edge
-    store.teach_edge(Edge(
-        kind=kind, src=src, dst=dst, provenance="taught",
-        notes=args.note or "", attrs=_parse_attrs(args.attr),
-    ))
-    print(f"taught edge {kind} {src} -> {dst}")
-    return 0
+        result = 0
+    else:
+        kind, src, dst = args.edge
+        store.teach_edge(Edge(
+            kind=kind, src=src, dst=dst, provenance="taught",
+            notes=args.note or "", attrs=_parse_attrs(args.attr),
+        ))
+        print(f"taught edge {kind} {src} -> {dst}")
+        result = 0
+    if result == 0 and _should_autosync(args):
+        return _sync_targets(args)
+    return result
+
+
+def cmd_sync(args: argparse.Namespace) -> int:
+    return _sync_targets(args)
 
 
 def cmd_why(args: argparse.Namespace) -> int:
@@ -198,6 +242,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("scan", help="rescan roots into derived facts")
     p.add_argument("--roots", nargs="*", default=None)
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--sync", action=argparse.BooleanOptionalAction,
+                   default=None, help="force/suppress re-render of targets")
     p.set_defaults(func=cmd_scan)
 
     p = sub.add_parser("teach", help="add a taught fact")
@@ -207,7 +253,14 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--import", dest="import_file", metavar="FILE")
     p.add_argument("--note", default=None)
     p.add_argument("--attr", action="append", metavar="K=V")
+    p.add_argument("--sync", action=argparse.BooleanOptionalAction,
+                   default=None, help="force/suppress re-render of targets")
     p.set_defaults(func=cmd_teach)
+
+    p = sub.add_parser(
+        "sync", help="re-render every configured consumer output"
+    )
+    p.set_defaults(func=cmd_sync)
 
     p = sub.add_parser("why", help="explain edges with provenance")
     p.add_argument("src")
