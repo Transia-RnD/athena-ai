@@ -1,0 +1,50 @@
+nodes:
+- id: environment:alphanet
+  kind: environment
+  name: alphanet
+  provenance: taught
+  notes: 'XRPL alphanet. Deploys are triggered FROM the sentinel server (labeled-PR discovery
+    -> merge -> build -> deploy; fund/verify the faucet for genesis runs). ALWAYS show dry-run
+    output before a live deploy.
+
+    '
+- id: environment:gcp-perfnet
+  kind: environment
+  name: GCP perf network
+  provenance: taught
+  notes: 'xrpld performance/DR network on GCP (dr-drill skill: Makefile bring-up, fault injection,
+    XDGM/loadtester measurement).
+
+    '
+- id: server:sentinel
+  kind: server
+  name: sentinel
+  provenance: taught
+  notes: 'Sentinel production box. SSH port 1988 with key ~/.ssh/xrpl-labs; project at /opt/sentinel-ai.
+    Run processes as user ''sentinel'', not root. The server can push code (dangell8); the
+    local Mac cannot push for the pipeline.
+
+    '
+  attrs:
+    ip: 79.110.60.203
+    project_path: /opt/sentinel-ai
+    ssh_key: ~/.ssh/xrpl-labs
+    ssh_port: 1988
+    user: sentinel
+- id: service:firestore-xarvis-production
+  kind: service
+  name: Firestore xarvis-production
+  provenance: taught
+  notes: 'Prod datastore for sentinel-ai (no Mongo in prod). Query via docker exec into the
+    sentinel-server-main container on the sentinel box. Local dev creds point at xarvis-sandbox.
+
+    '
+edges:
+- kind: deploys_via
+  src: environment:alphanet
+  dst: workflow:deploy-alphanet
+  provenance: taught
+- kind: deploys_via
+  src: environment:gcp-perfnet
+  dst: workflow:xrpld-lab-networks
+  provenance: taught

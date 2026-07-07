@@ -16,6 +16,7 @@ driven by **tree-sitter** AST parsing for C++, Python, TypeScript, and JavaScrip
 - **Storage** — local filesystem or Google Cloud Storage
 - **Code labeler** — generates `.ai.json` / `.ai.md` metadata for source files
 - **Formal modeler** — closure-gated LLM extraction of finite state machines from real C++, with a differential fidelity gate against the actual implementation (see [`athenah_ai/modeler/FINDING.md`](athenah_ai/modeler/FINDING.md))
+- **Atlas** — a personal job/life knowledge graph (identities, orgs, repos, servers, workflows, rules) over hand-editable YAML facts; renders the bootstrap context any zero-context AI agent needs (see below)
 
 ## Requirements
 
@@ -132,6 +133,27 @@ per-unit decomposition with a validator-driven repair loop and raw-output
 caching. See [`athenah_ai/modeler/FINDING.md`](athenah_ai/modeler/FINDING.md)
 for the full write-up: what the experiment proved, what it did not, and where
 the real cost actually lands in LLM-driven formal-methods work.
+
+## Atlas — agent bootstrap knowledge graph
+
+`athenah_ai/atlas/` encodes the operator's world as a typed graph: identities
+and their GitHub capabilities, orgs, repos (keyed by remote, not directory),
+local checkouts/worktrees, servers, deploy workflows, rules, and plan stores.
+Source of truth is hand-editable YAML under `athenah_ai/atlas/facts/`
+(taught facts) plus scanner-maintained `facts/derived/` (never clobbers
+taught facts).
+
+```bash
+python -m athenah_ai.atlas scan                 # rescan ~/projects checkouts
+python -m athenah_ai.atlas context --cwd .      # scoped bootstrap for a dir
+python -m athenah_ai.atlas render               # write full ATLAS.md
+python -m athenah_ai.atlas render --claude-md   # emit generated CLAUDE.md
+python -m athenah_ai.atlas teach --edge can_write identity:github/x org:y
+python -m athenah_ai.atlas why identity:github/x   # provenance of any fact
+```
+
+Seed inventory: `athenah_ai/atlas/seeds/taught.yaml`
+(`teach --import` it once, then `scan`).
 
 ## Project layout
 

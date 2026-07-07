@@ -1,0 +1,85 @@
+nodes:
+- id: rule:bug-fixing
+  kind: rule
+  name: Bug fixing
+  provenance: taught
+  notes: 'Given a bug report, just fix it — follow logs, errors, failing tests, and CI without
+    asking for hand-holding.
+
+    '
+- id: rule:code-quality
+  kind: rule
+  name: Code quality
+  provenance: taught
+  notes: 'Understand the problem fully, design, THEN write — no write-and-see-if-it-works
+    loops. Challenge the first solution. NEVER suppress a linter (no NOLINT/disable comments);
+    fix the underlying issue.
+
+    '
+- id: rule:commit-style
+  kind: rule
+  name: Commit messages
+  provenance: taught
+  notes: 'Single short conventional-commit title line (feat:/fix:/refactor: prefix + brief
+    subject). No body paragraphs; the "why" belongs in a PR description. No Claude/Co-Authored-By
+    trailers.
+
+    '
+- id: rule:data-integrity
+  kind: rule
+  name: Data integrity
+  provenance: taught
+  notes: 'Use database transactions for write operations touching related state (MongoDB:
+    session.withTransaction()) — even single-document writes.
+
+    '
+- id: rule:lessons
+  kind: rule
+  name: Self-improvement
+  provenance: taught
+  notes: 'After ANY correction, update tasks/lessons.md with the pattern that prevents the
+    same mistake; review lessons at session start.
+
+    '
+- id: rule:never-push
+  kind: rule
+  name: Git — never push
+  provenance: taught
+  notes: 'NEVER git push or open PRs unless explicitly asked in that message; commit locally
+    only. Don''t batch up many tiny PRs — accumulate related work and let Denis decide when
+    to push.
+
+    '
+- id: rule:no-fragmentation
+  kind: rule
+  name: No over-fragmentation
+  provenance: taught
+  notes: 'Keep related changes together. Do not split a single feature/fix across multiple
+    branches, PRs, commits, or files without a real reason.
+
+    '
+- id: rule:plan-mode
+  kind: rule
+  name: Planning & execution
+  provenance: taught
+  notes: 'Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions).
+    Write the plan to tasks/todo.md with checkable items and check in before starting; mark
+    items complete as you go. If something goes sideways, STOP and re-plan immediately.
+
+    '
+- id: rule:subagents
+  kind: rule
+  name: Subagent strategy
+  provenance: taught
+  notes: 'Use subagents liberally to keep the main context clean; when researching anything
+    unfamiliar, fan out 3+ agents in parallel, one task per agent.
+
+    '
+- id: rule:verification
+  kind: rule
+  name: Verification
+  provenance: taught
+  notes: 'Never mark a task complete without proving it works — run tests, check logs, diff
+    behavior against main. Ask "would a staff engineer approve this?"
+
+    '

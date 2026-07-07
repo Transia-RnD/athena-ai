@@ -1,0 +1,437 @@
+# Atlas seed: verified inventory of Denis's world.
+# Import with: python -m athenah_ai.atlas teach --import athenah_ai/atlas/seeds/taught.yaml
+# Facts only — never token/secret values.
+
+nodes:
+  # ------------------------------------------------------------- people
+  - id: person:denis
+    kind: person
+    name: Denis Angell
+    provenance: taught
+    notes: >
+      XRPL core developer. Runs Transia-RnD (private product work) and
+      contributes across XRPLF/public XRPL repos. Git identity
+      dangell@transia.co; commits are GPG-signed.
+  - id: person:kris
+    kind: person
+    name: Kris
+    provenance: taught
+    notes: Operator on ai-bootstrap and thelab monorepos.
+
+  # ---------------------------------------------------------- identities
+  - id: identity:github/dangell7
+    kind: identity
+    name: dangell7
+    provenance: taught
+    notes: Primary GitHub account (human). Author of PRs, reviews, issues.
+  - id: identity:github/dangell8
+    kind: identity
+    name: dangell8
+    provenance: taught
+    notes: >
+      Service account for automated/bot code writes. PAT auth + GPG signing
+      via local git (git_push.py pattern) so every bot commit is
+      GitHub-Verified. NOT the GitHub App.
+  - id: identity:github/sentinel-app
+    kind: identity
+    name: Sentinel GitHub App
+    provenance: taught
+    notes: >
+      GitHub App used by sentinel-ai. Read, comment, and checks ONLY —
+      deliberately has no contents:write. All code writes go through
+      dangell8 instead.
+
+  # ---------------------------------------------------------------- orgs
+  - id: org:transia-rnd
+    kind: org
+    name: Transia-RnD
+    provenance: taught
+    notes: >
+      Private product org. Local checkouts mostly under ~/projects/transia
+      but several live under ~/projects/xrplf (trust the repo map, not the
+      directory).
+  - id: org:xrplf
+    kind: org
+    name: XRPLF
+    provenance: taught
+    notes: >
+      XRP Ledger Foundation — public/work product. rippled (xrpld) and
+      foundation infra live here.
+  - id: org:xrpl-labs
+    kind: org
+    name: XRPL-Labs
+    provenance: taught
+    notes: Xaman/xApps work; local checkouts under ~/projects/mithra.
+  - id: org:nightpricer
+    kind: org
+    name: Nightpricer
+    provenance: taught
+    notes: Personal product org (nightpricer-js / nightpricer-py).
+  - id: org:ripple
+    kind: org
+    name: ripple
+    provenance: taught
+    notes: Ripple the company (e.g. xrpl-wasm-stdlib).
+  - id: org:xahau
+    kind: org
+    name: Xahau
+    provenance: taught
+    notes: Xahau network (xahaud).
+  - id: org:depositorysolutions
+    kind: org
+    name: depositorysolutions
+    provenance: taught
+    notes: Axiology work; ax-rippled fork under ~/projects/axiology.
+  - id: org:xrpl365
+    kind: org
+    name: xrpl365
+    provenance: taught
+    notes: ai-bootstrap monorepo org (operated with Kris).
+  - id: org:dangell7
+    kind: org
+    name: dangell7 (personal)
+    provenance: taught
+    notes: Personal GitHub namespace used for forks and staging repos.
+
+  # --------------------------------------------------------- key repos
+  - id: repo:XRPLF/rippled
+    kind: repo
+    name: rippled
+    provenance: taught
+    notes: >
+      Canonical XRPL node (locally always called xrpld). ~18 checkouts under
+      ~/projects/xrplf/xrpld-* — one repo, many feature clones, each dir =
+      one workstream. Plans/specs for all of them live in xrpl-guides.
+      C++ tests follow the xrpld-testing skill conventions.
+  - id: repo:Transia-RnD/sentinel-ai
+    kind: repo
+    name: sentinel-ai
+    provenance: taught
+    notes: >
+      AI code-audit product; server runs on the sentinel box as user
+      'sentinel' (never root — Claude SDK blocks root). Prod data is
+      Firestore xarvis-production (no Mongo in prod). Consumes athenah-ai
+      as git submodule + wheel; its argus layer is the agent runtime.
+  - id: repo:Transia-RnD/athenah-ai
+    kind: repo
+    name: athenah-ai
+    provenance: taught
+    notes: >
+      Hybrid RAG library (ChromaDB vector + symbol index + NetworkX
+      knowledge graph, tree-sitter AST) and home of this atlas.
+  - id: repo:Transia-RnD/xrpl-guides
+    kind: repo
+    name: xrpl-guides
+    provenance: taught
+    notes: >
+      THE central plan store (checked out at ~/projects/xrplf/xrpl-guides
+      despite being Transia-RnD-owned). Workstream folders + tasks/ +
+      XLS spec drafts; plans map 1:1 to xrpld-* checkouts.
+  - id: repo:Transia-RnD/xrpld-lab
+    kind: repo
+    name: xrpld-lab
+    provenance: taught
+    notes: >
+      Launch XRPL networks — create:network (local Docker) or
+      create:ansible (remote servers with IPs). Relaunch/fix clusters
+      through the deploy step (ansible db wipe), never manual container
+      restarts.
+  - id: repo:xrpl365/ai-bootstrap
+    kind: repo
+    name: ai-bootstrap
+    provenance: taught
+    notes: Node/Express + React monorepo (PostgreSQL), operated with Kris.
+  - id: repo:Transia-RnD/thelab
+    kind: repo
+    name: thelab
+    provenance: taught
+    notes: Monorepo like ai-bootstrap but MongoDB, operated with Kris.
+
+  # ------------------------------------------------- servers & services
+  - id: server:sentinel
+    kind: server
+    name: sentinel
+    provenance: taught
+    notes: >
+      Sentinel production box. SSH port 1988 with key ~/.ssh/xrpl-labs;
+      project at /opt/sentinel-ai. Run processes as user 'sentinel', not
+      root. The server can push code (dangell8); the local Mac cannot push
+      for the pipeline.
+    attrs:
+      ip: 79.110.60.203
+      ssh_port: 1988
+      ssh_key: ~/.ssh/xrpl-labs
+      user: sentinel
+      project_path: /opt/sentinel-ai
+  - id: service:firestore-xarvis-production
+    kind: service
+    name: Firestore xarvis-production
+    provenance: taught
+    notes: >
+      Prod datastore for sentinel-ai (no Mongo in prod). Query via docker
+      exec into the sentinel-server-main container on the sentinel box.
+      Local dev creds point at xarvis-sandbox.
+  - id: environment:alphanet
+    kind: environment
+    name: alphanet
+    provenance: taught
+    notes: >
+      XRPL alphanet. Deploys are triggered FROM the sentinel server
+      (labeled-PR discovery -> merge -> build -> deploy; fund/verify the
+      faucet for genesis runs). ALWAYS show dry-run output before a live
+      deploy.
+  - id: environment:gcp-perfnet
+    kind: environment
+    name: GCP perf network
+    provenance: taught
+    notes: >
+      xrpld performance/DR network on GCP (dr-drill skill: Makefile
+      bring-up, fault injection, XDGM/loadtester measurement).
+
+  # ----------------------------------------------------------- workflows
+  - id: workflow:sentinel-deploy
+    kind: workflow
+    name: sentinel-deploy
+    provenance: taught
+    notes: >
+      Deploying sentinel-ai = run ansible/run.sh from the Mac (clone main
+      -> make container -> recreate). Push does NOT deploy; tags and
+      GH-Actions are not wired.
+  - id: workflow:deploy-alphanet
+    kind: workflow
+    name: deploy-alphanet
+    provenance: taught
+    notes: >
+      Alphanet xrpld deployment from the sentinel server; genesis or
+      non-genesis. Dry-run by default.
+  - id: workflow:verified-bot-commits
+    kind: workflow
+    name: verified-bot-commits
+    provenance: taught
+    notes: >
+      Pattern for pipeline commits: dangell8 + local git commit + GPG sign
+      + push. Never api_commit_changes or GitHub App commits. Stage-1
+      branch sync is fine; every bot commit must show as Verified.
+  - id: workflow:xrpld-lab-networks
+    kind: workflow
+    name: xrpld-lab-networks
+    provenance: taught
+    notes: >
+      Stand up XRPL test networks via xrpld-lab (create:network local /
+      create:ansible remote).
+
+  # ---------------------------------------------------------- plan store
+  - id: plan_store:xrpl-guides
+    kind: plan_store
+    name: xrpl-guides
+    provenance: taught
+    notes: >
+      Central plan/spec/audit store for public XRPL work. Topic dirs
+      (rfq/, amm-curves/, soul/ subsystem deep-dives...) plus tasks/ and
+      root-level XLS specs. When a plan-N-<topic>.md exists here, expect a
+      matching xrpld-* checkout/branch.
+
+  # --------------------------------------------------------------- rules
+  - id: rule:never-push
+    kind: rule
+    name: Git — never push
+    provenance: taught
+    notes: >
+      NEVER git push or open PRs unless explicitly asked in that message;
+      commit locally only. Don't batch up many tiny PRs — accumulate
+      related work and let Denis decide when to push.
+  - id: rule:commit-style
+    kind: rule
+    name: Commit messages
+    provenance: taught
+    notes: >
+      Single short conventional-commit title line (feat:/fix:/refactor:
+      prefix + brief subject). No body paragraphs; the "why" belongs in a
+      PR description. No Claude/Co-Authored-By trailers.
+  - id: rule:plan-mode
+    kind: rule
+    name: Planning & execution
+    provenance: taught
+    notes: >
+      Enter plan mode for ANY non-trivial task (3+ steps or architectural
+      decisions). Write the plan to tasks/todo.md with checkable items and
+      check in before starting; mark items complete as you go. If
+      something goes sideways, STOP and re-plan immediately.
+  - id: rule:verification
+    kind: rule
+    name: Verification
+    provenance: taught
+    notes: >
+      Never mark a task complete without proving it works — run tests,
+      check logs, diff behavior against main. Ask "would a staff engineer
+      approve this?"
+  - id: rule:subagents
+    kind: rule
+    name: Subagent strategy
+    provenance: taught
+    notes: >
+      Use subagents liberally to keep the main context clean; when
+      researching anything unfamiliar, fan out 3+ agents in parallel, one
+      task per agent.
+  - id: rule:code-quality
+    kind: rule
+    name: Code quality
+    provenance: taught
+    notes: >
+      Understand the problem fully, design, THEN write — no
+      write-and-see-if-it-works loops. Challenge the first solution.
+      NEVER suppress a linter (no NOLINT/disable comments); fix the
+      underlying issue.
+  - id: rule:bug-fixing
+    kind: rule
+    name: Bug fixing
+    provenance: taught
+    notes: >
+      Given a bug report, just fix it — follow logs, errors, failing
+      tests, and CI without asking for hand-holding.
+  - id: rule:lessons
+    kind: rule
+    name: Self-improvement
+    provenance: taught
+    notes: >
+      After ANY correction, update tasks/lessons.md with the pattern that
+      prevents the same mistake; review lessons at session start.
+  - id: rule:data-integrity
+    kind: rule
+    name: Data integrity
+    provenance: taught
+    notes: >
+      Use database transactions for write operations touching related
+      state (MongoDB: session.withTransaction()) — even single-document
+      writes.
+  - id: rule:no-fragmentation
+    kind: rule
+    name: No over-fragmentation
+    provenance: taught
+    notes: >
+      Keep related changes together. Do not split a single feature/fix
+      across multiple branches, PRs, commits, or files without a real
+      reason.
+
+  # -------------------------------------------------------------- skills
+  - id: skill:deploy-alphanet
+    kind: skill
+    name: deploy-alphanet
+    provenance: taught
+    notes: Claude Code skill wrapping the alphanet deploy workflow.
+  - id: skill:dr-drill
+    kind: skill
+    name: dr-drill
+    provenance: taught
+    notes: Bring up the GCP perf network; DR drills and load tests.
+  - id: skill:xrpld-testing
+    kind: skill
+    name: xrpld-testing
+    provenance: taught
+    notes: C++ unit-test conventions for xrpld (jtx, beast::unit_test).
+  - id: skill:weekly-work-summary
+    kind: skill
+    name: weekly-work-summary
+    provenance: taught
+    notes: Local git-activity gather across ~/projects for weekly reports.
+  - id: skill:cleanup-projects
+    kind: skill
+    name: cleanup-projects
+    provenance: taught
+    notes: Plan-aware sweep of uncommitted work; commits per repo.
+  - id: skill:commit
+    kind: skill
+    name: commit
+    provenance: taught
+    notes: Commit convention enforcement (single-line, no trailer).
+  - id: skill:db-mongo
+    kind: skill
+    name: db-mongo
+    provenance: taught
+    notes: MongoDB query/debug patterns.
+
+edges:
+  # people & identities
+  - kind: member_of
+    src: person:denis
+    dst: org:transia-rnd
+    provenance: taught
+  - kind: member_of
+    src: identity:github/dangell7
+    dst: org:xrplf
+    provenance: taught
+  - kind: operates
+    src: person:kris
+    dst: repo:xrpl365/ai-bootstrap
+    provenance: taught
+  - kind: operates
+    src: person:kris
+    dst: repo:Transia-RnD/thelab
+    provenance: taught
+
+  # the auth split (the load-bearing fact)
+  - kind: can_write
+    src: identity:github/dangell7
+    dst: org:transia-rnd
+    provenance: taught
+    notes: Human account; normal development pushes when Denis asks.
+  - kind: can_write
+    src: identity:github/dangell8
+    dst: org:transia-rnd
+    provenance: taught
+    notes: >
+      PAT + GPG-signed local git commits (verified-bot-commits workflow).
+      Used for ALL automated code writes incl. Transia-RnD branches/PRs.
+    attrs:
+      auth: PAT
+      gpg_verified: true
+  - kind: can_comment
+    src: identity:github/sentinel-app
+    dst: org:transia-rnd
+    provenance: taught
+    notes: GitHub App — read/comment/checks only; no contents:write.
+  - kind: can_review
+    src: identity:github/dangell7
+    dst: org:xrplf
+    provenance: taught
+    notes: PR reviews/comments on XRPLF repos happen as dangell7.
+
+  # plan flow
+  - kind: plans_in
+    src: repo:XRPLF/rippled
+    dst: plan_store:xrpl-guides
+    provenance: taught
+  - kind: documented_in
+    src: plan_store:xrpl-guides
+    dst: repo:Transia-RnD/xrpl-guides
+    provenance: taught
+    notes: The plan store IS this repo (checked out under ~/projects/xrplf).
+
+  # deploy flow
+  - kind: deploys_via
+    src: repo:Transia-RnD/sentinel-ai
+    dst: workflow:sentinel-deploy
+    provenance: taught
+  - kind: deploys_to
+    src: repo:Transia-RnD/sentinel-ai
+    dst: server:sentinel
+    provenance: taught
+  - kind: deploys_via
+    src: environment:alphanet
+    dst: workflow:deploy-alphanet
+    provenance: taught
+  - kind: deploys_via
+    src: environment:gcp-perfnet
+    dst: workflow:xrpld-lab-networks
+    provenance: taught
+
+  # consumption
+  - kind: consumes
+    src: repo:Transia-RnD/sentinel-ai
+    dst: repo:Transia-RnD/athenah-ai
+    provenance: taught
+    notes: Git submodule at libs/athenah-ai + built wheel in the server venv.
+  - kind: consumes
+    src: repo:Transia-RnD/sentinel-ai
+    dst: service:firestore-xarvis-production
+    provenance: taught

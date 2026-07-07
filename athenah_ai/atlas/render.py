@@ -26,6 +26,7 @@ def _title(node: Node) -> str:
 
 
 def _note_suffix(text: str) -> str:
+    text = " ".join((text or "").split())
     return f" — {text}" if text else ""
 
 

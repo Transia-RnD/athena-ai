@@ -235,7 +235,10 @@ class AtlasGraph:
             ctx.workflows += self._out(scope, "deploys_via")
             ctx.plan_stores += self._out(scope, "plans_in")
             ctx.servers += self._out(scope, "deploys_to")
-            ctx.rules += self._in(scope, "documented_in")
+            ctx.rules += [
+                n for n in self._in(scope, "documented_in")
+                if n.kind == "rule"
+            ]
         for workflow in ctx.workflows:
             ctx.servers += self._out(workflow.id, "deploys_to")
         ctx.servers = sorted(

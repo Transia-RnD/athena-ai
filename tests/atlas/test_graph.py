@@ -53,6 +53,8 @@ EDGES = [
     _e("worktree_of", "checkout:~/projects/xrplf/xrpld-lending",
        "checkout:~/projects/xrplf/xrpld"),
     _e("plans_in", "repo:XRPLF/rippled", "plan_store:xrpl-guides"),
+    _e("documented_in", "plan_store:xrpl-guides", "repo:XRPLF/rippled"),
+    _e("documented_in", "rule:never-push", "repo:XRPLF/rippled"),
     _e("deploys_via", "repo:XRPLF/rippled", "workflow:deploy-alphanet"),
     _e("deploys_to", "repo:XRPLF/rippled", "server:sentinel"),
 ]
@@ -120,6 +122,12 @@ class TestContextFor(GraphTestCase):
         self.assertIn(("can_write", "identity:github/dangell7"), caps)
         # org-level capability inherited to repo context
         self.assertIn(("can_comment", "identity:github/dangell7"), caps)
+
+    def test_rules_only_contain_rule_nodes(self):
+        # plan_store is documented_in the repo too but must not leak here
+        self.assertEqual(
+            [n.id for n in self.ctx.rules], ["rule:never-push"]
+        )
 
     def test_plan_store_workflow_server(self):
         self.assertIn(

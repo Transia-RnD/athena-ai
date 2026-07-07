@@ -1,0 +1,77 @@
+nodes:
+- id: repo:Transia-RnD/athenah-ai
+  kind: repo
+  name: athenah-ai
+  provenance: taught
+  notes: 'Hybrid RAG library (ChromaDB vector + symbol index + NetworkX knowledge graph, tree-sitter
+    AST) and home of this atlas.
+
+    '
+- id: repo:Transia-RnD/sentinel-ai
+  kind: repo
+  name: sentinel-ai
+  provenance: taught
+  notes: 'AI code-audit product; server runs on the sentinel box as user ''sentinel'' (never
+    root — Claude SDK blocks root). Prod data is Firestore xarvis-production (no Mongo in
+    prod). Consumes athenah-ai as git submodule + wheel; its argus layer is the agent runtime.
+
+    '
+- id: repo:Transia-RnD/thelab
+  kind: repo
+  name: thelab
+  provenance: taught
+  notes: Monorepo like ai-bootstrap but MongoDB, operated with Kris.
+- id: repo:Transia-RnD/xrpl-guides
+  kind: repo
+  name: xrpl-guides
+  provenance: taught
+  notes: 'THE central plan store (checked out at ~/projects/xrplf/xrpl-guides despite being
+    Transia-RnD-owned). Workstream folders + tasks/ + XLS spec drafts; plans map 1:1 to xrpld-*
+    checkouts.
+
+    '
+- id: repo:Transia-RnD/xrpld-lab
+  kind: repo
+  name: xrpld-lab
+  provenance: taught
+  notes: 'Launch XRPL networks — create:network (local Docker) or create:ansible (remote servers
+    with IPs). Relaunch/fix clusters through the deploy step (ansible db wipe), never manual
+    container restarts.
+
+    '
+- id: repo:XRPLF/rippled
+  kind: repo
+  name: rippled
+  provenance: taught
+  notes: 'Canonical XRPL node (locally always called xrpld). ~18 checkouts under ~/projects/xrplf/xrpld-*
+    — one repo, many feature clones, each dir = one workstream. Plans/specs for all of them
+    live in xrpl-guides. C++ tests follow the xrpld-testing skill conventions.
+
+    '
+- id: repo:xrpl365/ai-bootstrap
+  kind: repo
+  name: ai-bootstrap
+  provenance: taught
+  notes: Node/Express + React monorepo (PostgreSQL), operated with Kris.
+edges:
+- kind: consumes
+  src: repo:Transia-RnD/sentinel-ai
+  dst: repo:Transia-RnD/athenah-ai
+  provenance: taught
+  notes: Git submodule at libs/athenah-ai + built wheel in the server venv.
+- kind: consumes
+  src: repo:Transia-RnD/sentinel-ai
+  dst: service:firestore-xarvis-production
+  provenance: taught
+- kind: deploys_to
+  src: repo:Transia-RnD/sentinel-ai
+  dst: server:sentinel
+  provenance: taught
+- kind: deploys_via
+  src: repo:Transia-RnD/sentinel-ai
+  dst: workflow:sentinel-deploy
+  provenance: taught
+- kind: plans_in
+  src: repo:XRPLF/rippled
+  dst: plan_store:xrpl-guides
+  provenance: taught

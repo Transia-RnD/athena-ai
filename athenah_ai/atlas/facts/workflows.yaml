@@ -1,0 +1,69 @@
+nodes:
+- id: skill:cleanup-projects
+  kind: skill
+  name: cleanup-projects
+  provenance: taught
+  notes: Plan-aware sweep of uncommitted work; commits per repo.
+- id: skill:commit
+  kind: skill
+  name: commit
+  provenance: taught
+  notes: Commit convention enforcement (single-line, no trailer).
+- id: skill:db-mongo
+  kind: skill
+  name: db-mongo
+  provenance: taught
+  notes: MongoDB query/debug patterns.
+- id: skill:deploy-alphanet
+  kind: skill
+  name: deploy-alphanet
+  provenance: taught
+  notes: Claude Code skill wrapping the alphanet deploy workflow.
+- id: skill:dr-drill
+  kind: skill
+  name: dr-drill
+  provenance: taught
+  notes: Bring up the GCP perf network; DR drills and load tests.
+- id: skill:weekly-work-summary
+  kind: skill
+  name: weekly-work-summary
+  provenance: taught
+  notes: Local git-activity gather across ~/projects for weekly reports.
+- id: skill:xrpld-testing
+  kind: skill
+  name: xrpld-testing
+  provenance: taught
+  notes: C++ unit-test conventions for xrpld (jtx, beast::unit_test).
+- id: workflow:deploy-alphanet
+  kind: workflow
+  name: deploy-alphanet
+  provenance: taught
+  notes: 'Alphanet xrpld deployment from the sentinel server; genesis or non-genesis. Dry-run
+    by default.
+
+    '
+- id: workflow:sentinel-deploy
+  kind: workflow
+  name: sentinel-deploy
+  provenance: taught
+  notes: 'Deploying sentinel-ai = run ansible/run.sh from the Mac (clone main -> make container
+    -> recreate). Push does NOT deploy; tags and GH-Actions are not wired.
+
+    '
+- id: workflow:verified-bot-commits
+  kind: workflow
+  name: verified-bot-commits
+  provenance: taught
+  notes: 'Pattern for pipeline commits: dangell8 + local git commit + GPG sign + push. Never
+    api_commit_changes or GitHub App commits. Stage-1 branch sync is fine; every bot commit
+    must show as Verified.
+
+    '
+- id: workflow:xrpld-lab-networks
+  kind: workflow
+  name: xrpld-lab-networks
+  provenance: taught
+  notes: 'Stand up XRPL test networks via xrpld-lab (create:network local / create:ansible
+    remote).
+
+    '

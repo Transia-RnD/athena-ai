@@ -1,0 +1,78 @@
+nodes:
+- id: identity:github/dangell7
+  kind: identity
+  name: dangell7
+  provenance: taught
+  notes: Primary GitHub account (human). Author of PRs, reviews, issues.
+- id: identity:github/dangell8
+  kind: identity
+  name: dangell8
+  provenance: taught
+  notes: 'Service account for automated/bot code writes. PAT auth + GPG signing via local
+    git (git_push.py pattern) so every bot commit is GitHub-Verified. NOT the GitHub App.
+
+    '
+- id: identity:github/sentinel-app
+  kind: identity
+  name: Sentinel GitHub App
+  provenance: taught
+  notes: 'GitHub App used by sentinel-ai. Read, comment, and checks ONLY — deliberately has
+    no contents:write. All code writes go through dangell8 instead.
+
+    '
+- id: person:denis
+  kind: person
+  name: Denis Angell
+  provenance: taught
+  notes: 'XRPL core developer. Runs Transia-RnD (private product work) and contributes across
+    XRPLF/public XRPL repos. Git identity dangell@transia.co; commits are GPG-signed.
+
+    '
+- id: person:kris
+  kind: person
+  name: Kris
+  provenance: taught
+  notes: Operator on ai-bootstrap and thelab monorepos.
+edges:
+- kind: can_comment
+  src: identity:github/sentinel-app
+  dst: org:transia-rnd
+  provenance: taught
+  notes: GitHub App — read/comment/checks only; no contents:write.
+- kind: can_review
+  src: identity:github/dangell7
+  dst: org:xrplf
+  provenance: taught
+  notes: PR reviews/comments on XRPLF repos happen as dangell7.
+- kind: can_write
+  src: identity:github/dangell7
+  dst: org:transia-rnd
+  provenance: taught
+  notes: Human account; normal development pushes when Denis asks.
+- kind: can_write
+  src: identity:github/dangell8
+  dst: org:transia-rnd
+  provenance: taught
+  notes: 'PAT + GPG-signed local git commits (verified-bot-commits workflow). Used for ALL
+    automated code writes incl. Transia-RnD branches/PRs.
+
+    '
+  attrs:
+    auth: PAT
+    gpg_verified: true
+- kind: member_of
+  src: identity:github/dangell7
+  dst: org:xrplf
+  provenance: taught
+- kind: member_of
+  src: person:denis
+  dst: org:transia-rnd
+  provenance: taught
+- kind: operates
+  src: person:kris
+  dst: repo:Transia-RnD/thelab
+  provenance: taught
+- kind: operates
+  src: person:kris
+  dst: repo:xrpl365/ai-bootstrap
+  provenance: taught

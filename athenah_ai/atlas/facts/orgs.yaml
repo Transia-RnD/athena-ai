@@ -1,0 +1,52 @@
+nodes:
+- id: org:dangell7
+  kind: org
+  name: dangell7 (personal)
+  provenance: taught
+  notes: Personal GitHub namespace used for forks and staging repos.
+- id: org:depositorysolutions
+  kind: org
+  name: depositorysolutions
+  provenance: taught
+  notes: Axiology work; ax-rippled fork under ~/projects/axiology.
+- id: org:nightpricer
+  kind: org
+  name: Nightpricer
+  provenance: taught
+  notes: Personal product org (nightpricer-js / nightpricer-py).
+- id: org:ripple
+  kind: org
+  name: ripple
+  provenance: taught
+  notes: Ripple the company (e.g. xrpl-wasm-stdlib).
+- id: org:transia-rnd
+  kind: org
+  name: Transia-RnD
+  provenance: taught
+  notes: 'Private product org. Local checkouts mostly under ~/projects/transia but several
+    live under ~/projects/xrplf (trust the repo map, not the directory).
+
+    '
+- id: org:xahau
+  kind: org
+  name: Xahau
+  provenance: taught
+  notes: Xahau network (xahaud).
+- id: org:xrpl-labs
+  kind: org
+  name: XRPL-Labs
+  provenance: taught
+  notes: Xaman/xApps work; local checkouts under ~/projects/mithra.
+- id: org:xrpl365
+  kind: org
+  name: xrpl365
+  provenance: taught
+  notes: ai-bootstrap monorepo org (operated with Kris).
+- id: org:xrplf
+  kind: org
+  name: XRPLF
+  provenance: taught
+  notes: 'XRP Ledger Foundation — public/work product. rippled (xrpld) and foundation infra
+    live here.
+
+    '

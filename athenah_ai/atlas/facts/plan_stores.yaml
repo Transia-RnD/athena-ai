@@ -1,0 +1,16 @@
+nodes:
+- id: plan_store:xrpl-guides
+  kind: plan_store
+  name: xrpl-guides
+  provenance: taught
+  notes: 'Central plan/spec/audit store for public XRPL work. Topic dirs (rfq/, amm-curves/,
+    soul/ subsystem deep-dives...) plus tasks/ and root-level XLS specs. When a plan-N-<topic>.md
+    exists here, expect a matching xrpld-* checkout/branch.
+
+    '
+edges:
+- kind: documented_in
+  src: plan_store:xrpl-guides
+  dst: repo:Transia-RnD/xrpl-guides
+  provenance: taught
+  notes: The plan store IS this repo (checked out under ~/projects/xrplf).
