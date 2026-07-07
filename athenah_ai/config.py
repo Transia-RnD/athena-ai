@@ -232,6 +232,34 @@ class DirectoryConfig:
 
 
 @dataclass
+class AtlasConfig:
+    """Configuration for the atlas personal knowledge graph."""
+
+    # Facts directory (source of truth). Default: in-package facts dir so the
+    # graph ships with the library (wheel/submodule) and stays git-versioned.
+    facts_dir: str = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "atlas", "facts"
+    )
+
+    # Comma-separated scan roots (the env-override machinery is scalar-only)
+    scan_roots: str = "~/projects"
+
+    # Max directory depth when scanning for git checkouts
+    scan_depth: int = 4
+
+    # Default output path for the rendered ATLAS.md
+    render_out: str = "~/.athenah/atlas/ATLAS.md"
+
+    def scan_roots_list(self) -> list:
+        """Return scan_roots split into a list of paths.
+
+        Returns:
+            list: Individual root paths, whitespace-stripped.
+        """
+        return [r.strip() for r in self.scan_roots.split(",") if r.strip()]
+
+
+@dataclass
 class AthenaConfig:
     """Main configuration class for Athena AI."""
 
@@ -244,6 +272,7 @@ class AthenaConfig:
     http: HTTPConfig = field(default_factory=HTTPConfig)
     indexer: IndexerConfig = field(default_factory=IndexerConfig)
     directory: DirectoryConfig = field(default_factory=DirectoryConfig)
+    atlas: AtlasConfig = field(default_factory=AtlasConfig)
 
     def __post_init__(self):
         """Apply environment variable overrides after initialization."""
@@ -294,6 +323,8 @@ class AthenaConfig:
                 section = self.indexer
             elif section_name == "directory":
                 section = self.directory
+            elif section_name == "atlas":
+                section = self.atlas
 
             if section is None:
                 continue
