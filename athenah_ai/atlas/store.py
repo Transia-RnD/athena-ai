@@ -299,6 +299,7 @@ class FactStore:
         # frozen into a taught file.
         self._sources = {}
         t_nodes, t_edges, errors = self._read_layer(derived=False)
+        taught_sources = dict(self._sources)
         d_nodes, d_edges, d_errors = self._read_layer(derived=True)
         errors += d_errors
         if errors:
@@ -321,11 +322,11 @@ class FactStore:
         rel = os.path.relpath(path, self.facts_dir)
         file_nodes = [
             n for n in t_nodes
-            if self._sources.get(n.id, rel if n is fact else None) == rel
+            if taught_sources.get(n.id, rel if n is fact else None) == rel
         ]
         file_edges = [
             e for e in t_edges
-            if self._sources.get(e.key(), rel if e is fact else None) == rel
+            if taught_sources.get(e.key(), rel if e is fact else None) == rel
         ]
 
         os.makedirs(self.facts_dir, exist_ok=True)
