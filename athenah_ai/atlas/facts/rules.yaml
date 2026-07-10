@@ -7,6 +7,13 @@ nodes:
     asking for hand-holding.
 
     '
+- id: rule:code-comments
+  kind: rule
+  name: Code comments
+  provenance: taught
+  notes: 'State what the code does; do not narrate. For a small block, one line: what it does
+    plus a terse why. No arguing importance (''it matters because''), no investigation notes,
+    no facts about other files'' callers (they rot), no restating what the code already says.'
 - id: rule:code-quality
   kind: rule
   name: Code quality
@@ -31,14 +38,6 @@ nodes:
   provenance: taught
   notes: 'Use database transactions for write operations touching related state (MongoDB:
     session.withTransaction()) — even single-document writes.
-
-    '
-- id: rule:lessons
-  kind: rule
-  name: Self-improvement
-  provenance: taught
-  notes: 'After ANY correction, update tasks/lessons.md with the pattern that prevents the
-    same mistake; review lessons at session start.
 
     '
 - id: rule:never-push
