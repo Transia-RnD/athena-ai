@@ -5,12 +5,14 @@ Usage: python -m athenah_ai.atlas <command>
 Commands:
     scan       rescan checkout roots into derived facts
     teach      add a taught node/edge, or bulk-import a YAML file
+               (--propose marks the fact for human review; renders skip it)
+    review     list proposed facts; --accept N / --reject N
     why        explain the edges touching a node, with provenance
     context    print the scoped bootstrap for a working directory
-    render     write ATLAS.md (or emit the generated CLAUDE.md)
+    render     write ATLAS.md (or emit CLAUDE.md / AGENTS.md)
     sync       re-render every configured consumer (CLAUDE.md, ATLAS.md...)
     show       print one node and its neighbors
-    validate   check all facts; exit 1 on errors
+    validate   check all facts; exit 1 on errors, warn on stale facts
 
 teach and scan auto-sync when operating on the default facts dir; a
 --facts-dir/env override is treated as a sandbox and skips it
@@ -30,9 +32,11 @@ import yaml
 
 from athenah_ai.atlas.graph import AtlasGraph
 from athenah_ai.atlas.render import (
+    render_agents_md,
     render_atlas,
     render_claude_md,
     render_context,
+    stale_since,
 )
 from athenah_ai.atlas.scanner import AtlasScanner
 from athenah_ai.atlas.schema import Edge, Node
@@ -124,8 +128,10 @@ def _sync_targets(args: argparse.Namespace) -> int:
     renderers = {
         "atlas": render_atlas,
         "claude-md": render_claude_md,
+        "agents-md": render_agents_md,
         "http-atlas": render_atlas,
         "http-claude-md": render_claude_md,
+        "http-agents-md": render_agents_md,
     }
     for fmt, _ in targets:
         if fmt not in renderers:
@@ -133,8 +139,9 @@ def _sync_targets(args: argparse.Namespace) -> int:
                   file=sys.stderr)
             return 1
     graph = _graph(args)
+    stale_days = config.atlas.stale_after_days
     for fmt, out in targets:
-        rendered = renderers[fmt](graph)
+        rendered = renderers[fmt](graph, stale_after_days=stale_days)
         if fmt.startswith("http-"):
             _post_target(out, rendered)
             continue
@@ -173,6 +180,17 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 0
 
 
+def _today() -> str:
+    return datetime.date.today().isoformat()
+
+
+def _stamped(attrs: dict) -> dict:
+    """Return attrs with verified_at defaulted to today (explicit wins)."""
+    stamped = dict(attrs or {})
+    stamped.setdefault("verified_at", _today())
+    return stamped
+
+
 def _teach_import(store: FactStore, path: str) -> int:
     with open(path, "r") as f:
         data = yaml.safe_load(f) or {}
@@ -183,14 +201,14 @@ def _teach_import(store: FactStore, path: str) -> int:
         store.teach_node(Node(
             id=raw["id"], kind=raw["kind"], name=raw["name"],
             provenance=raw["provenance"], notes=raw.get("notes", ""),
-            attrs=raw.get("attrs") or {},
+            attrs=_stamped(raw.get("attrs")),
         ))
     for raw in edges:
         raw.setdefault("provenance", "imported")
         store.teach_edge(Edge(
             kind=raw["kind"], src=raw["src"], dst=raw["dst"],
             provenance=raw["provenance"], notes=raw.get("notes", ""),
-            attrs=raw.get("attrs") or {},
+            attrs=_stamped(raw.get("attrs")),
         ))
     print(f"imported {len(nodes)} nodes, {len(edges)} edges from {path}")
     return 0
@@ -198,27 +216,81 @@ def _teach_import(store: FactStore, path: str) -> int:
 
 def cmd_teach(args: argparse.Namespace) -> int:
     store = _store(args)
+    provenance = "proposed" if args.propose else "taught"
     if args.import_file:
         result = _teach_import(store, args.import_file)
     elif args.node:
         kind, node_id, name = args.node
         store.teach_node(Node(
-            id=node_id, kind=kind, name=name, provenance="taught",
-            notes=args.note or "", attrs=_parse_attrs(args.attr),
+            id=node_id, kind=kind, name=name, provenance=provenance,
+            notes=args.note or "", attrs=_stamped(_parse_attrs(args.attr)),
         ))
-        print(f"taught node {node_id}")
+        print(f"{provenance} node {node_id}")
         result = 0
     else:
         kind, src, dst = args.edge
         store.teach_edge(Edge(
-            kind=kind, src=src, dst=dst, provenance="taught",
-            notes=args.note or "", attrs=_parse_attrs(args.attr),
+            kind=kind, src=src, dst=dst, provenance=provenance,
+            notes=args.note or "", attrs=_stamped(_parse_attrs(args.attr)),
         ))
-        print(f"taught edge {kind} {src} -> {dst}")
+        print(f"{provenance} edge {kind} {src} -> {dst}")
         result = 0
     if result == 0 and _should_autosync(args):
         return _sync_targets(args)
     return result
+
+
+def _fact_label(fact) -> str:
+    if isinstance(fact, Node):
+        return f"node {fact.id} ({fact.kind}) — {fact.name}"
+    return f"edge {fact.kind} {fact.src} -> {fact.dst}"
+
+
+def cmd_review(args: argparse.Namespace) -> int:
+    store = _store(args)
+    facts = store.proposed()
+    if not facts:
+        print("no proposed facts awaiting review")
+        return 0
+
+    index = args.accept if args.accept is not None else args.reject
+    if index is None:
+        for i, fact in enumerate(facts, start=1):
+            notes = getattr(fact, "notes", "")
+            suffix = f" — {' '.join(notes.split())}" if notes else ""
+            print(f"[{i}] {_fact_label(fact)}{suffix}")
+        print(
+            f"\n{len(facts)} proposed fact(s). Accept with "
+            "`review --accept N`, discard with `review --reject N`."
+        )
+        return 0
+
+    if not 1 <= index <= len(facts):
+        print(f"ERROR: index {index} out of range 1..{len(facts)}",
+              file=sys.stderr)
+        return 1
+    fact = facts[index - 1]
+
+    if args.accept is not None:
+        attrs = {**fact.attrs, "verified_at": _today()}
+        if isinstance(fact, Node):
+            store.teach_node(Node(
+                id=fact.id, kind=fact.kind, name=fact.name,
+                provenance="taught", notes=fact.notes, attrs=attrs,
+            ))
+        else:
+            store.teach_edge(Edge(
+                kind=fact.kind, src=fact.src, dst=fact.dst,
+                provenance="taught", notes=fact.notes, attrs=attrs,
+            ))
+        print(f"accepted {_fact_label(fact)}")
+    else:
+        store.remove(fact)
+        print(f"rejected {_fact_label(fact)}")
+
+    if _should_autosync(args):
+        return _sync_targets(args)
+    return 0
 
 
 def cmd_sync(args: argparse.Namespace) -> int:
@@ -240,8 +312,16 @@ def cmd_why(args: argparse.Namespace) -> int:
 
 
 def cmd_context(args: argparse.Namespace) -> int:
+    from athenah_ai.config import config
+
     cwd = args.cwd or os.getcwd()
-    print(render_context(_graph(args), cwd), end="")
+    print(
+        render_context(
+            _graph(args), cwd,
+            stale_after_days=config.atlas.stale_after_days,
+        ),
+        end="",
+    )
     return 0
 
 
@@ -249,14 +329,16 @@ def cmd_render(args: argparse.Namespace) -> int:
     from athenah_ai.config import config
 
     graph = _graph(args)
-    if args.claude_md:
-        text = render_claude_md(graph)
+    stale_days = config.atlas.stale_after_days
+    if args.claude_md or args.agents_md:
+        renderer = render_claude_md if args.claude_md else render_agents_md
+        text = renderer(graph, stale_after_days=stale_days)
         if not args.out:
             print(text, end="")
             return 0
         out = os.path.expanduser(args.out)
     else:
-        text = render_atlas(graph)
+        text = render_atlas(graph, stale_after_days=stale_days)
         out = os.path.expanduser(args.out or config.atlas.render_out)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as f:
@@ -285,6 +367,8 @@ def cmd_show(args: argparse.Namespace) -> int:
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
+    from athenah_ai.config import config
+
     store = _store(args)
     try:
         nodes, edges = store.load()
@@ -294,6 +378,19 @@ def cmd_validate(args: argparse.Namespace) -> int:
         return 1
     for warning in store.warnings():
         print(f"WARNING: {warning}")
+    cutoff = datetime.date.today() - datetime.timedelta(
+        days=config.atlas.stale_after_days
+    )
+    for node in nodes:
+        since = stale_since(node, cutoff)
+        if since:
+            print(f"WARNING: {node.id} unverified since {since}")
+    proposed = store.proposed()
+    if proposed:
+        print(
+            f"WARNING: {len(proposed)} proposed fact(s) awaiting "
+            "`review`"
+        )
     print(f"OK: {len(nodes)} nodes, {len(edges)} edges")
     return 0
 
@@ -326,9 +423,22 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--import", dest="import_file", metavar="FILE")
     p.add_argument("--note", default=None)
     p.add_argument("--attr", action="append", metavar="K=V")
+    p.add_argument("--propose", action="store_true",
+                   help="mark for human review; renders skip it until "
+                        "accepted (agents suggesting facts use this)")
     p.add_argument("--sync", action=argparse.BooleanOptionalAction,
                    default=None, help="force/suppress re-render of targets")
     p.set_defaults(func=cmd_teach)
+
+    p = sub.add_parser("review", help="list/accept/reject proposed facts")
+    group = p.add_mutually_exclusive_group()
+    group.add_argument("--accept", type=int, metavar="N",
+                       help="promote proposed fact N to taught")
+    group.add_argument("--reject", type=int, metavar="N",
+                       help="delete proposed fact N")
+    p.add_argument("--sync", action=argparse.BooleanOptionalAction,
+                   default=None, help="force/suppress re-render of targets")
+    p.set_defaults(func=cmd_review)
 
     p = sub.add_parser(
         "sync", help="re-render every configured consumer output"
@@ -344,9 +454,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--cwd", default=None)
     p.set_defaults(func=cmd_context)
 
-    p = sub.add_parser("render", help="write ATLAS.md / emit CLAUDE.md")
+    p = sub.add_parser(
+        "render", help="write ATLAS.md / emit CLAUDE.md or AGENTS.md"
+    )
     p.add_argument("--out", default=None)
-    p.add_argument("--claude-md", action="store_true")
+    group = p.add_mutually_exclusive_group()
+    group.add_argument("--claude-md", action="store_true")
+    group.add_argument("--agents-md", action="store_true")
     p.set_defaults(func=cmd_render)
 
     p = sub.add_parser("show", help="print one node and its neighbors")

@@ -120,6 +120,27 @@ class AtlasGraph:
 
     # ----------------------------------------------------------- helpers
 
+    def without_provenance(self, provenance: str) -> "AtlasGraph":
+        """Return a copy of the graph with one provenance layer removed.
+
+        Args:
+            provenance: Layer to drop, e.g. ``proposed``.
+
+        Returns:
+            A new AtlasGraph without those facts (edges touching dropped
+            nodes are dropped too).
+        """
+        nodes = [
+            n for n in self.nodes_by_id.values()
+            if n.provenance != provenance
+        ]
+        ids = {n.id for n in nodes}
+        edges = [
+            e for e in self.edges
+            if e.provenance != provenance and e.src in ids and e.dst in ids
+        ]
+        return AtlasGraph(nodes, edges, store=self.store)
+
     def node(self, node_id: str) -> Optional[Node]:
         """Return a node by id.
 
@@ -243,6 +264,17 @@ class AtlasGraph:
             ctx.servers += self._out(workflow.id, "deploys_to")
         ctx.servers = sorted(
             {n.id: n for n in ctx.servers}.values(), key=lambda n: n.id
+        )
+
+        # Conditional rules scoped here via applies_to (checkout, repo, org,
+        # plus everything reachable: workflows, servers).
+        rule_scopes = [cid] + sorted(scope_ids)
+        rule_scopes += [n.id for n in ctx.workflows]
+        rule_scopes += [n.id for n in ctx.servers]
+        for scope in rule_scopes:
+            ctx.rules += self._in(scope, "applies_to")
+        ctx.rules = sorted(
+            {n.id: n for n in ctx.rules}.values(), key=lambda n: n.id
         )
         return ctx
 

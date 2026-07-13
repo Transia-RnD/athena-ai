@@ -35,6 +35,11 @@ NODES = [
     _n("workflow:deploy-alphanet", "workflow", "deploy-alphanet"),
     _n("rule:never-push", "rule", "Never push",
        notes="Never git push unless explicitly asked."),
+    _n("rule:ssh-access", "rule", "SSH access",
+       notes="Load the key into ssh-agent before connecting.",
+       attrs={"applies_when": "connecting to a remote machine"}),
+    Node(id="repo:Proposed/thing", kind="repo", name="thing",
+         provenance="proposed", notes="agent-suggested repo"),
 ]
 
 EDGES = [
@@ -57,6 +62,7 @@ EDGES = [
     _e("documented_in", "rule:never-push", "repo:XRPLF/rippled"),
     _e("deploys_via", "repo:XRPLF/rippled", "workflow:deploy-alphanet"),
     _e("deploys_to", "repo:XRPLF/rippled", "server:sentinel"),
+    _e("applies_to", "rule:ssh-access", "server:sentinel"),
 ]
 
 
@@ -126,8 +132,14 @@ class TestContextFor(GraphTestCase):
     def test_rules_only_contain_rule_nodes(self):
         # plan_store is documented_in the repo too but must not leak here
         self.assertEqual(
-            [n.id for n in self.ctx.rules], ["rule:never-push"]
+            [n.id for n in self.ctx.rules],
+            ["rule:never-push", "rule:ssh-access"],
         )
+
+    def test_conditional_rule_scoped_via_applies_to(self):
+        # ssh-access applies_to server:sentinel, which is in scope because
+        # the repo deploys there — so the rule surfaces in this context
+        self.assertIn("rule:ssh-access", [n.id for n in self.ctx.rules])
 
     def test_plan_store_workflow_server(self):
         self.assertIn(
@@ -173,6 +185,16 @@ class TestQueries(GraphTestCase):
     def test_rules_listed(self):
         rules = self.graph.find("rule", "*")
         self.assertEqual(rules[0].id, "rule:never-push")
+
+    def test_without_provenance_drops_proposed(self):
+        self.assertIsNotNone(self.graph.node("repo:Proposed/thing"))
+        filtered = self.graph.without_provenance("proposed")
+        self.assertIsNone(filtered.node("repo:Proposed/thing"))
+        # untouched facts survive, edges intact
+        self.assertIsNotNone(filtered.node("repo:XRPLF/rippled"))
+        self.assertEqual(
+            filtered.who_owns("repo:XRPLF/rippled").id, "org:xrplf"
+        )
 
 
 if __name__ == "__main__":

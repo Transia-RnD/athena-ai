@@ -31,7 +31,11 @@ class TestVocabularies(unittest.TestCase):
         self.assertIn("owned_by", EDGE_KINDS)
         self.assertIn("worktree_of", EDGE_KINDS)
         self.assertIn("can_write", EDGE_KINDS)
-        self.assertEqual(PROVENANCE, frozenset({"taught", "derived", "imported"}))
+        self.assertIn("applies_to", EDGE_KINDS)
+        self.assertEqual(
+            PROVENANCE,
+            frozenset({"taught", "derived", "imported", "proposed"}),
+        )
 
 
 class TestMakeId(unittest.TestCase):
@@ -114,6 +118,25 @@ class TestValidate(unittest.TestCase):
     def test_bad_provenance_is_error(self):
         errors, _ = validate([_node(provenance="guessed")], [])
         self.assertTrue(any("guessed" in e for e in errors))
+
+    def test_proposed_provenance_is_valid(self):
+        errors, _ = validate([_node(provenance="proposed")], [])
+        self.assertEqual(errors, [])
+
+    def test_applies_to_endpoint_rules(self):
+        nodes = [
+            _node(id="rule:ssh", kind="rule", name="SSH"),
+            _node(id="server:sentinel", kind="server", name="sentinel"),
+            _node(id="org:transia-rnd", kind="org", name="Transia"),
+        ]
+        ok = [_edge(kind="applies_to", src="rule:ssh", dst="server:sentinel")]
+        errors, _ = validate(nodes, ok)
+        self.assertEqual(errors, [])
+        # org -> server is not a legal applies_to source
+        bad = [_edge(kind="applies_to", src="org:transia-rnd",
+                     dst="server:sentinel")]
+        errors, _ = validate(nodes, bad)
+        self.assertTrue(any("applies_to" in e for e in errors))
 
     def test_empty_name_is_error(self):
         errors, _ = validate([_node(name="")], [])

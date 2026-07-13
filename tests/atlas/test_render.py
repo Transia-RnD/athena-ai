@@ -1,14 +1,19 @@
 """Tests for atlas markdown rendering."""
 
+import datetime
 import os
 import unittest
 
 from athenah_ai.atlas.graph import AtlasGraph
 from athenah_ai.atlas.render import (
+    CORE_MARKER,
+    MAP_MARKER,
+    render_agents_md,
     render_atlas,
     render_claude_md,
     render_context,
 )
+from athenah_ai.atlas.schema import Node
 from tests.atlas.test_graph import EDGES, NODES
 
 HOME = os.path.expanduser("~")
@@ -98,6 +103,103 @@ class TestRenderClaudeMd(RenderTestCase):
 
     def test_scoped_context_instructions(self):
         self.assertIn("context --cwd", self.text)
+
+
+class TestConditionalRules(RenderTestCase):
+    def test_atlas_splits_core_and_conditional(self):
+        text = render_atlas(self.graph)
+        self.assertIn("## Conditional Rules", text)
+        self.assertIn("_when: connecting to a remote machine_", text)
+        # the core rule stays in the plain Rules section
+        rules_section = text.split("## Rules")[1].split(
+            "## Conditional Rules"
+        )[0]
+        self.assertIn("Never push", rules_section)
+        self.assertNotIn("SSH access", rules_section)
+
+    def test_claude_md_splits_too(self):
+        text = render_claude_md(self.graph)
+        self.assertIn("# Conditional Rules", text)
+        self.assertIn("_when: connecting to a remote machine_", text)
+
+    def test_context_marks_conditional_rules(self):
+        text = render_context(
+            self.graph, f"{HOME}/projects/xrplf/xrpld-lending"
+        )
+        self.assertIn("_when: connecting to a remote machine_", text)
+
+
+class TestProposedExcluded(RenderTestCase):
+    def test_all_renders_skip_proposed_facts(self):
+        for text in (
+            render_atlas(self.graph),
+            render_claude_md(self.graph),
+            render_agents_md(self.graph),
+        ):
+            self.assertNotIn("Proposed/thing", text)
+
+
+class TestStaleness(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        nodes = list(NODES) + [
+            Node(id="server:oldbox", kind="server", name="oldbox",
+                 provenance="taught", notes="ancient box",
+                 attrs={"verified_at": "2025-01-01"}),
+            Node(id="server:freshbox", kind="server", name="freshbox",
+                 provenance="taught",
+                 attrs={"verified_at": "2026-07-01"}),
+        ]
+        cls.graph = AtlasGraph.from_facts(nodes, EDGES)
+        cls.today = datetime.date(2026, 7, 13)
+
+    def test_stale_fact_marked(self):
+        text = render_atlas(self.graph, stale_after_days=90, today=self.today)
+        self.assertIn("_(unverified since 2025-01-01)_", text)
+
+    def test_fresh_and_unstamped_facts_not_marked(self):
+        text = render_atlas(self.graph, stale_after_days=90, today=self.today)
+        line = next(ln for ln in text.splitlines() if "freshbox" in ln)
+        self.assertNotIn("unverified", line)
+        line = next(
+            ln for ln in text.splitlines() if "`server:sentinel`" in ln
+        )
+        self.assertNotIn("unverified", line)
+
+    def test_verified_at_hidden_from_attr_listing(self):
+        text = render_atlas(self.graph, stale_after_days=90, today=self.today)
+        self.assertNotIn("verified_at=", text)
+
+
+class TestRenderAgentsMd(RenderTestCase):
+    def setUp(self):
+        self.text = render_agents_md(self.graph)
+
+    def test_matches_claude_md_body(self):
+        # identical content, only the regen hint differs
+        claude = render_claude_md(self.graph)
+        self.assertEqual(
+            self.text.split("-->", 1)[1], claude.split("-->", 1)[1]
+        )
+
+    def test_names_its_own_regen_flag(self):
+        self.assertIn("--agents-md", self.text)
+
+
+class TestCoreMapMarkers(RenderTestCase):
+    def test_atlas_has_markers_in_order(self):
+        text = render_atlas(self.graph)
+        self.assertIn(CORE_MARKER, text)
+        self.assertIn(MAP_MARKER, text)
+        core_at = text.index(CORE_MARKER)
+        map_at = text.index(MAP_MARKER)
+        self.assertLess(core_at, map_at)
+        core_zone = text[core_at:map_at]
+        self.assertIn("## Identities & Capabilities", core_zone)
+        self.assertIn("## Rules", core_zone)
+        map_zone = text[map_at:]
+        self.assertIn("## Repository Map", map_zone)
+        self.assertNotIn("## Rules", map_zone)
 
 
 if __name__ == "__main__":

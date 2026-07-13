@@ -250,11 +250,15 @@ class AtlasConfig:
     # Default output path for the rendered ATLAS.md
     render_out: str = "~/.athenah/atlas/ATLAS.md"
 
+    # Days after which a taught fact's verified_at earns an "unverified
+    # since" marker in renders and a `validate` warning.
+    stale_after_days: int = 90
+
     # Comma-separated sync targets, each "<format>:<path>" where format is
-    # "atlas", "claude-md", "http-atlas", or "http-claude-md". File formats
-    # write the rendered markdown to <path>; the http-* formats POST it to the
-    # URL in <path>. `sync` (and auto-sync after teach/scan on the default
-    # facts dir) re-renders every target.
+    # "atlas", "claude-md", "agents-md", or an "http-" prefixed variant.
+    # File formats write the rendered markdown to <path>; the http-* formats
+    # POST it to the URL in <path>. `sync` (and auto-sync after teach/scan on
+    # the default facts dir) re-renders every target.
     sync_targets: str = (
         "claude-md:~/.claude/CLAUDE.md,"
         "atlas:~/.athenah/atlas/ATLAS.md,"

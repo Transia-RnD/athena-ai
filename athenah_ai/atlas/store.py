@@ -306,8 +306,27 @@ class FactStore:
             raise AtlasValidationError(errors)
 
         if isinstance(fact, Node):
+            existing = next(
+                (n for n in t_nodes if n.id == fact.id), None
+            )
+            if (fact.provenance == "proposed" and existing is not None
+                    and existing.provenance != "proposed"):
+                raise AtlasValidationError([
+                    f"node {fact.id} is already {existing.provenance}; "
+                    "refusing to downgrade it to proposed"
+                ])
             t_nodes = [n for n in t_nodes if n.id != fact.id] + [fact]
         else:
+            existing = next(
+                (e for e in t_edges if e.key() == fact.key()), None
+            )
+            if (fact.provenance == "proposed" and existing is not None
+                    and existing.provenance != "proposed"):
+                raise AtlasValidationError([
+                    f"edge {fact.kind} {fact.src} -> {fact.dst} is already "
+                    f"{existing.provenance}; refusing to downgrade it to "
+                    "proposed"
+                ])
             t_edges = [e for e in t_edges if e.key() != fact.key()] + [fact]
 
         merged_nodes = self._merge_nodes(t_nodes, d_nodes)
@@ -354,3 +373,57 @@ class FactStore:
             AtlasValidationError: If adding the edge yields invalid facts.
         """
         self._teach(edge)
+
+    # --------------------------------------------------------- proposals
+
+    def proposed(self) -> List[Union[Node, Edge]]:
+        """Return proposed facts awaiting review, in stable order.
+
+        Returns:
+            Proposed nodes (sorted by id) then proposed edges (sorted by
+            key); the position in this list is the review index.
+        """
+        t_nodes, t_edges, errors = self._read_layer(derived=False)
+        if errors:
+            raise AtlasValidationError(errors)
+        nodes = sorted(
+            (n for n in t_nodes if n.provenance == "proposed"),
+            key=lambda n: n.id,
+        )
+        edges = sorted(
+            (e for e in t_edges if e.provenance == "proposed"),
+            key=lambda e: e.key(),
+        )
+        return list(nodes) + list(edges)
+
+    def remove(self, fact: Union[Node, Edge]) -> None:
+        """Remove one fact from the taught layer and rewrite its file.
+
+        Args:
+            fact: The taught-layer Node or Edge to delete.
+
+        Raises:
+            AtlasValidationError: If the taught layer is unreadable.
+        """
+        self._sources = {}
+        t_nodes, t_edges, errors = self._read_layer(derived=False)
+        taught_sources = dict(self._sources)
+        if errors:
+            raise AtlasValidationError(errors)
+
+        if isinstance(fact, Node):
+            rel = taught_sources.get(fact.id)
+            t_nodes = [n for n in t_nodes if n.id != fact.id]
+        else:
+            rel = taught_sources.get(fact.key())
+            t_edges = [e for e in t_edges if e.key() != fact.key()]
+        if rel is None:
+            return
+
+        path = os.path.join(self.facts_dir, rel)
+        file_nodes = [n for n in t_nodes if taught_sources.get(n.id) == rel]
+        file_edges = [
+            e for e in t_edges if taught_sources.get(e.key()) == rel
+        ]
+        with open(path, "w") as f:
+            f.write(_dump(file_nodes, file_edges))

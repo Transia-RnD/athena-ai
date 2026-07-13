@@ -44,9 +44,12 @@ EDGE_KINDS = frozenset({
     "member_of",
     "operates",
     "documented_in",
+    "applies_to",
 })
 
-PROVENANCE = frozenset({"taught", "derived", "imported"})
+# "proposed" facts are agent-suggested and await human review; renders skip
+# them until `review --accept` flips them to taught.
+PROVENANCE = frozenset({"taught", "derived", "imported", "proposed"})
 
 # edge kind -> (allowed src kinds, allowed dst kinds). Kinds absent from the
 # table are unconstrained beyond the closed vocabulary.
@@ -82,6 +85,13 @@ EDGE_ENDPOINT_RULES: Dict[str, Tuple[frozenset, frozenset]] = {
     "documented_in": (
         frozenset(NODE_KINDS),
         frozenset({"plan_store", "repo", "checkout"}),
+    ),
+    "applies_to": (
+        frozenset({"rule"}),
+        frozenset({
+            "org", "repo", "server", "service", "environment",
+            "workflow", "skill", "checkout",
+        }),
     ),
 }
 

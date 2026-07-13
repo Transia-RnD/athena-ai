@@ -1,16 +1,24 @@
 """Deterministic markdown rendering of the atlas.
 
-Three products:
+Four products:
 
 * ``render_atlas``     — the full ATLAS.md ("init into my life").
 * ``render_context``   — scoped bootstrap for one working directory.
 * ``render_claude_md`` — the generated global CLAUDE.md for Claude Code.
+* ``render_agents_md`` — the same body for the AGENTS.md convention.
 
 No LLM involved; every line is traceable to a fact, and rendering the same
-graph twice yields identical bytes.
+graph on the same day yields identical bytes. Proposed facts are excluded
+from every render until they are accepted via ``review``.
+
+ATLAS.md carries ``<!-- atlas:core -->`` / ``<!-- atlas:map -->`` section
+markers so consumers can budget identities+rules separately from the world
+map (core survives context pressure; the map is re-queryable and sheds
+first).
 """
 
-from typing import List
+import datetime
+from typing import List, Optional
 
 from athenah_ai.atlas.graph import AtlasContext, AtlasGraph
 from athenah_ai.atlas.schema import NODE_KINDS, Node
@@ -19,6 +27,44 @@ _REGEN_HINT = (
     "regenerate: `python -m athenah_ai.atlas render` — edit facts, "
     "not this file"
 )
+
+DEFAULT_STALE_AFTER_DAYS = 90
+
+CORE_MARKER = "<!-- atlas:core -->"
+MAP_MARKER = "<!-- atlas:map -->"
+
+
+def _stale_cutoff(
+    stale_after_days: int, today: Optional[datetime.date]
+) -> datetime.date:
+    return (today or datetime.date.today()) - datetime.timedelta(
+        days=stale_after_days
+    )
+
+
+def stale_since(
+    node: Node, cutoff: datetime.date
+) -> Optional[str]:
+    """Return a node's ``verified_at`` date when it is older than cutoff.
+
+    Args:
+        node: Any fact node.
+        cutoff: Facts verified before this date count as stale.
+
+    Returns:
+        The ISO date string, or None when fresh, unstamped, or derived
+        (the scanner refreshes derived facts on every run).
+    """
+    if node.provenance == "derived":
+        return None
+    raw = node.attrs.get("verified_at")
+    if not raw:
+        return None
+    try:
+        verified = datetime.date.fromisoformat(str(raw))
+    except ValueError:
+        return None
+    return str(raw) if verified < cutoff else None
 
 
 def _title(node: Node) -> str:
@@ -30,12 +76,34 @@ def _note_suffix(text: str) -> str:
     return f" — {text}" if text else ""
 
 
-def _identities(graph: AtlasGraph, lines: List[str]) -> None:
+def _stale_suffix(node: Node, cutoff: datetime.date) -> str:
+    since = stale_since(node, cutoff)
+    return f" _(unverified since {since})_" if since else ""
+
+
+def is_conditional(node: Node) -> bool:
+    """Return True when a rule only applies under a trigger condition.
+
+    Args:
+        node: A rule node.
+
+    Returns:
+        True when the rule carries an ``applies_when`` attr.
+    """
+    return bool(str(node.attrs.get("applies_when", "")).strip())
+
+
+def _identities(
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+) -> None:
     lines.append("## Identities & Capabilities")
     lines.append("")
     for kind in ("person", "identity"):
         for node in graph.find(kind):
-            lines.append(f"- {_title(node)}{_note_suffix(node.notes)}")
+            lines.append(
+                f"- {_title(node)}{_note_suffix(node.notes)}"
+                f"{_stale_suffix(node, cutoff)}"
+            )
             for cap in graph.capabilities_of(node.id):
                 lines.append(
                     f"  - `{cap.kind}` → `{cap.dst}`"
@@ -46,13 +114,18 @@ def _identities(graph: AtlasGraph, lines: List[str]) -> None:
     lines.append("")
 
 
-def _orgs(graph: AtlasGraph, lines: List[str]) -> None:
+def _orgs(
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+) -> None:
     lines.append("## Organizations")
     lines.append("")
     for node in graph.find("org"):
         repos = graph._in(node.id, "owned_by")
         suffix = f" — {len(repos)} repo(s)" if repos else ""
-        lines.append(f"- {_title(node)}{_note_suffix(node.notes)}{suffix}")
+        lines.append(
+            f"- {_title(node)}{_note_suffix(node.notes)}{suffix}"
+            f"{_stale_suffix(node, cutoff)}"
+        )
     lines.append("")
 
 
@@ -104,16 +177,20 @@ def _repo_map(graph: AtlasGraph, lines: List[str]) -> None:
     lines.append("")
 
 
-def _servers(graph: AtlasGraph, lines: List[str]) -> None:
+def _servers(
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+) -> None:
     lines.append("## Servers & Environments")
     lines.append("")
     for kind in ("server", "service", "environment"):
         for node in graph.find(kind):
             attrs = ", ".join(
                 f"{k}={v}" for k, v in sorted(node.attrs.items())
+                if k != "verified_at"
             )
             lines.append(
                 f"- {_title(node)}{_note_suffix(node.notes)}"
+                f"{_stale_suffix(node, cutoff)}"
                 f"{' [' + attrs + ']' if attrs else ''}"
             )
             for src in graph._in(node.id, "deploys_to"):
@@ -121,28 +198,75 @@ def _servers(graph: AtlasGraph, lines: List[str]) -> None:
     lines.append("")
 
 
-def _workflows(graph: AtlasGraph, lines: List[str]) -> None:
+def _workflows(
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+) -> None:
     lines.append("## Workflows & Skills")
     lines.append("")
     for kind in ("workflow", "skill"):
         for node in graph.find(kind):
-            lines.append(f"- {_title(node)}{_note_suffix(node.notes)}")
+            lines.append(
+                f"- {_title(node)}{_note_suffix(node.notes)}"
+                f"{_stale_suffix(node, cutoff)}"
+            )
     lines.append("")
 
 
-def _rules(graph: AtlasGraph, lines: List[str]) -> None:
-    lines.append("## Rules")
-    lines.append("")
-    for node in graph.find("rule"):
-        lines.append(f"- **{node.name}**{_note_suffix(node.notes)}")
-    lines.append("")
+def _rule_line(node: Node, cutoff: datetime.date) -> str:
+    return (
+        f"- **{node.name}**{_note_suffix(node.notes)}"
+        f"{_stale_suffix(node, cutoff)}"
+    )
 
 
-def _plan_stores(graph: AtlasGraph, lines: List[str]) -> None:
+def _conditional_rule_line(node: Node, cutoff: datetime.date) -> str:
+    when = " ".join(str(node.attrs.get("applies_when", "")).split())
+    return (
+        f"- **{node.name}** — _when: {when}_"
+        f"{_note_suffix(node.notes)}{_stale_suffix(node, cutoff)}"
+    )
+
+
+def _rules(
+    graph: AtlasGraph,
+    lines: List[str],
+    cutoff: datetime.date,
+    heading: str = "##",
+) -> None:
+    rules = graph.find("rule")
+    core = [n for n in rules if not is_conditional(n)]
+    conditional = [n for n in rules if is_conditional(n)]
+
+    lines.append(f"{heading} Rules")
+    lines.append("")
+    for node in core:
+        lines.append(_rule_line(node, cutoff))
+    lines.append("")
+
+    if conditional:
+        lines.append(f"{heading} Conditional Rules")
+        lines.append("")
+        lines.append(
+            "Apply each of these only when its trigger matches the task "
+            "at hand; `context --cwd` also surfaces the ones scoped to "
+            "where you are working."
+        )
+        lines.append("")
+        for node in conditional:
+            lines.append(_conditional_rule_line(node, cutoff))
+        lines.append("")
+
+
+def _plan_stores(
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+) -> None:
     lines.append("## Plan Stores")
     lines.append("")
     for node in graph.find("plan_store"):
-        lines.append(f"- {_title(node)}{_note_suffix(node.notes)}")
+        lines.append(
+            f"- {_title(node)}{_note_suffix(node.notes)}"
+            f"{_stale_suffix(node, cutoff)}"
+        )
         for src in graph._in(node.id, "plans_in"):
             lines.append(f"  - `{src.id}` plans here")
     lines.append("")
@@ -160,15 +284,24 @@ def _other(graph: AtlasGraph, lines: List[str]) -> None:
     lines.append("")
 
 
-def render_atlas(graph: AtlasGraph) -> str:
+def render_atlas(
+    graph: AtlasGraph,
+    stale_after_days: int = DEFAULT_STALE_AFTER_DAYS,
+    today: Optional[datetime.date] = None,
+) -> str:
     """Render the full ATLAS.md document.
 
     Args:
         graph: The atlas graph.
+        stale_after_days: Age after which a taught fact's ``verified_at``
+            earns an unverified marker.
+        today: Injectable clock for deterministic tests.
 
     Returns:
-        Markdown text.
+        Markdown text with core/map section markers.
     """
+    graph = graph.without_provenance("proposed")
+    cutoff = _stale_cutoff(stale_after_days, today)
     lines = [
         "# ATLAS",
         "",
@@ -179,19 +312,24 @@ def render_atlas(graph: AtlasGraph) -> str:
         "top-to-bottom once, then use "
         "`python -m athenah_ai.atlas context --cwd .` for any directory.",
         "",
+        CORE_MARKER,
+        "",
     ]
-    _identities(graph, lines)
-    _orgs(graph, lines)
+    _identities(graph, lines, cutoff)
+    _rules(graph, lines, cutoff)
+    lines.append(MAP_MARKER)
+    lines.append("")
+    _orgs(graph, lines, cutoff)
     _repo_map(graph, lines)
-    _servers(graph, lines)
-    _workflows(graph, lines)
-    _rules(graph, lines)
-    _plan_stores(graph, lines)
+    _servers(graph, lines, cutoff)
+    _workflows(graph, lines, cutoff)
+    _plan_stores(graph, lines, cutoff)
     _other(graph, lines)
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _context_lines(graph: AtlasGraph, ctx: AtlasContext) -> List[str]:
+def _context_lines(graph: AtlasGraph, ctx: AtlasContext,
+                   cutoff: datetime.date) -> List[str]:
     lines = []
     checkout = ctx.checkout
     path = checkout.attrs.get("path", checkout.id.split(":", 1)[1])
@@ -256,21 +394,34 @@ def _context_lines(graph: AtlasGraph, ctx: AtlasContext) -> List[str]:
     if ctx.rules:
         lines.append("Rules in force here:")
         for rule in ctx.rules:
-            lines.append(f"- **{rule.name}**{_note_suffix(rule.notes)}")
+            if is_conditional(rule):
+                lines.append(_conditional_rule_line(rule, cutoff))
+            else:
+                lines.append(_rule_line(rule, cutoff))
         lines.append("")
     return lines
 
 
-def render_context(graph: AtlasGraph, cwd: str) -> str:
+def render_context(
+    graph: AtlasGraph,
+    cwd: str,
+    stale_after_days: int = DEFAULT_STALE_AFTER_DAYS,
+    today: Optional[datetime.date] = None,
+) -> str:
     """Render the scoped bootstrap for one working directory.
 
     Args:
         graph: The atlas graph.
         cwd: Path to contextualize.
+        stale_after_days: Age after which a taught fact's ``verified_at``
+            earns an unverified marker.
+        today: Injectable clock for deterministic tests.
 
     Returns:
         Markdown text; explains itself when the path is unknown.
     """
+    graph = graph.without_provenance("proposed")
+    cutoff = _stale_cutoff(stale_after_days, today)
     ctx = graph.context_for(cwd)
     if ctx.checkout is None:
         return (
@@ -278,33 +429,20 @@ def render_context(graph: AtlasGraph, cwd: str) -> str:
             "`python -m athenah_ai.atlas scan` to index new checkouts, or "
             "teach facts about it explicitly.\n"
         )
-    return "\n".join(_context_lines(graph, ctx)).rstrip() + "\n"
+    return "\n".join(_context_lines(graph, ctx, cutoff)).rstrip() + "\n"
 
 
-def render_claude_md(graph: AtlasGraph) -> str:
-    """Render the generated global CLAUDE.md.
-
-    Args:
-        graph: The atlas graph.
-
-    Returns:
-        Markdown text for ~/.claude/CLAUDE.md.
-    """
-    lines = [
-        "<!-- AUTO-GENERATED by atlas (athenah-ai). Do not hand-edit: "
-        "teach facts via `python -m athenah_ai.atlas teach ...` or edit "
-        "the YAML under athenah_ai/atlas/facts/, then regenerate with "
-        "`python -m athenah_ai.atlas render --claude-md`. -->",
-        "",
-        "# Rules",
-        "",
-    ]
-    for node in graph.find("rule"):
-        lines.append(f"- **{node.name}**{_note_suffix(node.notes)}")
-    lines += ["", "# Identities", ""]
+def _agent_context_body(
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+) -> None:
+    _rules(graph, lines, cutoff, heading="#")
+    lines += ["# Identities", ""]
     for kind in ("person", "identity"):
         for node in graph.find(kind):
-            lines.append(f"- {_title(node)}{_note_suffix(node.notes)}")
+            lines.append(
+                f"- {_title(node)}{_note_suffix(node.notes)}"
+                f"{_stale_suffix(node, cutoff)}"
+            )
             for cap in graph.capabilities_of(node.id):
                 lines.append(
                     f"  - `{cap.kind}` → `{cap.dst}`"
@@ -312,8 +450,8 @@ def render_claude_md(graph: AtlasGraph) -> str:
                 )
     lines += ["", "# World Map", ""]
     _repo_map(graph, lines)
-    _servers(graph, lines)
-    _plan_stores(graph, lines)
+    _servers(graph, lines, cutoff)
+    _plan_stores(graph, lines, cutoff)
     lines += [
         "# Atlas",
         "",
@@ -326,7 +464,66 @@ def render_claude_md(graph: AtlasGraph) -> str:
         "```",
         "",
         "Other queries: `show <id>`, `why <src> [dst]`, `scan`, "
-        "`validate`. Teach it new facts with `teach`.",
+        "`validate`. Teach it new facts with `teach`; suggest facts you "
+        "discovered with `teach --propose` (they stay out of renders "
+        "until a human accepts them via `review`).",
         "",
     ]
+
+
+def render_claude_md(
+    graph: AtlasGraph,
+    stale_after_days: int = DEFAULT_STALE_AFTER_DAYS,
+    today: Optional[datetime.date] = None,
+) -> str:
+    """Render the generated global CLAUDE.md.
+
+    Args:
+        graph: The atlas graph.
+        stale_after_days: Age after which a taught fact's ``verified_at``
+            earns an unverified marker.
+        today: Injectable clock for deterministic tests.
+
+    Returns:
+        Markdown text for ~/.claude/CLAUDE.md.
+    """
+    graph = graph.without_provenance("proposed")
+    cutoff = _stale_cutoff(stale_after_days, today)
+    lines = [
+        "<!-- AUTO-GENERATED by atlas (athenah-ai). Do not hand-edit: "
+        "teach facts via `python -m athenah_ai.atlas teach ...` or edit "
+        "the YAML under athenah_ai/atlas/facts/, then regenerate with "
+        "`python -m athenah_ai.atlas render --claude-md`. -->",
+        "",
+    ]
+    _agent_context_body(graph, lines, cutoff)
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_agents_md(
+    graph: AtlasGraph,
+    stale_after_days: int = DEFAULT_STALE_AFTER_DAYS,
+    today: Optional[datetime.date] = None,
+) -> str:
+    """Render the same agent context for the AGENTS.md convention.
+
+    Args:
+        graph: The atlas graph.
+        stale_after_days: Age after which a taught fact's ``verified_at``
+            earns an unverified marker.
+        today: Injectable clock for deterministic tests.
+
+    Returns:
+        Markdown text for a global or per-project AGENTS.md.
+    """
+    graph = graph.without_provenance("proposed")
+    cutoff = _stale_cutoff(stale_after_days, today)
+    lines = [
+        "<!-- AUTO-GENERATED by atlas (athenah-ai). Do not hand-edit: "
+        "teach facts via `python -m athenah_ai.atlas teach ...` or edit "
+        "the YAML under athenah_ai/atlas/facts/, then regenerate with "
+        "`python -m athenah_ai.atlas render --agents-md`. -->",
+        "",
+    ]
+    _agent_context_body(graph, lines, cutoff)
     return "\n".join(lines).rstrip() + "\n"

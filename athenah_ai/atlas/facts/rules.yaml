@@ -73,15 +73,18 @@ nodes:
   notes: 'All remote machines need an SSH key loaded into the agent — plain `ssh user@host`
     FAILS. Workflow: (1) check access first with `ssh-add -l`; (2) if the key isn''t loaded,
     load it and chain in ONE bash invocation (agent state does not persist between commands):
-    `eval "$(ssh-agent -s)" && ssh-add --apple-use-keychain ~/.ssh/xrpl-labs && ssh -i
-    ~/.ssh/xrpl-labs -o IdentitiesOnly=yes <user>@<host> ''<cmd>''`. Nearly every repo has an
-    associated machine (~1:1). The machine→key/user/port map lives in
-    `~/.claude/ssh-machines.md` — consult it (plus Servers & Environments below, repo skills,
-    ansible hosts.txt) before connecting; if a machine isn''t mapped, ask which key it wants
-    and add it there — never guess. macOS boxes: prefix non-interactive remote commands with
-    `export PATH=/opt/homebrew/bin:$PATH;`.
+    `eval "$(ssh-agent -s)" && ssh-add --apple-use-keychain ~/.ssh/xrpl-labs && ssh -i ~/.ssh/xrpl-labs
+    -o IdentitiesOnly=yes <user>@<host> ''<cmd>''`. Nearly every repo has an associated machine
+    (~1:1). The machine→key/user/port map lives in `~/.claude/ssh-machines.md` — consult it
+    (plus Servers & Environments below, repo skills, ansible hosts.txt) before connecting;
+    if a machine isn''t mapped, ask which key it wants and add it there — never guess. macOS
+    boxes: prefix non-interactive remote commands with `export PATH=/opt/homebrew/bin:$PATH;`.
 
     '
+  attrs:
+    applies_when: connecting to any remote machine (ssh/scp/rsync/ansible) or debugging a
+      deployed service
+    verified_at: '2026-07-13'
 - id: rule:subagents
   kind: rule
   name: Subagent strategy
@@ -98,3 +101,22 @@ nodes:
     behavior against main. Ask "would a staff engineer approve this?"
 
     '
+edges:
+- kind: applies_to
+  src: rule:ssh-access
+  dst: environment:gcp-perfnet
+  provenance: taught
+  attrs:
+    verified_at: '2026-07-13'
+- kind: applies_to
+  src: rule:ssh-access
+  dst: server:sage-mini
+  provenance: taught
+  attrs:
+    verified_at: '2026-07-13'
+- kind: applies_to
+  src: rule:ssh-access
+  dst: server:sentinel
+  provenance: taught
+  attrs:
+    verified_at: '2026-07-13'

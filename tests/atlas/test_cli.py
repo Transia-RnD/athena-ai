@@ -168,6 +168,100 @@ class TestRenderAndContext(CliTestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertIn("not in the atlas", proc.stdout)
 
+    def test_render_agents_md_to_stdout(self):
+        proc = self._run("render", "--agents-md")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("AUTO-GENERATED", proc.stdout)
+        self.assertIn("--agents-md", proc.stdout)
+
+    def test_sync_agents_md_target(self):
+        agents_out = os.path.join(self.facts_dir, "out", "AGENTS.md")
+        proc = self._run(
+            "sync",
+            env={"ATHENA_ATLAS_SYNC_TARGETS": f"agents-md:{agents_out}"},
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        with open(agents_out) as f:
+            self.assertIn("--agents-md", f.read())
+
+
+class TestProposeAndReview(CliTestCase):
+    def _propose_box(self):
+        proc = self._run(
+            "teach", "--propose", "--node", "server", "server:box1", "box1",
+            "--note", "agent-discovered box",
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("proposed node server:box1", proc.stdout)
+
+    def test_proposed_fact_hidden_until_accepted(self):
+        self._propose_box()
+        proc = self._run("render", "--claude-md")
+        self.assertNotIn("box1", proc.stdout)
+
+        proc = self._run("review")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("[1] node server:box1", proc.stdout)
+
+        proc = self._run("review", "--accept", "1")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("accepted", proc.stdout)
+
+        proc = self._run("render", "--claude-md")
+        self.assertIn("box1", proc.stdout)
+        # accept stamped freshness
+        proc = self._run("show", "server:box1")
+        self.assertIn("verified_at", proc.stdout)
+
+    def test_reject_deletes_the_proposal(self):
+        self._propose_box()
+        proc = self._run("review", "--reject", "1")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("rejected", proc.stdout)
+        proc = self._run("review")
+        self.assertIn("no proposed facts", proc.stdout)
+        proc = self._run("show", "server:box1")
+        self.assertEqual(proc.returncode, 1)
+
+    def test_review_index_out_of_range(self):
+        self._propose_box()
+        proc = self._run("review", "--accept", "9")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("out of range", proc.stderr)
+
+    def test_propose_cannot_downgrade_taught_fact(self):
+        proc = self._run(
+            "teach", "--propose", "--node", "org", "org:transia-rnd",
+            "Transia-RnD",
+        )
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("refusing to downgrade", proc.stderr)
+
+    def test_validate_warns_about_proposed(self):
+        self._propose_box()
+        proc = self._run("validate")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("proposed fact(s) awaiting", proc.stdout)
+
+
+class TestTeachStampsFreshness(CliTestCase):
+    def test_teach_stamps_verified_at(self):
+        proc = self._run(
+            "teach", "--node", "server", "server:box2", "box2",
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        proc = self._run("show", "server:box2")
+        self.assertIn("verified_at", proc.stdout)
+
+    def test_explicit_verified_at_wins(self):
+        proc = self._run(
+            "teach", "--node", "server", "server:box3", "box3",
+            "--attr", "verified_at=2020-01-01",
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        proc = self._run("show", "server:box3")
+        self.assertIn("2020-01-01", proc.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
