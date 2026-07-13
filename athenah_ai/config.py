@@ -251,13 +251,22 @@ class AtlasConfig:
     render_out: str = "~/.athenah/atlas/ATLAS.md"
 
     # Comma-separated sync targets, each "<format>:<path>" where format is
-    # "atlas" or "claude-md". `sync` (and auto-sync after teach/scan on the
-    # default facts dir) re-renders every target.
+    # "atlas", "claude-md", "http-atlas", or "http-claude-md". File formats
+    # write the rendered markdown to <path>; the http-* formats POST it to the
+    # URL in <path>. `sync` (and auto-sync after teach/scan on the default
+    # facts dir) re-renders every target.
     sync_targets: str = (
         "claude-md:~/.claude/CLAUDE.md,"
         "atlas:~/.athenah/atlas/ATLAS.md,"
         "atlas:~/projects/transia/sage-ai/.claude/knowledge/ATLAS.md"
     )
+
+    # HMAC secret for signing http-* sync pushes (X-Atlas-Signature header).
+    # Empty disables http pushes (they are skipped with a warning).
+    sync_hmac_secret: str = os.environ.get("ATLAS_WEBHOOK_SECRET", "")
+
+    # userId sent in the http-* sync push body.
+    sync_user_id: str = os.environ.get("ATLAS_SYNC_USER_ID", "")
 
     def sync_targets_list(self) -> list:
         """Return sync_targets parsed into (format, path) tuples.

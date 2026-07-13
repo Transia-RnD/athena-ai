@@ -18,6 +18,10 @@ teach and scan auto-sync when operating on the default facts dir; a
 """
 
 import argparse
+import datetime
+import hashlib
+import hmac
+import json
 import os
 import sys
 from typing import Optional
@@ -53,11 +57,76 @@ def _parse_attrs(pairs) -> dict:
     return attrs
 
 
+def _post_target(url: str, markdown: str) -> None:
+    """POST rendered atlas markdown to a remote webhook (fail-soft).
+
+    Skips with a warning when no HMAC secret is configured, and swallows any
+    transport/HTTP error so a failed push never aborts the sync or other
+    targets.
+
+    Args:
+        url: Destination webhook URL.
+        markdown: Rendered markdown to push.
+    """
+    from athenah_ai.config import config
+
+    secret = config.atlas.sync_hmac_secret
+    if not secret:
+        print(
+            "WARNING: ATLAS_WEBHOOK_SECRET is not set; skipping http push "
+            f"to {url}",
+            file=sys.stderr,
+        )
+        return
+
+    digest = hashlib.sha256(markdown.encode()).hexdigest()
+    generated_at = datetime.datetime.now(
+        datetime.timezone.utc
+    ).isoformat().replace("+00:00", "Z")
+    body = {
+        "markdown": markdown,
+        "hash": digest,
+        "generatedAt": generated_at,
+        "source": "athenah-atlas",
+        "userId": config.atlas.sync_user_id,
+    }
+    body_bytes = json.dumps(
+        body, separators=(",", ":"), sort_keys=True
+    ).encode()
+    signature = hmac.new(
+        secret.encode(), body_bytes, hashlib.sha256
+    ).hexdigest()
+    headers = {
+        "Content-Type": "application/json",
+        "X-Atlas-Signature": f"sha256={signature}",
+    }
+    try:
+        import httpx
+
+        response = httpx.post(
+            url,
+            content=body_bytes,
+            headers=headers,
+            timeout=config.http.default_timeout,
+        )
+        print(
+            f"pushed {url} ({len(body_bytes)} bytes, "
+            f"status {response.status_code})"
+        )
+    except Exception as err:  # fail-soft: never break sync/scan/teach
+        print(f"WARNING: atlas push to {url} failed: {err}", file=sys.stderr)
+
+
 def _sync_targets(args: argparse.Namespace) -> int:
     from athenah_ai.config import config
 
     targets = config.atlas.sync_targets_list()
-    renderers = {"atlas": render_atlas, "claude-md": render_claude_md}
+    renderers = {
+        "atlas": render_atlas,
+        "claude-md": render_claude_md,
+        "http-atlas": render_atlas,
+        "http-claude-md": render_claude_md,
+    }
     for fmt, _ in targets:
         if fmt not in renderers:
             print(f"ERROR: unknown sync target format '{fmt}'",
@@ -65,9 +134,13 @@ def _sync_targets(args: argparse.Namespace) -> int:
             return 1
     graph = _graph(args)
     for fmt, out in targets:
+        rendered = renderers[fmt](graph)
+        if fmt.startswith("http-"):
+            _post_target(out, rendered)
+            continue
         os.makedirs(os.path.dirname(out), exist_ok=True)
         with open(out, "w") as f:
-            f.write(renderers[fmt](graph))
+            f.write(rendered)
         print(f"synced {out}")
     return 0
 

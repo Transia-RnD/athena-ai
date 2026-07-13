@@ -31,6 +31,21 @@ nodes:
     ssh_key: ~/.ssh/xrpl-labs
     ssh_port: 1988
     user: sentinel
+- id: server:sage-mini
+  kind: server
+  name: sage-mini
+  provenance: taught
+  notes: 'Sage AI production Mac mini. SSH: load the key into the agent first — `eval "$(ssh-agent -s)"
+    && ssh-add --apple-use-keychain ~/.ssh/xrpl-labs` — then `ssh -i ~/.ssh/xrpl-labs -o IdentitiesOnly=yes
+    sageagent@45.88.58.10`. Plain ssh fails until the key is agent-loaded. App at ~/.sage-ai,
+    logs at ~/.sage-ai/logs/server.log.
+
+    '
+  attrs:
+    ip: 45.88.58.10
+    project_path: ~/.sage-ai
+    ssh_key: ~/.ssh/xrpl-labs
+    user: sageagent
 - id: service:firestore-xarvis-production
   kind: service
   name: Firestore xarvis-production
@@ -40,6 +55,10 @@ nodes:
 
     '
 edges:
+- kind: deploys_to
+  src: repo:Transia-RnD/sage-ai
+  dst: server:sage-mini
+  provenance: taught
 - kind: deploys_via
   src: environment:alphanet
   dst: workflow:deploy-alphanet

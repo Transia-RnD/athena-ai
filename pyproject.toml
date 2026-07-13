@@ -14,6 +14,7 @@ google-cloud-storage = "^3.4.0"
 python-dotenv = "^1.2.1"
 anthropic = "^0.75.0"
 cachetools = "^5.3.0"
+httpx = ">=0.24.0,<1.0.0"
 
 # Pin exact versions
 langchain = "1.1.0"
