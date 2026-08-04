@@ -1,4 +1,17 @@
 nodes:
+- id: rule:blockers
+  kind: rule
+  name: Blockers
+  provenance: taught
+  notes: 'Don''t manufacture blockers. Having the goal, the spec, and the context is not a
+    blocker — keep executing through the whole task (understand -> implement -> fix -> test
+    -> doc) with senior judgment; don''t stop to ask ''want me to continue?'' or add permission
+    gates for reversible work that follows from the request. A real blocker is narrow: a destructive
+    or irreversible action, a genuine change of scope, or missing information only the user
+    can provide. When you actually hit one, name it plainly and stop; otherwise proceed and
+    report what you did.'
+  attrs:
+    verified_at: '2026-07-16'
 - id: rule:bug-fixing
   kind: rule
   name: Bug fixing
@@ -13,7 +26,9 @@ nodes:
   provenance: taught
   notes: 'State what the code does; do not narrate. For a small block, one line: what it does
     plus a terse why. No arguing importance (''it matters because''), no investigation notes,
-    no facts about other files'' callers (they rot), no restating what the code already says.'
+    no facts about other files'' callers (they rot), no restating what the code already says,
+    no justifying code by pointing at behavior enforced elsewhere ("also rejected in preflight",
+    "fails downstream"), and no references to a previous implementation or alternative approach.'
 - id: rule:code-quality
   kind: rule
   name: Code quality
@@ -62,8 +77,11 @@ nodes:
   name: Planning & execution
   provenance: taught
   notes: 'Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions).
-    Write the plan to tasks/todo.md with checkable items and check in before starting; mark
-    items complete as you go. If something goes sideways, STOP and re-plan immediately.
+    NEVER create tasks/ folders or todo/plan files inside project repos — plans and task lists
+    go in the CENTRAL plan store ONLY (see Plan Stores: ~/projects/xrplf/xrpl-guides for XRPL
+    work — topic dir or its tasks/; use the project''s mapped plan store otherwise). Write
+    the plan there with checkable items and check in before starting; mark items complete
+    as you go. If something goes sideways, STOP and re-plan immediately.
 
     '
 - id: rule:ssh-access
