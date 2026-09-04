@@ -1,4 +1,21 @@
 nodes:
+- id: rule:verify-before-stating
+  kind: rule
+  name: Verify before stating — no fabrication
+  provenance: taught
+  notes: 'Never state a fact about a live system (repo contents, counts, whether something is empty, DNS
+    or proxy state, what a host runs, whether a job ran) unless you can point to the command output in
+    THIS session that proves it, or you run the check first. Plan-store notes, memory files, open checkboxes,
+    and your own earlier summaries are hypotheses, never evidence: an open checkbox means "unverified",
+    a 404 on a directory means "no index", not "empty". If a claim cannot be verified right now, write
+    "unverified" or cut the sentence. Denis (2026-09-04): "did you just make that up ... Can we please
+    stop doing that? Fabricating something out of thin air?" after two invented present-tense facts (private
+    repos "empty" while they held xrpld 3.4.0 b1..rc2; nexus.xrplf.org "not proxied" while my own dig
+    and cert check in the same session showed Cloudflare). Both reached Ripple engineers. This rule ranks
+    with Real identifiers only.'
+  attrs:
+    verified_at: '2026-09-04'
+    priority: first
 - id: rule:blockers
   kind: rule
   name: Blockers
