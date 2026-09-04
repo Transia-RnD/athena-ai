@@ -235,6 +235,8 @@ def _rules(
 ) -> None:
     rules = graph.find("rule")
     core = [n for n in rules if not is_conditional(n)]
+    # attrs.priority == "first" pins a rule to the top; id order within each group.
+    core.sort(key=lambda n: 0 if n.attrs.get("priority") == "first" else 1)
     conditional = [n for n in rules if is_conditional(n)]
 
     lines.append(f"{heading} Rules")
