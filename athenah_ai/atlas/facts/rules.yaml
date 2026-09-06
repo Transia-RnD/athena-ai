@@ -182,6 +182,26 @@ nodes:
     so settle the channel before the send, not after.'
   attrs:
     verified_at: '2026-09-04'
+- id: rule:xrplf-webapp-data-layer
+  kind: rule
+  name: xrplf-webapp — versioned-document data layer
+  provenance: taught
+  notes: 'MongoDB only (PostgreSQL was removed 2026-07-07). Every mutable entity uses the versioned-document
+    pattern from shared/src/database/: the live document sits at a stable _id in <collection>; every update
+    first snapshots the pre-update state into <collection>_archive inside session.withTransaction() (versionedSave.ts),
+    chained by string refs refOld/refNew of the form "<collection>/<id>"; base fields active/deleted/createdTime/createdBy/updatedTime/updatedBy.
+    New repositories extend VersionedRepository, PlainRepository, or ContentRepository; indexes are declared
+    in indexes.ts (ensured at boot and by `mongo:setup`), never ad hoc. Documents are camelCase with epoch-ms
+    timestamps; snake_case Rows only at the API boundary via msToIso. Multi-entity writes are one withMongoTransaction
+    with a versionedSave per entity. Evidence documents (votes, payments, proofs, logs) are plain BaseDoc
+    with no chain. Vote handlers re-verify the voter''s credential (GA MEMBER:*, committee CMTE:<code>)
+    inside the ballot transaction. Dev DB: `docker compose -f docker-compose.mongo.yml up -d` (single-node
+    replica set; transactions need it), then mongo:setup, mongo:seed-dev, mongo:bootstrap-admin (the only
+    ROLE:ADMIN grant). Unit chain tests run on mongodb-memory-server.'
+  attrs:
+    applies_when: 'working in ~/projects/xrplf/xrplf-webapp (XRPLF/xrplf-webapp): backend, worker, or
+      shared data code'
+    verified_at: '2026-09-06'
 edges:
 - kind: applies_to
   src: rule:ssh-access
