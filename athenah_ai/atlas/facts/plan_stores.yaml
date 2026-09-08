@@ -3,11 +3,15 @@ nodes:
   kind: plan_store
   name: xrpl-guides
   provenance: taught
-  notes: 'Central plan/spec/audit store for public XRPL work. Topic dirs (rfq/, amm-curves/,
-    soul/ subsystem deep-dives...) plus tasks/ and root-level XLS specs. When a plan-N-<topic>.md
-    exists here, expect a matching xrpld-* checkout/branch.
-
-    '
+  notes: 'Central plan/spec/report store for XRPLF work; Denis''s sandbox (becomes XRPLF/sandbox-dangell7).
+    Layout since 2026-09-08: work/<workstream>/ holds plans, specs, reports, reviews and evidence
+    per subject; guides/ reference docs; content/ drafts; archive/ finished work; _outbound/
+    material leaving for ops-plans or Transia. registry.yaml maps checkout to plan, checked
+    by tools/registry.py. Repo CLAUDE.md states the conventions; skills plan, report, status,
+    triage live in .claude/skills. No secrets, no foundation-sensitive or embargoed material,
+    no generated artifacts.'
+  attrs:
+    verified_at: '2026-09-08'
 edges:
 - kind: documented_in
   src: plan_store:xrpl-guides
