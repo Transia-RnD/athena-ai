@@ -156,6 +156,10 @@ nodes:
   kind: repo
   name: xrpld-publisher
   provenance: derived
+- id: repo:XRPL-Labs/Xaman-App
+  kind: repo
+  name: Xaman-App
+  provenance: derived
 - id: repo:XRPL-Labs/alerts-xapp
   kind: repo
   name: alerts-xapp
@@ -372,6 +376,10 @@ edges:
 - kind: owned_by
   src: repo:Transia-RnD/xrpld-publisher
   dst: org:transia-rnd
+  provenance: derived
+- kind: owned_by
+  src: repo:XRPL-Labs/Xaman-App
+  dst: org:xrpl-labs
   provenance: derived
 - kind: owned_by
   src: repo:XRPL-Labs/alerts-xapp
