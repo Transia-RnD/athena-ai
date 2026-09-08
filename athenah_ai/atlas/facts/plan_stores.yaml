@@ -6,10 +6,11 @@ nodes:
   notes: 'Central plan/spec/report store for XRPLF work; Denis''s sandbox (becomes XRPLF/sandbox-dangell7).
     Layout since 2026-09-08: work/<workstream>/ holds plans, specs, reports, reviews and evidence
     per subject; guides/ reference docs; content/ drafts; archive/ finished work; _outbound/
-    material leaving for ops-plans or Transia. registry.yaml maps checkout to plan, checked
-    by tools/registry.py. Repo CLAUDE.md states the conventions; skills plan, report, status,
-    triage live in .claude/skills. No secrets, no foundation-sensitive or embargoed material,
-    no generated artifacts.'
+    material leaving for ops-plans or Transia. Plan frontmatter repos: (owner/repo @ branch)
+    is the only record of which plan governs which checkout; the atlas scan derives governed_by
+    edges from it and context --cwd lists them; tools/plans.py derives the same table locally.
+    Repo CLAUDE.md states the conventions; skills plan, report, status, triage live in .claude/skills.
+    No secrets, no foundation-sensitive or embargoed material, no generated artifacts.'
   attrs:
     verified_at: '2026-09-08'
 edges:
