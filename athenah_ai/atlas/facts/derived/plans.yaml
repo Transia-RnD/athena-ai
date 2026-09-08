@@ -804,6 +804,10 @@ edges:
   dst: plan:xrpl-guides/work/perf/plans/01-parallel-apply.md
   provenance: derived
 - kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-priority-lane
+  dst: plan:xrpl-guides/work/perf/plans/18-consensus-priority-lane.md
+  provenance: derived
+- kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-publisher
   dst: plan:xrpl-guides/work/unl-multisig/plan.md
   provenance: derived
@@ -918,10 +922,6 @@ edges:
 - kind: governed_by
   src: repo:XRPLF/rippled
   dst: plan:xrpl-guides/work/network-mapper/plan.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/rippled
-  dst: plan:xrpl-guides/work/perf/plans/18-consensus-priority-lane.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
