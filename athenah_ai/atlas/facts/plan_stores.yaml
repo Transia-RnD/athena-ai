@@ -4,14 +4,15 @@ nodes:
   name: xrpl-guides
   provenance: taught
   notes: 'Denis''s sandbox for XRPLF work (becomes XRPLF/sandbox-dangell7). Every top-level
-    directory is a project named for its subject; each holds plan.md (entry: goal, status,
-    tasks, index) and the fixed buckets plans/, specs/, guides/, reports/, drafts/, data/,
-    evidence/, harness/, notes/, reading/. Status lives in frontmatter; no work/archive/content
-    layers. Plan frontmatter repos: (owner/repo @ branch) is the only record of which plan
-    governs which checkout; scan derives governed_by edges, context --cwd lists them, validate
-    flags plans whose boxes and status disagree. Repo CLAUDE.md states the conventions; skills
-    plan, report, status, triage in .claude/skills. No secrets, no foundation-sensitive or
-    embargoed material, no generated artifacts.'
+    directory is a project named for its subject; each holds README.md (entry: what it is,
+    status, contents index; no tasks, no repos) and the fixed buckets plans/ (every plan,
+    even the only one), specs/, guides/, reports/, drafts/, data/, evidence/, harness/, notes/,
+    reading/. Status lives in frontmatter; no work/archive/content layers. Plan frontmatter
+    repos: (owner/repo @ branch) is the only record of which plan governs which checkout;
+    scan derives governed_by edges, context --cwd lists them, validate flags plans whose boxes
+    and status disagree. Repo CLAUDE.md states the conventions; skills plan, report, status,
+    triage in .claude/skills. Sensitive material goes to XRPLF/exec-plans (Executives team),
+    never here.'
   attrs:
     verified_at: '2026-09-08'
 edges:

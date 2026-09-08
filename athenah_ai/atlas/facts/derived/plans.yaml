@@ -1,15 +1,5 @@
 # machine-owned; rewritten by `python -m athenah_ai.atlas scan` — do not hand-edit
 nodes:
-- id: plan:xrpl-guides/ai-operating-model/plan.md
-  kind: plan
-  name: ai operating model
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/ai-operating-model/plan.md
-    status: Active
-    store: xrpl-guides
-    title: ai operating model
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/ai-operating-model/plans/hardening.md
   kind: plan
   name: GitHub hardening runbook
@@ -32,16 +22,6 @@ nodes:
     store: xrpl-guides
     title: 'Phase 0: xrpl-guides refactor into sandbox-dangell7'
     updated: 2026-09-08 (steps 1-8 done, commits b873737, 1290a15, cf33271, c8d9567)
-- id: plan:xrpl-guides/alphanet/plan.md
-  kind: plan
-  name: alphanet
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/alphanet/plan.md
-    status: Active
-    store: xrpl-guides
-    title: alphanet
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/alphanet/plans/domain-migration.md
   kind: plan
   name: Alphanet domain migration — nerdnest.xyz → *.xrpl.org
@@ -67,16 +47,6 @@ nodes:
     store: xrpl-guides
     title: 'Plan 16 — Alphanet build/deploy: converge sentinel + loadtester into one network-ops
       pipeline'
-    updated: '2026-09-08'
-- id: plan:xrpl-guides/amendment-dashboard/plan.md
-  kind: plan
-  name: amendment dashboard
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/amendment-dashboard/plan.md
-    status: Active
-    store: xrpl-guides
-    title: amendment dashboard
     updated: '2026-09-08'
 - id: plan:xrpl-guides/amendment-dashboard/plans/01-build.md
   kind: plan
@@ -124,16 +94,6 @@ nodes:
     store: xrpl-guides
     title: Amendment Dashboard — surface-model review against xrpld 3.3.0
     updated: '2026-09-02'
-- id: plan:xrpl-guides/amendment-portfolio/plan.md
-  kind: plan
-  name: amendment portfolio
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/amendment-portfolio/plan.md
-    status: Active
-    store: xrpl-guides
-    title: amendment portfolio
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/amendment-portfolio/plans/status-board.md
   kind: plan
   name: Plan 1 — Amendment Status Board (Vet + Denis)
@@ -146,16 +106,6 @@ nodes:
     store: xrpl-guides
     title: Plan 1 — Amendment Status Board (Vet + Denis)
     updated: '2026-09-04'
-- id: plan:xrpl-guides/amm-curves/plan.md
-  kind: plan
-  name: amm curves
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/amm-curves/plan.md
-    status: Active
-    store: xrpl-guides
-    title: amm curves
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/amm-curves/plans/perf.md
   kind: plan
   name: AMM Performance Plan — Direct Work
@@ -178,16 +128,6 @@ nodes:
     store: xrpl-guides
     title: xrpl-wasm-stdlib — smart AMM escrow examples
     updated: '2026-06-13'
-- id: plan:xrpl-guides/confidential-voting/plan.md
-  kind: plan
-  name: confidential voting
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/confidential-voting/plan.md
-    status: Active
-    store: xrpl-guides
-    title: confidential voting
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/confidential-voting/plans/01-design.md
   kind: plan
   name: Plan 1 — Confidential Voting (homomorphic encrypted tally)
@@ -212,29 +152,17 @@ nodes:
     store: xrpl-guides
     title: Plan 2 — Confidential Voting implementation (Transia-RnD/rippled)
     updated: '2026-07-18'
-- id: plan:xrpl-guides/credit-record/plan.md
+- id: plan:xrpl-guides/credit-record/plans/platform-and-demo.md
   kind: plan
   name: Credit Record Platform
   provenance: derived
   attrs:
     boxes_done: 3
     boxes_open: 25
-    path: ~/projects/xrplf/xrpl-guides/credit-record/plan.md
+    path: ~/projects/xrplf/xrpl-guides/credit-record/plans/platform-and-demo.md
     status: Active
     store: xrpl-guides
     title: Credit Record Platform
-    updated: '2026-09-08'
-- id: plan:xrpl-guides/dex-timeseries/plan.md
-  kind: plan
-  name: dex timeseries
-  provenance: derived
-  attrs:
-    boxes_done: 0
-    boxes_open: 1
-    path: ~/projects/xrplf/xrpl-guides/dex-timeseries/plan.md
-    status: Draft
-    store: xrpl-guides
-    title: dex timeseries
     updated: '2026-09-08'
 - id: plan:xrpl-guides/dex-timeseries/specs/spec.md
   kind: plan
@@ -248,16 +176,6 @@ nodes:
     store: xrpl-guides
     title: DEX Timeseries
     updated: '2026-04-28'
-- id: plan:xrpl-guides/disaster-recovery/plan.md
-  kind: plan
-  name: disaster recovery
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/disaster-recovery/plan.md
-    status: Active
-    store: xrpl-guides
-    title: disaster recovery
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/disaster-recovery/plans/governance.md
   kind: plan
   name: xrpl-dr-plan — 2026-08-01 peer-flood debrief + DR scenarios
@@ -270,26 +188,26 @@ nodes:
     store: xrpl-guides
     title: xrpl-dr-plan — 2026-08-01 peer-flood debrief + DR scenarios
     updated: '2026-08-04'
-- id: plan:xrpl-guides/manifest-gossip/plan.md
+- id: plan:xrpl-guides/manifest-gossip/plans/repro-and-fix.md
   kind: plan
   name: 3.2.1 manifest gossip regression — local repro + fix confirmation
   provenance: derived
   attrs:
     boxes_done: 12
     boxes_open: 0
-    path: ~/projects/xrplf/xrpl-guides/manifest-gossip/plan.md
+    path: ~/projects/xrplf/xrpl-guides/manifest-gossip/plans/repro-and-fix.md
     status: Done
     store: xrpl-guides
     title: 3.2.1 manifest gossip regression — local repro + fix confirmation
     updated: '2026-09-08'
-- id: plan:xrpl-guides/mpt-structured-data/plan.md
+- id: plan:xrpl-guides/mpt-structured-data/plans/implementation.md
   kind: plan
   name: MPTStructuredData amendment implementation
   provenance: derived
   attrs:
     boxes_done: 24
     boxes_open: 0
-    path: ~/projects/xrplf/xrpl-guides/mpt-structured-data/plan.md
+    path: ~/projects/xrplf/xrpl-guides/mpt-structured-data/plans/implementation.md
     status: Done
     store: xrpl-guides
     title: MPTStructuredData amendment implementation
@@ -304,52 +222,42 @@ nodes:
     store: xrpl-guides
     title: Structured Data for Multi-Purpose Tokens
     updated: '2026-08-05'
-- id: plan:xrpl-guides/network-mapper/plan.md
+- id: plan:xrpl-guides/network-mapper/plans/observatory.md
   kind: plan
   name: XRPL Overlay Observatory — passive network listener + topology mapper
   provenance: derived
   attrs:
     boxes_done: 20
     boxes_open: 12
-    path: ~/projects/xrplf/xrpl-guides/network-mapper/plan.md
+    path: ~/projects/xrplf/xrpl-guides/network-mapper/plans/observatory.md
     status: Draft
     store: xrpl-guides
     title: XRPL Overlay Observatory — passive network listener + topology mapper
     updated: '2026-08-01'
-- id: plan:xrpl-guides/nudb-bloom-filter/plan.md
+- id: plan:xrpl-guides/nudb-bloom-filter/plans/bloom-filter.md
   kind: plan
   name: NuDB — bloom-filter negative lookups + mmap key reads
   provenance: derived
   attrs:
     boxes_done: 5
     boxes_open: 3
-    path: ~/projects/xrplf/xrpl-guides/nudb-bloom-filter/plan.md
+    path: ~/projects/xrplf/xrpl-guides/nudb-bloom-filter/plans/bloom-filter.md
     status: Active
     store: xrpl-guides
     title: NuDB — bloom-filter negative lookups + mmap key reads
     updated: '2026-08-04'
-- id: plan:xrpl-guides/onchain-cosigner/plan.md
+- id: plan:xrpl-guides/onchain-cosigner/plans/reference-implementation.md
   kind: plan
   name: 'On-Chain Cosigner (XLS-Discussion #589) — reference implementation with review deltas'
   provenance: derived
   attrs:
     boxes_done: 11
     boxes_open: 0
-    path: ~/projects/xrplf/xrpl-guides/onchain-cosigner/plan.md
+    path: ~/projects/xrplf/xrpl-guides/onchain-cosigner/plans/reference-implementation.md
     status: Done
     store: xrpl-guides
     title: 'On-Chain Cosigner (XLS-Discussion #589) — reference implementation with review
       deltas'
-    updated: '2026-09-08'
-- id: plan:xrpl-guides/online-delete/plan.md
-  kind: plan
-  name: online delete
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/online-delete/plan.md
-    status: Done
-    store: xrpl-guides
-    title: online delete
     updated: '2026-09-08'
 - id: plan:xrpl-guides/online-delete/plans/pr5531.md
   kind: plan
@@ -383,39 +291,29 @@ nodes:
     store: xrpl-guides
     title: Audit — PR 5531 (pause online delete on recent ledger-history gaps)
     updated: '2026-07-14'
-- id: plan:xrpl-guides/orderbook-index/plan.md
+- id: plan:xrpl-guides/orderbook-index/plans/09-orderbook-index.md
   kind: plan
   name: Plan 9 — Deterministic Ordered In-Memory Order-Book Index
   provenance: derived
   attrs:
     boxes_done: 9
     boxes_open: 2
-    path: ~/projects/xrplf/xrpl-guides/orderbook-index/plan.md
+    path: ~/projects/xrplf/xrpl-guides/orderbook-index/plans/09-orderbook-index.md
     status: Active
     store: xrpl-guides
     title: Plan 9 — Deterministic Ordered In-Memory Order-Book Index
     updated: '2026-09-08'
-- id: plan:xrpl-guides/reserve-debate/plan.md
+- id: plan:xrpl-guides/reserve-debate/plans/blog-post.md
   kind: plan
   name: Reserves blog post
   provenance: derived
   attrs:
     boxes_done: 3
     boxes_open: 6
-    path: ~/projects/xrplf/xrpl-guides/reserve-debate/plan.md
+    path: ~/projects/xrplf/xrpl-guides/reserve-debate/plans/blog-post.md
     status: Draft
     store: xrpl-guides
     title: Reserves blog post
-    updated: '2026-09-08'
-- id: plan:xrpl-guides/rfq/plan.md
-  kind: plan
-  name: rfq
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/rfq/plan.md
-    status: Active
-    store: xrpl-guides
-    title: rfq
     updated: '2026-09-08'
 - id: plan:xrpl-guides/rfq/plans/tier1.md
   kind: plan
@@ -429,38 +327,38 @@ nodes:
     store: xrpl-guides
     title: Tier 1 Plan — Execution Qualifiers + Market-Order Clarity
     updated: '2026-07-16'
-- id: plan:xrpl-guides/signature-roles/plan.md
+- id: plan:xrpl-guides/signature-roles/plans/test-matrix.md
   kind: plan
   name: Signature Roles — LoanSet × Sponsor × Batch × multisign test matrix
   provenance: derived
   attrs:
     boxes_done: 14
     boxes_open: 1
-    path: ~/projects/xrplf/xrpl-guides/signature-roles/plan.md
+    path: ~/projects/xrplf/xrpl-guides/signature-roles/plans/test-matrix.md
     status: Active
     store: xrpl-guides
     title: Signature Roles — LoanSet × Sponsor × Batch × multisign test matrix
     updated: '2026-09-02'
-- id: plan:xrpl-guides/staging-validator-ops/plan.md
+- id: plan:xrpl-guides/staging-validator-ops/plans/17-staging-ops-build.md
   kind: plan
   name: plan-17 — Custom ops build on the XRPLF staging validator (+ XDGM metrics site)
   provenance: derived
   attrs:
     boxes_done: 1
     boxes_open: 5
-    path: ~/projects/xrplf/xrpl-guides/staging-validator-ops/plan.md
+    path: ~/projects/xrplf/xrpl-guides/staging-validator-ops/plans/17-staging-ops-build.md
     status: Active
     store: xrpl-guides
     title: plan-17 — Custom ops build on the XRPLF staging validator (+ XDGM metrics site)
     updated: '2026-09-08'
-- id: plan:xrpl-guides/unl-multisig/plan.md
+- id: plan:xrpl-guides/unl-multisig/plans/implementation.md
   kind: plan
   name: UNL Multisig — Implementation Plan
   provenance: derived
   attrs:
     boxes_done: 0
     boxes_open: 18
-    path: ~/projects/xrplf/xrpl-guides/unl-multisig/plan.md
+    path: ~/projects/xrplf/xrpl-guides/unl-multisig/plans/implementation.md
     status: Active
     store: xrpl-guides
     title: UNL Multisig — Implementation Plan
@@ -475,18 +373,6 @@ nodes:
     store: xrpl-guides
     title: UNL Multisig — Threshold Signing for Validator Lists
     updated: '2026-06-21'
-- id: plan:xrpl-guides/validator-ranking/plan.md
-  kind: plan
-  name: validator ranking
-  provenance: derived
-  attrs:
-    boxes_done: 0
-    boxes_open: 1
-    path: ~/projects/xrplf/xrpl-guides/validator-ranking/plan.md
-    status: Draft
-    store: xrpl-guides
-    title: validator ranking
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/validator-ranking/specs/metrics.md
   kind: plan
   name: Validator ranking — metrics specification
@@ -499,14 +385,14 @@ nodes:
     store: xrpl-guides
     title: Validator ranking — metrics specification
     updated: '2026-08-09'
-- id: plan:xrpl-guides/wallet-signing/plan.md
+- id: plan:xrpl-guides/wallet-signing/plans/standard.md
   kind: plan
   name: Definitions-driven wallet signing standard (Xaman does not integrate each amendment)
   provenance: derived
   attrs:
     boxes_done: 10
     boxes_open: 21
-    path: ~/projects/xrplf/xrpl-guides/wallet-signing/plan.md
+    path: ~/projects/xrplf/xrpl-guides/wallet-signing/plans/standard.md
     status: Active
     store: xrpl-guides
     title: Definitions-driven wallet signing standard (Xaman does not integrate each amendment)
@@ -521,7 +407,7 @@ nodes:
     store: xrpl-guides
     title: Definitions-Driven Transaction Signing for Wallets
     updated: '2026-09-07'
-- id: plan:xrpl-guides/xls-impact-studies/plan.md
+- id: plan:xrpl-guides/xls-impact-studies/plans/generator.md
   kind: plan
   name: Impact study from the XLS — stage-1 ledger-impact projection, computed from the spec
     alone
@@ -529,58 +415,48 @@ nodes:
   attrs:
     boxes_done: 33
     boxes_open: 11
-    path: ~/projects/xrplf/xrpl-guides/xls-impact-studies/plan.md
+    path: ~/projects/xrplf/xrpl-guides/xls-impact-studies/plans/generator.md
     status: Active
     store: xrpl-guides
     title: Impact study from the XLS — stage-1 ledger-impact projection, computed from the
       spec alone
     updated: '2026-09-06'
-- id: plan:xrpl-guides/xrpl-studio/plan.md
+- id: plan:xrpl-guides/xrpl-studio/plans/toolkit.md
   kind: plan
   name: XRPL Studio — definitions-driven toolkit
   provenance: derived
   attrs:
     boxes_done: 1
     boxes_open: 1
-    path: ~/projects/xrplf/xrpl-guides/xrpl-studio/plan.md
+    path: ~/projects/xrplf/xrpl-guides/xrpl-studio/plans/toolkit.md
     status: Active
     store: xrpl-guides
     title: XRPL Studio — definitions-driven toolkit
     updated: '2026-06-13'
-- id: plan:xrpl-guides/xrpl-technical-explorer/plan.md
+- id: plan:xrpl-guides/xrpl-technical-explorer/plans/endpoint-override.md
   kind: plan
   name: XRPL Technical Explorer — runtime endpoint override
   provenance: derived
   attrs:
     boxes_done: 2
     boxes_open: 1
-    path: ~/projects/xrplf/xrpl-guides/xrpl-technical-explorer/plan.md
+    path: ~/projects/xrplf/xrpl-guides/xrpl-technical-explorer/plans/endpoint-override.md
     status: Active
     store: xrpl-guides
     title: XRPL Technical Explorer — runtime endpoint override
     updated: '2026-06-13'
-- id: plan:xrpl-guides/xrpld-build/plan.md
+- id: plan:xrpl-guides/xrpld-build/plans/supported-cicd.md
   kind: plan
   name: Supported-amendments build via CMake option (supported-cicd)
   provenance: derived
   attrs:
     boxes_done: 5
     boxes_open: 2
-    path: ~/projects/xrplf/xrpl-guides/xrpld-build/plan.md
+    path: ~/projects/xrplf/xrpl-guides/xrpld-build/plans/supported-cicd.md
     status: Active
     store: xrpl-guides
     title: Supported-amendments build via CMake option (supported-cicd)
     updated: '2026-08-04'
-- id: plan:xrpl-guides/xrpld-debug-stream/plan.md
-  kind: plan
-  name: xrpld debug stream
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/xrpld-debug-stream/plan.md
-    status: Active
-    store: xrpl-guides
-    title: xrpld debug stream
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/xrpld-debug-stream/plans/01-devnet.md
   kind: plan
   name: Debug Stream on the Public Networks — Devnet First
@@ -605,16 +481,6 @@ nodes:
     store: xrpl-guides
     title: Batch Inner Results — Query After the Fact
     updated: '2026-09-02'
-- id: plan:xrpl-guides/xrpld-loadtester/plan.md
-  kind: plan
-  name: xrpld loadtester
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/xrpld-loadtester/plan.md
-    status: Active
-    store: xrpl-guides
-    title: xrpld loadtester
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/xrpld-loadtester/plans/13-env-agnostic-deploy.md
   kind: plan
   name: Plan 13 — Environment-agnostic, swappable deploy (GCP ⇄ bare-metal) + topology as
@@ -641,14 +507,14 @@ nodes:
     store: xrpl-guides
     title: Loadtester Web App
     updated: '2026-08-04'
-- id: plan:xrpl-guides/xrpld-performance/plan.md
+- id: plan:xrpl-guides/xrpld-performance/plans/00-throughput-index.md
   kind: plan
   name: XRPL Throughput Plans — Top 5 Bottlenecks
   provenance: derived
   attrs:
     boxes_done: 8
     boxes_open: 39
-    path: ~/projects/xrplf/xrpl-guides/xrpld-performance/plan.md
+    path: ~/projects/xrplf/xrpl-guides/xrpld-performance/plans/00-throughput-index.md
     status: Active
     store: xrpl-guides
     title: XRPL Throughput Plans — Top 5 Bottlenecks
@@ -775,16 +641,6 @@ nodes:
     store: xrpl-guides
     title: Validation relay loss on mainnet — one-ledger cohort drops at the s1/s2 vantage
     updated: '2026-09-08'
-- id: plan:xrpl-guides/xrplf-distribution/plan.md
-  kind: plan
-  name: xrplf distribution
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/xrplf-distribution/plan.md
-    status: Active
-    store: xrpl-guides
-    title: xrplf distribution
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/xrplf-distribution/plans/hardening.md
   kind: plan
   name: XRPLF ops maintenance — distribution + UNL validator
@@ -797,16 +653,6 @@ nodes:
     store: xrpl-guides
     title: XRPLF ops maintenance — distribution + UNL validator
     updated: '2026-08-04'
-- id: plan:xrpl-guides/xrplf-release-notifier/plan.md
-  kind: plan
-  name: xrplf release notifier
-  provenance: derived
-  attrs:
-    path: ~/projects/xrplf/xrpl-guides/xrplf-release-notifier/plan.md
-    status: Active
-    store: xrpl-guides
-    title: xrplf release notifier
-    updated: '2026-09-08'
 - id: plan:xrpl-guides/xrplf-release-notifier/plans/docs-parity.md
   kind: plan
   name: Documentation parity check (xrplf-release-notifier)
@@ -858,19 +704,11 @@ nodes:
 edges:
 - kind: governed_by
   src: checkout:~/projects/transia/inteligen
-  dst: plan:xrpl-guides/xrpld-performance/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/transia/loadnet
-  dst: plan:xrpl-guides/alphanet/plan.md
+  dst: plan:xrpl-guides/xrpld-performance/plans/00-throughput-index.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/transia/loadnet
   dst: plan:xrpl-guides/alphanet/plans/network-ops-convergence.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/transia/loadnet
-  dst: plan:xrpl-guides/xrpld-loadtester/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/transia/loadnet
@@ -878,15 +716,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/transia/sentinel-ai
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/transia/sentinel-ai
   dst: plan:xrpl-guides/alphanet/plans/network-ops-convergence.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/transia/thehub-faucet
-  dst: plan:xrpl-guides/alphanet/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/transia/thehub-faucet
@@ -894,7 +724,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrpl-labs/xaman-app
-  dst: plan:xrpl-guides/wallet-signing/plan.md
+  dst: plan:xrpl-guides/wallet-signing/plans/standard.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrpl-labs/xaman-app
@@ -902,11 +732,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/NuDB
-  dst: plan:xrpl-guides/nudb-bloom-filter/plan.md
+  dst: plan:xrpl-guides/nudb-bloom-filter/plans/bloom-filter.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/XRPL-Standards
-  dst: plan:xrpl-guides/wallet-signing/plan.md
+  dst: plan:xrpl-guides/wallet-signing/plans/standard.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/XRPL-Standards
@@ -914,11 +744,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/XRPL-Technical-Explorer
-  dst: plan:xrpl-guides/xrpl-technical-explorer/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/amendment-dashboard
-  dst: plan:xrpl-guides/amendment-dashboard/plan.md
+  dst: plan:xrpl-guides/xrpl-technical-explorer/plans/endpoint-override.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/amendment-dashboard
@@ -938,23 +764,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/amm-curves-static
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/amm-curves-static
   dst: plan:xrpl-guides/alphanet/plans/domain-migration.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/quantum-static
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/quantum-static
   dst: plan:xrpl-guides/alphanet/plans/domain-migration.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/unl
-  dst: plan:xrpl-guides/validator-ranking/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/unl
@@ -962,15 +776,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-dev-portal
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpl-dev-portal
   dst: plan:xrpl-guides/alphanet/plans/domain-migration.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpl-dr-plan
-  dst: plan:xrpl-guides/disaster-recovery/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-dr-plan
@@ -978,31 +784,19 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-guides
-  dst: plan:xrpl-guides/ai-operating-model/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpl-guides
   dst: plan:xrpl-guides/ai-operating-model/plans/phase0-refactor.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-playground
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpl-playground
   dst: plan:xrpl-guides/alphanet/plans/domain-migration.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-playground
-  dst: plan:xrpl-guides/network-mapper/plan.md
+  dst: plan:xrpl-guides/network-mapper/plans/observatory.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-reserves-static
-  dst: plan:xrpl-guides/reserve-debate/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpl-studio
-  dst: plan:xrpl-guides/alphanet/plan.md
+  dst: plan:xrpl-guides/reserve-debate/plans/blog-post.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-studio
@@ -1010,15 +804,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-studio
-  dst: plan:xrpl-guides/xrpl-studio/plan.md
+  dst: plan:xrpl-guides/xrpl-studio/plans/toolkit.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-tally
-  dst: plan:xrpl-guides/credit-record/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpl-wasm-stdlib
-  dst: plan:xrpl-guides/amm-curves/plan.md
+  dst: plan:xrpl-guides/credit-record/plans/platform-and-demo.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-wasm-stdlib
@@ -1026,23 +816,19 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
-  dst: plan:xrpl-guides/confidential-voting/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld
   dst: plan:xrpl-guides/confidential-voting/plans/01-design.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
-  dst: plan:xrpl-guides/onchain-cosigner/plan.md
+  dst: plan:xrpl-guides/onchain-cosigner/plans/reference-implementation.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
-  dst: plan:xrpl-guides/staging-validator-ops/plan.md
+  dst: plan:xrpl-guides/staging-validator-ops/plans/17-staging-ops-build.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
-  dst: plan:xrpl-guides/wallet-signing/plan.md
+  dst: plan:xrpl-guides/wallet-signing/plans/standard.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
@@ -1050,11 +836,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
-  dst: plan:xrpl-guides/xrpld-build/plan.md
+  dst: plan:xrpl-guides/xrpld-build/plans/supported-cicd.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
-  dst: plan:xrpl-guides/xrpld-performance/plan.md
+  dst: plan:xrpl-guides/xrpld-performance/plans/00-throughput-index.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
@@ -1070,15 +856,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-amm
-  dst: plan:xrpl-guides/amm-curves/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-amm
   dst: plan:xrpl-guides/amm-curves/plans/perf.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-batch-db
-  dst: plan:xrpl-guides/xrpld-debug-stream/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-batch-db
@@ -1090,23 +868,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-debug-stream
-  dst: plan:xrpl-guides/xrpld-debug-stream/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-debug-stream
   dst: plan:xrpl-guides/xrpld-debug-stream/plans/02-batch-results.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-lab
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-lab
   dst: plan:xrpl-guides/alphanet/plans/domain-migration.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-lab
-  dst: plan:xrpl-guides/xrpld-loadtester/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-lab
@@ -1130,19 +896,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-loadtester
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-loadtester
   dst: plan:xrpl-guides/alphanet/plans/network-ops-convergence.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-loadtester
-  dst: plan:xrpl-guides/staging-validator-ops/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-loadtester
-  dst: plan:xrpl-guides/xrpld-loadtester/plan.md
+  dst: plan:xrpl-guides/staging-validator-ops/plans/17-staging-ops-build.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-loadtester
@@ -1174,10 +932,6 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-online-delete
-  dst: plan:xrpl-guides/online-delete/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-online-delete
   dst: plan:xrpl-guides/online-delete/plans/pr5531.md
   provenance: derived
 - kind: governed_by
@@ -1198,11 +952,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-private-321fix
-  dst: plan:xrpl-guides/manifest-gossip/plan.md
+  dst: plan:xrpl-guides/manifest-gossip/plans/repro-and-fix.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-publisher
-  dst: plan:xrpl-guides/unl-multisig/plan.md
+  dst: plan:xrpl-guides/unl-multisig/plans/implementation.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-publisher
@@ -1210,11 +964,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-sig-roles
-  dst: plan:xrpl-guides/signature-roles/plan.md
+  dst: plan:xrpl-guides/signature-roles/plans/test-matrix.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-structured-data
-  dst: plan:xrpl-guides/mpt-structured-data/plan.md
+  dst: plan:xrpl-guides/mpt-structured-data/plans/implementation.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-structured-data
@@ -1222,19 +976,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-timeseries
-  dst: plan:xrpl-guides/dex-timeseries/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-timeseries
   dst: plan:xrpl-guides/dex-timeseries/specs/spec.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-top-of-book
-  dst: plan:xrpl-guides/orderbook-index/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-transia
-  dst: plan:xrpl-guides/confidential-voting/plan.md
+  dst: plan:xrpl-guides/orderbook-index/plans/09-orderbook-index.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-transia
@@ -1242,15 +988,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-transia-rfq
-  dst: plan:xrpl-guides/rfq/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-transia-rfq
   dst: plan:xrpl-guides/rfq/plans/tier1.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-distribution
-  dst: plan:xrpl-guides/xrplf-distribution/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-distribution
@@ -1258,15 +996,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
-  dst: plan:xrpl-guides/alphanet/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-release-notifier
   dst: plan:xrpl-guides/alphanet/plans/network-ops-convergence.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-release-notifier
-  dst: plan:xrpl-guides/validator-ranking/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
@@ -1274,15 +1004,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
-  dst: plan:xrpl-guides/xls-impact-studies/plan.md
+  dst: plan:xrpl-guides/xls-impact-studies/plans/generator.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
   dst: plan:xrpl-guides/xrpld-performance/reports/validation-relay-loss-mainnet.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-release-notifier
-  dst: plan:xrpl-guides/xrplf-release-notifier/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
@@ -1302,15 +1028,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:xrpl-guides/network-mapper/plan.md
+  dst: plan:xrpl-guides/network-mapper/plans/observatory.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:xrpl-guides/staging-validator-ops/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:xrpl-guides/xrpld-debug-stream/plan.md
+  dst: plan:xrpl-guides/staging-validator-ops/plans/17-staging-ops-build.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-unl-validator
@@ -1326,15 +1048,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:xrpl-guides/xrplf-distribution/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
   dst: plan:xrpl-guides/xrplf-distribution/plans/hardening.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-webapp
-  dst: plan:xrpl-guides/alphanet/plan.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-webapp
@@ -1342,19 +1056,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-webapp
-  dst: plan:xrpl-guides/confidential-voting/plan.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-webapp
   dst: plan:xrpl-guides/confidential-voting/plans/01-design.md
   provenance: derived
 - kind: governed_by
   src: repo:Transia-RnD/xrpl-playground
-  dst: plan:xrpl-guides/network-mapper/plan.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/rippled
-  dst: plan:xrpl-guides/ai-operating-model/plan.md
+  dst: plan:xrpl-guides/network-mapper/plans/observatory.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
@@ -1362,11 +1068,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
-  dst: plan:xrpl-guides/network-mapper/plan.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/rippled
-  dst: plan:xrpl-guides/validator-ranking/plan.md
+  dst: plan:xrpl-guides/network-mapper/plans/observatory.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
@@ -1374,7 +1076,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
-  dst: plan:xrpl-guides/xls-impact-studies/plan.md
+  dst: plan:xrpl-guides/xls-impact-studies/plans/generator.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
@@ -1382,15 +1084,7 @@ edges:
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
-  dst: plan:xrpl-guides/xrplf-release-notifier/plan.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/rippled
   dst: plan:xrpl-guides/xrplf-release-notifier/plans/xls-parity.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/unl
-  dst: plan:xrpl-guides/validator-ranking/plan.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/unl
@@ -1398,19 +1092,11 @@ edges:
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/xrpld-private
-  dst: plan:xrpl-guides/ai-operating-model/plan.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/xrpld-private
   dst: plan:xrpl-guides/ai-operating-model/plans/hardening.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/xrplf-unl-validator
-  dst: plan:xrpl-guides/network-mapper/plan.md
-  provenance: derived
-- kind: governed_by
-  src: repo:dangell7/xrplf-staging
-  dst: plan:xrpl-guides/amendment-portfolio/plan.md
+  dst: plan:xrpl-guides/network-mapper/plans/observatory.md
   provenance: derived
 - kind: governed_by
   src: repo:dangell7/xrplf-staging

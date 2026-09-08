@@ -289,6 +289,15 @@ nodes:
     last_seen: '2026-09-08'
     no_remote: true
     path: ~/projects/xrplf/amm-curves-static
+- id: checkout:~/projects/xrplf/exec-plans
+  kind: checkout
+  name: exec-plans
+  provenance: derived
+  attrs:
+    branch: main
+    last_seen: '2026-09-08'
+    no_remote: true
+    path: ~/projects/xrplf/exec-plans
 - id: checkout:~/projects/xrplf/online-delete-static
   kind: checkout
   name: online-delete-static
@@ -298,6 +307,15 @@ nodes:
     last_seen: '2026-09-08'
     no_remote: true
     path: ~/projects/xrplf/online-delete-static
+- id: checkout:~/projects/xrplf/ops-plans
+  kind: checkout
+  name: ops-plans
+  provenance: derived
+  attrs:
+    branch: main
+    last_seen: '2026-09-08'
+    path: ~/projects/xrplf/ops-plans
+    remote: https://github.com/XRPLF/ops-plans.git
 - id: checkout:~/projects/xrplf/quantum-static
   kind: checkout
   name: quantum-static
@@ -1235,6 +1253,10 @@ edges:
 - kind: checkout_of
   src: checkout:~/projects/xrplf/amendment-dashboard
   dst: repo:dangell7/amendment-dashboard
+  provenance: derived
+- kind: checkout_of
+  src: checkout:~/projects/xrplf/ops-plans
+  dst: repo:XRPLF/ops-plans
   provenance: derived
 - kind: checkout_of
   src: checkout:~/projects/xrplf/quantum-static

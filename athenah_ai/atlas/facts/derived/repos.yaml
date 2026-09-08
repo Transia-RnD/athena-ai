@@ -176,6 +176,10 @@ nodes:
   kind: repo
   name: ai-automation
   provenance: derived
+- id: repo:XRPLF/ops-plans
+  kind: repo
+  name: ops-plans
+  provenance: derived
 - id: repo:XRPLF/rippled
   kind: repo
   name: rippled
@@ -399,6 +403,10 @@ edges:
   provenance: derived
 - kind: owned_by
   src: repo:XRPLF/ai-automation
+  dst: org:xrplf
+  provenance: derived
+- kind: owned_by
+  src: repo:XRPLF/ops-plans
   dst: org:xrplf
   provenance: derived
 - kind: owned_by
