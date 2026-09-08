@@ -385,6 +385,18 @@ def cmd_validate(args: argparse.Namespace) -> int:
         since = stale_since(node, cutoff)
         if since:
             print(f"WARNING: {node.id} unverified since {since}")
+    for node in nodes:
+        if node.kind != "plan":
+            continue
+        status = str(node.attrs.get("status", ""))
+        done = int(node.attrs.get("boxes_done", 0) or 0)
+        open_ = int(node.attrs.get("boxes_open", 0) or 0)
+        if status and status not in ("Draft", "Active", "Done", "Parked", "Proposal"):
+            print(f"WARNING: {node.id} status {status!r} is not Draft/Active/Done/Parked/Proposal")
+        if status == "Active" and done and not open_:
+            print(f"WARNING: {node.id} all boxes ticked but status is Active")
+        if status == "Done" and open_:
+            print(f"WARNING: {node.id} has {open_} open box(es) but status is Done")
     proposed = store.proposed()
     if proposed:
         print(

@@ -36,13 +36,13 @@ class TestPlanScanner(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
         os.makedirs(os.path.join(self.tmp, "work", "amm"))
-        os.makedirs(os.path.join(self.tmp, "archive", "old"))
+        os.makedirs(os.path.join(self.tmp, "_outbound", "old"))
         with open(os.path.join(self.tmp, "work", "amm", "plan.md"), "w") as f:
             f.write('---\ntitle: "AMM plan"\nstatus: "Active"\nupdated: "2026-09-08"\n'
                     'repos: "xrplf/xrpld-amm @ dangell7/amm-curves, XRPLF/rippled @ dangell7/clob, XRPLF/xrpl.js"\n---\n# AMM\n- [ ] x\n')
         with open(os.path.join(self.tmp, "work", "amm", "notes.md"), "w") as f:
             f.write("# no frontmatter\n")
-        with open(os.path.join(self.tmp, "archive", "old", "plan.md"), "w") as f:
+        with open(os.path.join(self.tmp, "_outbound", "old", "plan.md"), "w") as f:
             f.write('---\nrepos: "xrplf/xrpld-amm"\n---\n')
         self.known = [
             _checkout("~/projects/xrplf/xrpld-amm", "https://github.com/Transia-RnD/rippled.git", "dangell7/amm-curves"),
@@ -64,9 +64,10 @@ class TestPlanScanner(unittest.TestCase):
         self.assertNotIn(("checkout:~/projects/xrplf/xrpld", "governed_by"), dsts)    # other branch untouched
         self.assertEqual(len(edges), 3)
 
-    def test_archive_skipped(self):
+    def test_outbound_skipped_and_boxes_counted(self):
         nodes, _ = PlanScanner().scan([self.tmp], self.known)
-        self.assertFalse(any("archive" in n.id for n in nodes))
+        self.assertFalse(any("_outbound" in n.id for n in nodes))
+        self.assertEqual((nodes[0].attrs["boxes_done"], nodes[0].attrs["boxes_open"]), (0, 1))
 
 
 if __name__ == "__main__":

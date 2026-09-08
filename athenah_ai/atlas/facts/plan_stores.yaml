@@ -3,14 +3,15 @@ nodes:
   kind: plan_store
   name: xrpl-guides
   provenance: taught
-  notes: 'Central plan/spec/report store for XRPLF work; Denis''s sandbox (becomes XRPLF/sandbox-dangell7).
-    Layout since 2026-09-08: work/<workstream>/ holds plans, specs, reports, reviews and evidence
-    per subject; guides/ reference docs; content/ drafts; archive/ finished work; _outbound/
-    material leaving for ops-plans or Transia. Plan frontmatter repos: (owner/repo @ branch)
-    is the only record of which plan governs which checkout; the atlas scan derives governed_by
-    edges from it and context --cwd lists them; tools/plans.py derives the same table locally.
-    Repo CLAUDE.md states the conventions; skills plan, report, status, triage live in .claude/skills.
-    No secrets, no foundation-sensitive or embargoed material, no generated artifacts.'
+  notes: 'Denis''s sandbox for XRPLF work (becomes XRPLF/sandbox-dangell7). Every top-level
+    directory is a project named for its subject; each holds plan.md (entry: goal, status,
+    tasks, index) and the fixed buckets plans/, specs/, guides/, reports/, drafts/, data/,
+    evidence/, harness/, notes/, reading/. Status lives in frontmatter; no work/archive/content
+    layers. Plan frontmatter repos: (owner/repo @ branch) is the only record of which plan
+    governs which checkout; scan derives governed_by edges, context --cwd lists them, validate
+    flags plans whose boxes and status disagree. Repo CLAUDE.md states the conventions; skills
+    plan, report, status, triage in .claude/skills. No secrets, no foundation-sensitive or
+    embargoed material, no generated artifacts.'
   attrs:
     verified_at: '2026-09-08'
 edges:

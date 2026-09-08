@@ -1,7 +1,8 @@
 """Plan scanner: derive plan nodes and governed_by edges from plan-store frontmatter.
 
-A plan store is a checkout (see ``AtlasConfig.plan_store_roots``) whose markdown
-files carry YAML frontmatter with a ``repos:`` field: comma-separated
+A plan store is a checkout (see ``AtlasConfig.plan_store_roots``) in which every
+top-level directory is a project and markdown files carry YAML frontmatter with a
+``repos:`` field: comma-separated
 ``<owner>/<repo> @ <branch>`` items. ``<owner>/<repo>`` is either a checkout
 directory under the projects root (``xrplf/xrpld-amm``) or a GitHub slug
 (``XRPLF/rippled``). Each such file becomes a derived ``plan`` node; each item
@@ -18,8 +19,8 @@ import yaml
 from athenah_ai.atlas.schema import Edge, Node
 from athenah_ai.atlas.scanner import parse_remote
 
-SCAN_DIRS = ("work", "content")
-SKIP_DIRS = {".git", "archive", "_outbound", "node_modules"}
+SCAN_DIRS = ()
+SKIP_DIRS = {".git", ".claude", "_outbound", "node_modules"}
 NONE_WORDS = ("none", "(none", "n/a")
 DASHES = ("-", "—")
 
@@ -125,6 +126,13 @@ class PlanScanner:
                 rel = os.path.relpath(path, root_abs)
                 pid = f"plan:{store}/{rel}"
                 attrs = {"path": _tilde(path), "store": store}
+                with open(path, encoding="utf-8") as f:
+                    body = f.read()
+                done = len(re.findall(r"^\s*- \[x\]", body, re.M | re.I))
+                open_ = len(re.findall(r"^\s*- \[ \]", body, re.M))
+                if done + open_:
+                    attrs["boxes_done"] = done
+                    attrs["boxes_open"] = open_
                 for k in ("status", "updated", "title"):
                     if fm.get(k):
                         attrs[k] = str(fm[k])
