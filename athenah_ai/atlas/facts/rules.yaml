@@ -220,6 +220,18 @@ nodes:
     applies_when: publishing a page, report, or site that someone outside the XRPLF org must be able to
       open
     verified_at: '2026-09-08'
+- id: rule:no-memory-files
+  kind: rule
+  name: No memory files — facts go to the atlas or the plan store
+  provenance: taught
+  notes: Do not write to ~/.claude/projects/*/memory or any MEMORY.md; Denis dropped the memory store
+    on 2026-09-06 because it duplicated CLAUDE.md and drifted. A durable fact about how Denis works, an
+    identity, a repo, a server, or a rule goes into the atlas (`python -m athenah_ai.atlas teach`, or
+    `teach --propose` when unsure) and is rendered into CLAUDE.md. Project status, decisions, and next
+    steps go into the plan store (xrpl-guides for XRPL work). Repo-specific conventions go into that repo's
+    own docs. If none of those fits, the fact is not worth keeping.
+  attrs:
+    verified_at: '2026-09-08'
 edges:
 - kind: applies_to
   src: rule:ssh-access
