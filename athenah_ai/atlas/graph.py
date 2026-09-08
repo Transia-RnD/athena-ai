@@ -52,6 +52,8 @@ class AtlasContext:
     plan_stores: List[Node] = field(default_factory=list)
     servers: List[Node] = field(default_factory=list)
     rules: List[Node] = field(default_factory=list)
+    plans: List[Node] = field(default_factory=list)
+    repo_plans: List[Node] = field(default_factory=list)
 
 
 class AtlasGraph:
@@ -229,6 +231,7 @@ class AtlasGraph:
         if cid is None:
             return ctx
         ctx.checkout = self.node(cid)
+        ctx.plans = self._out(cid, "governed_by")
 
         mains = self._out(cid, "worktree_of")
         ctx.main_checkout = mains[0] if mains else ctx.checkout
@@ -243,6 +246,11 @@ class AtlasGraph:
             return ctx
         orgs = self._out(ctx.repo.id, "owned_by")
         ctx.org = orgs[0] if orgs else None
+        seen = {n.id for n in ctx.plans}
+        ctx.repo_plans = sorted(
+            (n for n in self._out(ctx.repo.id, "governed_by") if n.id not in seen),
+            key=lambda n: n.id,
+        )
 
         scope_ids = {ctx.repo.id}
         if ctx.org is not None:

@@ -379,6 +379,25 @@ def _context_lines(graph: AtlasGraph, ctx: AtlasContext,
                 f"{_note_suffix(store.notes)}."
             )
         lines.append("")
+    if ctx.plans:
+        lines.append("Plans governing this checkout (frontmatter `repos:` names this directory or branch):")
+        for plan in ctx.plans:
+            lines.append(
+                f"- `{plan.attrs.get('path', plan.id)}` "
+                f"({plan.attrs.get('status', '?')}, updated {plan.attrs.get('updated', '?')})"
+            )
+        lines.append("")
+    if ctx.repo_plans:
+        if len(ctx.repo_plans) <= 5:
+            lines.append("Plans naming the repository without a branch:")
+            for plan in ctx.repo_plans:
+                lines.append(f"- `{plan.attrs.get('path', plan.id)}` ({plan.attrs.get('status', '?')})")
+        else:
+            lines.append(
+                f"{len(ctx.repo_plans)} plans name the repository without a branch; "
+                "run `python3 tools/plans.py for <slug>` in the plan store to list them."
+            )
+        lines.append("")
     if ctx.workflows:
         for wf in ctx.workflows:
             lines.append(

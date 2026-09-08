@@ -26,6 +26,7 @@ NODE_KINDS = frozenset({
     "skill",
     "rule",
     "plan_store",
+    "plan",
     "environment",
 })
 
@@ -45,6 +46,7 @@ EDGE_KINDS = frozenset({
     "operates",
     "documented_in",
     "applies_to",
+    "governed_by",
 })
 
 # "proposed" facts are agent-suggested and await human review; renders skip
@@ -57,6 +59,7 @@ EDGE_ENDPOINT_RULES: Dict[str, Tuple[frozenset, frozenset]] = {
     "owned_by": (frozenset({"repo"}), frozenset({"org", "person"})),
     "checkout_of": (frozenset({"checkout"}), frozenset({"repo"})),
     "worktree_of": (frozenset({"checkout"}), frozenset({"checkout"})),
+    "governed_by": (frozenset({"checkout", "repo"}), frozenset({"plan"})),
     "plans_in": (
         frozenset({"repo", "org", "workflow"}),
         frozenset({"plan_store", "repo"}),

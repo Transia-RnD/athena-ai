@@ -84,7 +84,7 @@ nodes:
     has_tasks_dir: true
     last_seen: '2026-09-08'
     path: ~/projects/transia/athenah-ai
-    remote: git@github.com:Transia-RnD/athenah-ai.git
+    remote: https://github.com/Transia-RnD/athenah-ai.git
 - id: checkout:~/projects/transia/inteligen
   kind: checkout
   name: inteligen
@@ -112,7 +112,7 @@ nodes:
     branch: main
     last_seen: '2026-09-08'
     path: ~/projects/transia/llm-training
-    remote: git@github.com:Transia-RnD/llm-training.git
+    remote: https://github.com/Transia-RnD/llm-training.git
 - id: checkout:~/projects/transia/loadnet
   kind: checkout
   name: loadnet
@@ -148,7 +148,7 @@ nodes:
     branch: main
     last_seen: '2026-09-08'
     path: ~/projects/transia/re-scraper
-    remote: git@github.com:dangell7/re-scraper.git
+    remote: https://github.com/dangell7/re-scraper.git
 - id: checkout:~/projects/transia/sage-ai
   kind: checkout
   name: sage-ai
@@ -177,7 +177,7 @@ nodes:
     branch: fix/anthropic-thinking-tokens
     last_seen: '2026-09-08'
     path: ~/projects/transia/sglang
-    remote: git@github.com:dangell7/sglang.git
+    remote: https://github.com/dangell7/sglang.git
 - id: checkout:~/projects/transia/tars
   kind: checkout
   name: tars
@@ -278,7 +278,7 @@ nodes:
     branch: main
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/amendment-dashboard
-    remote: git@github.com:dangell7/amendment-dashboard.git
+    remote: https://github.com/dangell7/amendment-dashboard.git
 - id: checkout:~/projects/xrplf/amm-curves-static
   kind: checkout
   name: amm-curves-static
@@ -378,7 +378,7 @@ nodes:
   provenance: derived
   attrs:
     branch: main
-    has_tasks_dir: true
+    has_claude_md: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpl-guides
     remote: https://github.com/Transia-RnD/xrpl-guides.git
@@ -408,7 +408,16 @@ nodes:
     branch: main
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpl-playground
-    remote: git@github.com:Transia-RnD/xrpl-playground.git
+    remote: https://github.com/Transia-RnD/xrpl-playground.git
+- id: checkout:~/projects/xrplf/xrpl-reserves-static
+  kind: checkout
+  name: xrpl-reserves-static
+  provenance: derived
+  attrs:
+    branch: main
+    last_seen: '2026-09-08'
+    no_remote: true
+    path: ~/projects/xrplf/xrpl-reserves-static
 - id: checkout:~/projects/xrplf/xrpl-studio
   kind: checkout
   name: xrpl-studio
@@ -418,6 +427,14 @@ nodes:
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpl-studio
     remote: https://github.com/Transia-RnD/xrpl-toolkit.git
+- id: checkout:~/projects/xrplf/xrpl-tally
+  kind: checkout
+  name: xrpl-tally
+  provenance: derived
+  attrs:
+    last_seen: '2026-09-08'
+    no_remote: true
+    path: ~/projects/xrplf/xrpl-tally
 - id: checkout:~/projects/xrplf/xrpl-wallet-signing
   kind: checkout
   name: xrpl-wallet-signing
@@ -511,7 +528,7 @@ nodes:
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-axrt2938
-    remote: git@github.com:XRPLF/xrpld-private.git
+    remote: https://github.com/XRPLF/xrpld-private.git
 - id: checkout:~/projects/xrplf/xrpld-batch
   kind: checkout
   name: xrpld-batch
@@ -560,7 +577,7 @@ nodes:
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-cap-pr4
-    remote: git@github.com:Transia-RnD/rippled.git
+    remote: https://github.com/Transia-RnD/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-clob
   kind: checkout
   name: xrpld-clob
@@ -579,7 +596,7 @@ nodes:
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-combined
-    remote: git@github.com:Transia-RnD/rippled.git
+    remote: https://github.com/Transia-RnD/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-conan-cache
   kind: checkout
   name: xrpld-conan-cache
@@ -616,7 +633,7 @@ nodes:
     branch: dangell7/coupon-payments
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-coupon
-    remote: git@github.com:Transia-RnD/rippled.git
+    remote: https://github.com/Transia-RnD/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-datagram
   kind: checkout
   name: xrpld-datagram
@@ -663,7 +680,7 @@ nodes:
     branch: dangell7/docs-ai
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-doc
-    remote: git@github.com:XRPLF/rippled.git
+    remote: https://github.com/XRPLF/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-docs-test
   kind: checkout
   name: xrpld-docs-test
@@ -672,7 +689,7 @@ nodes:
     branch: dangell7/docs
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-docs-test
-    remote: git@github.com:XRPLF/rippled.git
+    remote: https://github.com/XRPLF/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-fee-loop-fix
   kind: checkout
   name: xrpld-fee-loop-fix
@@ -691,7 +708,7 @@ nodes:
     branch: dangell7/fix-token-escrow-v2
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-fix-escrow
-    remote: git@github.com:XRPLF/rippled.git
+    remote: https://github.com/XRPLF/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-jtaccept
   kind: checkout
   name: xrpld-jtaccept
@@ -722,7 +739,7 @@ nodes:
     has_tasks_dir: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-lab
-    remote: git@github.com:Transia-RnD/xrpld-lab.git
+    remote: https://github.com/Transia-RnD/xrpld-lab.git
 - id: checkout:~/projects/xrplf/xrpld-lending
   kind: checkout
   name: xrpld-lending
@@ -752,7 +769,7 @@ nodes:
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-loadfee
-    remote: git@github.com:Transia-RnD/rippled.git
+    remote: https://github.com/Transia-RnD/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-loadtester
   kind: checkout
   name: xrpld-loadtester
@@ -772,7 +789,7 @@ nodes:
     branch: dangell7/trace
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-logging
-    remote: git@github.com:XRPLF/rippled.git
+    remote: https://github.com/XRPLF/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-online-delete
   kind: checkout
   name: xrpld-online-delete
@@ -801,7 +818,7 @@ nodes:
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-online-delete-gc
-    remote: git@github.com:Transia-RnD/rippled.git
+    remote: https://github.com/Transia-RnD/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-online-delete-gc-xrplf
   kind: checkout
   name: xrpld-online-delete-gc-xrplf
@@ -862,7 +879,7 @@ nodes:
     branch: dangell7/overlay-connection-throttle
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-private
-    remote: git@github.com:XRPLF/xrpld-private.git
+    remote: https://github.com/XRPLF/xrpld-private.git
 - id: checkout:~/projects/xrplf/xrpld-private-321fix
   kind: checkout
   name: xrpld-private-321fix
@@ -872,7 +889,7 @@ nodes:
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-private-321fix
-    remote: git@github.com:XRPLF/xrpld-private.git
+    remote: https://github.com/XRPLF/xrpld-private.git
 - id: checkout:~/projects/xrplf/xrpld-publisher
   kind: checkout
   name: xrpld-publisher
@@ -908,6 +925,7 @@ nodes:
   provenance: derived
   attrs:
     branch: dangell7/shamap-shed-subtrees
+    has_claude_md: true
     is_worktree: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-shed
@@ -990,7 +1008,7 @@ nodes:
     branch: token-paychan
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-token-paychan
-    remote: git@github.com:XRPLF/rippled.git
+    remote: https://github.com/XRPLF/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-top-of-book
   kind: checkout
   name: xrpld-top-of-book
@@ -1008,7 +1026,7 @@ nodes:
     branch: dangell7/confidential-voting
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrpld-transia
-    remote: git@github.com:Transia-RnD/rippled.git
+    remote: https://github.com/Transia-RnD/rippled.git
 - id: checkout:~/projects/xrplf/xrpld-transia-rfq
   kind: checkout
   name: xrpld-transia-rfq
@@ -1056,7 +1074,7 @@ nodes:
     branch: main
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrplf-distribution
-    remote: git@github.com:XRPLF/xrplf-distribution.git
+    remote: https://github.com/XRPLF/xrplf-distribution.git
 - id: checkout:~/projects/xrplf/xrplf-release-notifier
   kind: checkout
   name: xrplf-release-notifier
@@ -1066,7 +1084,7 @@ nodes:
     has_tasks_dir: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrplf-release-notifier
-    remote: git@github.com:XRPLF/xrplf-release-notifier.git
+    remote: https://github.com/XRPLF/xrplf-release-notifier.git
 - id: checkout:~/projects/xrplf/xrplf-staging
   kind: checkout
   name: xrplf-staging
@@ -1076,7 +1094,7 @@ nodes:
     has_tasks_dir: true
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrplf-staging
-    remote: git@github.com:dangell7/xrplf-staging.git
+    remote: https://github.com/dangell7/xrplf-staging.git
 - id: checkout:~/projects/xrplf/xrplf-unl-validator
   kind: checkout
   name: xrplf-unl-validator
@@ -1085,7 +1103,7 @@ nodes:
     branch: main
     last_seen: '2026-09-08'
     path: ~/projects/xrplf/xrplf-unl-validator
-    remote: git@github.com:XRPLF/xrplf-unl-validator.git
+    remote: https://github.com/XRPLF/xrplf-unl-validator.git
 - id: checkout:~/projects/xrplf/xrplf-webapp
   kind: checkout
   name: xrplf-webapp

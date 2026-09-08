@@ -238,4 +238,13 @@ class AtlasScanner:
         other_edges = [e for e in edges if e.kind == "owned_by"]
         store.write_derived("checkouts", checkout_nodes, checkout_edges)
         store.write_derived("repos", other_nodes, other_edges)
+        from athenah_ai.atlas.plans import PlanScanner
+        from athenah_ai.config import config as _cfg
+
+        plan_nodes, plan_edges = PlanScanner().scan(
+            _cfg.atlas.plan_store_roots_list(), checkout_nodes + other_nodes
+        )
+        store.write_derived("plans", plan_nodes, plan_edges)
+        nodes = nodes + plan_nodes
+        edges = edges + plan_edges
         return nodes, edges

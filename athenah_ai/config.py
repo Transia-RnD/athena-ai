@@ -247,6 +247,10 @@ class AtlasConfig:
     # Max directory depth when scanning for git checkouts
     scan_depth: int = 4
 
+    # Comma-separated plan-store checkouts whose plan frontmatter `repos:` is
+    # scanned into derived plan nodes and governed_by edges.
+    plan_store_roots: str = "~/projects/xrplf/xrpl-guides"
+
     # Default output path for the rendered ATLAS.md
     render_out: str = "~/.athenah/atlas/ATLAS.md"
 
@@ -286,6 +290,10 @@ class AtlasConfig:
             fmt, _, path = entry.partition(":")
             targets.append((fmt.strip(), os.path.expanduser(path.strip())))
         return targets
+
+    def plan_store_roots_list(self) -> list:
+        """Return plan_store_roots split into a list of paths."""
+        return [r.strip() for r in self.plan_store_roots.split(",") if r.strip()]
 
     def scan_roots_list(self) -> list:
         """Return scan_roots split into a list of paths.
