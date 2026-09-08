@@ -1101,9 +1101,10 @@ nodes:
   name: xrplf-x-mcp
   provenance: derived
   attrs:
+    branch: main
     last_seen: '2026-09-08'
-    no_remote: true
     path: ~/projects/xrplf/xrplf-x-mcp
+    remote: https://github.com/XRPLF/xrplf-x-mcp.git
 edges:
 - kind: checkout_of
   src: checkout:~/projects/axiology/xrpld
@@ -1536,6 +1537,10 @@ edges:
 - kind: checkout_of
   src: checkout:~/projects/xrplf/xrplf-webapp
   dst: repo:XRPLF/xrplf-webapp
+  provenance: derived
+- kind: checkout_of
+  src: checkout:~/projects/xrplf/xrplf-x-mcp
+  dst: repo:XRPLF/xrplf-x-mcp
   provenance: derived
 - kind: worktree_of
   src: checkout:~/projects/xrplf/xrpld-321

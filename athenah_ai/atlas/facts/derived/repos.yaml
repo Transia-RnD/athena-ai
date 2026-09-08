@@ -228,6 +228,10 @@ nodes:
   kind: repo
   name: xrplf-webapp
   provenance: derived
+- id: repo:XRPLF/xrplf-x-mcp
+  kind: repo
+  name: xrplf-x-mcp
+  provenance: derived
 - id: repo:Xahau/xahaud
   kind: repo
   name: xahaud
@@ -447,6 +451,10 @@ edges:
   provenance: derived
 - kind: owned_by
   src: repo:XRPLF/xrplf-webapp
+  dst: org:xrplf
+  provenance: derived
+- kind: owned_by
+  src: repo:XRPLF/xrplf-x-mcp
   dst: org:xrplf
   provenance: derived
 - kind: owned_by
