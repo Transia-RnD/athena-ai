@@ -94,6 +94,18 @@ nodes:
     store: xrpl-guides
     title: Amendment Dashboard — surface-model review against xrpld 3.3.0
     updated: '2026-09-02'
+- id: plan:xrpl-guides/amendment-portfolio/plans/protocol-menu-site.md
+  kind: plan
+  name: 'Plan: public protocol work menu site (xrpl-protocol-menu.vercel.app)'
+  provenance: derived
+  attrs:
+    boxes_done: 7
+    boxes_open: 2
+    path: ~/projects/xrplf/xrpl-guides/amendment-portfolio/plans/protocol-menu-site.md
+    status: Active
+    store: xrpl-guides
+    title: 'Plan: public protocol work menu site (xrpl-protocol-menu.vercel.app)'
+    updated: '2026-09-08'
 - id: plan:xrpl-guides/amendment-portfolio/plans/status-board.md
   kind: plan
   name: Plan 1 — Amendment Status Board (Vet + Denis)
