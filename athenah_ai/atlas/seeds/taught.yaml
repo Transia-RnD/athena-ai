@@ -124,7 +124,7 @@ nodes:
     name: xrpl-guides
     provenance: taught
     notes: >
-      THE central plan store (checked out at ~/projects/xrplf/xrpl-guides
+      THE central plan store (checked out at ~/projects/xrplf/sandbox-dangell7
       despite being Transia-RnD-owned). Workstream folders + tasks/ +
       XLS spec drafts; plans map 1:1 to xrpld-* checkouts.
   - id: repo:Transia-RnD/xrpld-lab
@@ -221,7 +221,7 @@ nodes:
       create:ansible remote).
 
   # ---------------------------------------------------------- plan store
-  - id: plan_store:xrpl-guides
+  - id: plan_store:sandbox-dangell7
     kind: plan_store
     name: xrpl-guides
     provenance: taught
@@ -399,10 +399,10 @@ edges:
   # plan flow
   - kind: plans_in
     src: repo:XRPLF/rippled
-    dst: plan_store:xrpl-guides
+    dst: plan_store:sandbox-dangell7
     provenance: taught
   - kind: documented_in
-    src: plan_store:xrpl-guides
+    src: plan_store:sandbox-dangell7
     dst: repo:Transia-RnD/xrpl-guides
     provenance: taught
     notes: The plan store IS this repo (checked out under ~/projects/xrplf).

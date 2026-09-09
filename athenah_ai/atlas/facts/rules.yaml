@@ -147,7 +147,7 @@ nodes:
     store on 2026-09-06 because it duplicated CLAUDE.md and drifted. A durable fact about
     how Denis works, an identity, a repo, a server, or a rule goes into the atlas (`python
     -m athenah_ai.atlas teach`, or `teach --propose` when unsure) and is rendered into CLAUDE.md.
-    Project status, decisions, and next steps go into the plan store (xrpl-guides for XRPL
+    Project status, decisions, and next steps go into the plan store (sandbox-dangell7 for XRPL
     work). Repo-specific conventions go into that repo's own docs. If none of those fits,
     the fact is not worth keeping.
   attrs:
@@ -158,7 +158,7 @@ nodes:
   provenance: taught
   notes: 'Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions).
     NEVER create tasks/ folders or todo/plan files inside project repos — plans and task lists
-    go in the CENTRAL plan store ONLY (see Plan Stores: ~/projects/xrplf/xrpl-guides for XRPL
+    go in the CENTRAL plan store ONLY (see Plan Stores: ~/projects/xrplf/sandbox-dangell7 for XRPL
     work — topic dir or its tasks/; use the project''s mapped plan store otherwise). Write
     the plan there with checkable items and check in before starting; mark items complete
     as you go. If something goes sideways, STOP and re-plan immediately.

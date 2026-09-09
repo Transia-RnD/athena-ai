@@ -249,7 +249,7 @@ class AtlasConfig:
 
     # Comma-separated plan-store checkouts whose plan frontmatter `repos:` is
     # scanned into derived plan nodes and governed_by edges.
-    plan_store_roots: str = "~/projects/xrplf/xrpl-guides"
+    plan_store_roots: str = "~/projects/xrplf/sandbox-dangell7"
 
     # Default output path for the rendered ATLAS.md
     render_out: str = "~/.athenah/atlas/ATLAS.md"

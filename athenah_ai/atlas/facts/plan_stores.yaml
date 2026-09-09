@@ -1,23 +1,28 @@
 nodes:
-- id: plan_store:xrpl-guides
+- id: plan_store:sandbox-dangell7
   kind: plan_store
-  name: xrpl-guides
+  name: sandbox-dangell7
   provenance: taught
-  notes: 'Denis''s sandbox for XRPLF work (becomes XRPLF/sandbox-dangell7). Every top-level
-    directory is a project named for its subject; each holds README.md (entry: what it is,
-    status, contents index; no tasks, no repos) and the fixed buckets plans/ (every plan,
-    even the only one), specs/, guides/, reports/, drafts/, data/, evidence/, harness/, notes/,
-    reading/. Status lives in frontmatter; no work/archive/content layers. Plan frontmatter
-    repos: (owner/repo @ branch) is the only record of which plan governs which checkout;
-    scan derives governed_by edges, context --cwd lists them, validate flags plans whose boxes
-    and status disagree. Repo CLAUDE.md states the conventions; skills plan, report, status,
-    triage in .claude/skills. Sensitive material goes to XRPLF/exec-plans (Executives team),
-    never here.'
+  notes: 'Denis''s sandbox for XRPLF work, at Transia-RnD/sandbox-dangell7 (renamed from xrpl-guides
+    2026-09-09, history kept; local checkout still ~/projects/xrplf/sandbox-dangell7). It does
+    NOT move to XRPLF: the org has six owners including Ripple (ximinez, Vjkhannaripple) and
+    XRPL Labs (WietseWind), and a GitHub org owner reads every private repo in the org, which
+    no team or repo permission can restrict. Transia-RnD has one owner (dangell7) and two
+    members (dangell7, dangell8). Every top-level directory is a project named for its subject;
+    each holds README.md (entry: what it is, status, contents index; no tasks, no repos) and
+    the fixed buckets plans/ (every plan, even the only one), specs/, guides/, reports/, drafts/,
+    data/, evidence/, harness/, notes/, reading/. Status lives in frontmatter; no work/archive/content
+    layers. Plan frontmatter repos: (owner/repo @ branch) is the only record of which plan
+    governs which checkout; scan derives governed_by edges, context --cwd lists them, validate
+    flags plans whose boxes and status disagree. Repo CLAUDE.md states the conventions; skills
+    plan, report, status, triage in .claude/skills. Foundation-sensitive material (board pack,
+    budget, embargoed security writeups) belongs in a repo whose owner set Denis controls,
+    never in XRPLF.'
   attrs:
-    verified_at: '2026-09-08'
+    verified_at: 2026-09-09
 edges:
 - kind: documented_in
-  src: plan_store:xrpl-guides
-  dst: repo:Transia-RnD/xrpl-guides
+  src: plan_store:sandbox-dangell7
+  dst: repo:Transia-RnD/sandbox-dangell7
   provenance: taught
   notes: The plan store IS this repo (checked out under ~/projects/xrplf).

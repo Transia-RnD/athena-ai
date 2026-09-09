@@ -21,16 +21,17 @@ nodes:
   name: thelab
   provenance: taught
   notes: Monorepo like ai-bootstrap but MongoDB, operated with Kris.
-- id: repo:Transia-RnD/xrpl-guides
+- id: repo:Transia-RnD/sandbox-dangell7
   kind: repo
-  name: xrpl-guides
+  name: sandbox-dangell7
   provenance: taught
-  notes: 'THE central plan store (checked out at ~/projects/xrplf/xrpl-guides despite being
-    Transia-RnD-owned). Workstream folders + tasks/ + XLS spec drafts; plans map 1:1 to xrpld-*
+  notes: 'THE central plan store (checked out at ~/projects/xrplf/sandbox-dangell7 despite being
+    Transia-RnD-owned). One directory per project, each with README.md and the fixed buckets (plans/, specs/,
+    guides/, reports/, ...); plans map 1:1 to xrpld-*
     checkouts.
 
     '
-- id: repo:Transia-RnD/xrpld-lab
+- id: repo:XRPLF/xrpld-lab
   kind: repo
   name: xrpld-lab
   provenance: taught
@@ -48,12 +49,26 @@ nodes:
     live in xrpl-guides. C++ tests follow the xrpld-testing skill conventions.
 
     '
+- id: repo:XRPLF/xrpl-tally
+  kind: repo
+  name: xrpl-tally
+  provenance: proposed
+  notes: Tally, the Credit Record reference producer. Denis decided 2026-09-08 that XRPLF
+    hosts it; the remote does not exist yet, so scan cannot derive this until it is created.
+  attrs:
+    verified_at: '2026-09-08'
 - id: repo:xrpl365/ai-bootstrap
   kind: repo
   name: ai-bootstrap
   provenance: taught
   notes: Node/Express + React monorepo (PostgreSQL), operated with Kris.
 edges:
+- kind: checkout_of
+  src: checkout:~/projects/xrplf/xrpl-tally
+  dst: repo:XRPLF/xrpl-tally
+  provenance: proposed
+  attrs:
+    verified_at: '2026-09-08'
 - kind: consumes
   src: repo:Transia-RnD/sentinel-ai
   dst: repo:Transia-RnD/athenah-ai
@@ -71,7 +86,13 @@ edges:
   src: repo:Transia-RnD/sentinel-ai
   dst: workflow:sentinel-deploy
   provenance: taught
+- kind: owned_by
+  src: repo:XRPLF/xrpl-tally
+  dst: org:xrplf
+  provenance: proposed
+  attrs:
+    verified_at: '2026-09-08'
 - kind: plans_in
   src: repo:XRPLF/rippled
-  dst: plan_store:xrpl-guides
+  dst: plan_store:sandbox-dangell7
   provenance: taught
