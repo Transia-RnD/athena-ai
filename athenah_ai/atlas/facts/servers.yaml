@@ -35,10 +35,13 @@ nodes:
   kind: server
   name: sage-mini
   provenance: taught
-  notes: 'Sage AI production Mac mini. SSH: load the key into the agent first — `eval "$(ssh-agent -s)"
-    && ssh-add --apple-use-keychain ~/.ssh/xrpl-labs` — then `ssh -i ~/.ssh/xrpl-labs -o IdentitiesOnly=yes
-    sageagent@45.88.58.10`. Plain ssh fails until the key is agent-loaded. App at ~/.sage-ai,
-    logs at ~/.sage-ai/logs/server.log.
+  notes: 'RETIRED 2026-09-09. Do not use and do not deploy here. sage-ai was dropped
+    (Denis, 2026-09-09); its two LaunchAgents com.sage-ai.server and com.sage-ai.worker-1 are
+    stopped and their plists moved to ~/Library/LaunchAgents/disabled-sage-ai/, and the local
+    credentials gcp-sa.json and .api-key were overwritten and removed. Still on the box, needing
+    root: the LaunchDaemons co.transia.sage-mongo-backup and co.transia.sage-mongod-logrotate, a
+    running mongod, and 329M of data under ~/.sage-ai. The tars runtime is the standard for agent
+    hosts; positions run on server:denis-build.
 
     '
   attrs:
@@ -55,10 +58,6 @@ nodes:
 
     '
 edges:
-- kind: deploys_to
-  src: repo:Transia-RnD/sage-ai
-  dst: server:sage-mini
-  provenance: taught
 - kind: deploys_via
   src: environment:alphanet
   dst: workflow:deploy-alphanet
