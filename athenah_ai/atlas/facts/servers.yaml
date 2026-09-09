@@ -40,8 +40,13 @@ nodes:
     stopped and their plists moved to ~/Library/LaunchAgents/disabled-sage-ai/, and the local
     credentials gcp-sa.json and .api-key were overwritten and removed. Still on the box, needing
     root: the LaunchDaemons co.transia.sage-mongo-backup and co.transia.sage-mongod-logrotate, a
-    running mongod, and 329M of data under ~/.sage-ai. The tars runtime is the standard for agent
-    hosts; positions run on server:denis-build.
+    running mongod, and 329M of data under ~/.sage-ai plus 120M of mongo under
+    /opt/homebrew/var/mongodb. Root SSH is refused here and sageagent has no NOPASSWD sudo, so those
+    need Denis at a terminal. OUTSTANDING: the GCP service account
+    sage-ai-box@sage-ai-production.iam.gserviceaccount.com (key id 3a6f69831b...) is still valid and
+    must be deleted as dangell@transia.co, not denis@xrpl.foundation, which has no access to that
+    project; also assess secret sage-ai-env-secret before deleting it. The tars runtime is the
+    standard for agent hosts; positions run on server:denis-build.
 
     '
   attrs:
