@@ -206,16 +206,18 @@ nodes:
   kind: rule
   name: Pages for people outside the org go to Vercel
   provenance: taught
-  notes: 'claude.ai artifacts cannot be shared outside the XRPLF org, so anything Ripple or another external
-    party must read is a plain static site: a local directory with index.html and vercel.json (`cleanUrls:
-    true`), its own git repo with no remote (examples: xrpld-online-delete-static, xrpl-batch-debug, xrpl-impact-static),
-    deployed with the Vercel CLI on the XRP Ledger Foundation team (slug xrp-ledger-foundation, CLI logged
-    in as denis-9433): `npx vercel link --yes --project <name>` then `npx vercel deploy --prod --yes`.
-    The deploy command is denied for Claude by the permission classifier: build the directory, then hand
-    Denis those two lines instead of retrying. Verify afterwards with curl on the production *.vercel.app
-    domain (200). Team projects show Vercel Authentication as all_except_custom_domains: the production
-    domain is public, only per-deployment URLs need login, so share the production domain only. The Vercel
-    connector file upload is not a substitute for multi-megabyte sites.'
+  notes: 'claude.ai artifacts cannot be shared outside the XRPLF org, so anything Ripple or another external party
+    must read is a plain static site: index.html plus vercel.json (`cleanUrls: true`) in its own directory under
+    XRPLF/static-sites, one directory per site, each with its own Vercel project (the .vercel link is gitignored
+    and stays local). Anything with a toolchain - Next.js, a bundler, dependencies - gets its own XRPLF repo
+    instead, as XRPLF/amm-curves and XRPLF/xrpl-batch-debug do. Deploy from the site directory with the Vercel
+    CLI on the XRP Ledger Foundation team (slug xrp-ledger-foundation, CLI logged in as denis-9433): `npx vercel
+    link --yes --project <name>` then `npx vercel deploy --prod --yes`. The deploy command is denied for Claude
+    by the permission classifier: build the directory, then hand Denis those two lines instead of retrying.
+    Verify afterwards with curl on the production *.vercel.app domain (200). Team projects show Vercel
+    Authentication as all_except_custom_domains: the production domain is public, only per-deployment URLs need
+    login, so share the production domain only. The Vercel connector file upload is not a substitute for multi-
+    megabyte sites.'
   attrs:
     applies_when: publishing a page, report, or site that someone outside the XRPLF org must be able to
       open
