@@ -1,239 +1,271 @@
 nodes:
-- id: rule:verify-before-stating
+- id: rule:anchor-on-the-goal
   kind: rule
-  name: Verify before stating — no fabrication
+  name: Anchor on the goal
   provenance: taught
-  notes: 'Never state a fact about a live system (repo contents, counts, whether something is empty, DNS
-    or proxy state, what a host runs, whether a job ran) unless you can point to the command output in
-    THIS session that proves it, or you run the check first. Plan-store notes, memory files, open checkboxes,
-    and your own earlier summaries are hypotheses, never evidence: an open checkbox means "unverified",
-    a 404 on a directory means "no index", not "empty". If a claim cannot be verified right now, write
-    "unverified" or cut the sentence. Denis (2026-09-04): "did you just make that up ... Can we please
-    stop doing that? Fabricating something out of thin air?" after two invented present-tense facts (private
-    repos "empty" while they held xrpld 3.4.0 b1..rc2; nexus.xrplf.org "not proxied" while my own dig
-    and cert check in the same session showed Cloudflare). Both reached Ripple engineers. This rule ranks
-    with Real identifiers only.'
+  notes: 'State the goal before you act, and serve THAT goal — not a pattern the task superficially
+    resembles. Before a substantive response or any fan-out of work, say in one line what
+    Denis is actually trying to achieve; if you can''t, ASK before working — don''t guess
+    and grind. The most expensive failure is spending real effort on the wrong frame: dressing
+    up the deliverable as a risk, reviewing for problems he never cares about, solving a generic
+    version of a specific ask. A pen test''s job is to find and map exposure — so mapping
+    validator IPs is the deliverable, not a concern to flag; the thing that looks like a red
+    flag in another context is the whole point in this one. When you''re about to raise a
+    caveat, warning, or "for the record" note, check it against the goal first: if the goal
+    wants that outcome, the caveat is noise — cut it. Don''t manufacture concerns, disclosures,
+    or ethical hand-wringing around work Denis explicitly wants done. If you''re unsure whether
+    something is actually an issue, ASK "is this a problem for you?" — don''t assume it is
+    and burn a response on it.'
   attrs:
     verified_at: '2026-09-04'
-    priority: first
+- id: rule:asking-questions
+  kind: rule
+  name: Asking questions
+  provenance: taught
+  notes: 'When you need something from Denis, isolate it: ONE question at a time, with just
+    enough context to answer it, and nothing else in the message. Never bundle two or three
+    asks, and never bury them at the end of a long report expecting him to find them. Denis
+    (2026-09-09): ''if you have questions then isolate them dont give me 10 paragraphs and
+    expect me to read. 1 single question with context at a time''. Prefer the AskUserQuestion
+    tool for a real choice so the ask is a prompt, not prose he has to mine. This does not
+    license asking more often: the Blockers rule still stands, so do the reversible work first
+    and ask only what genuinely only he can answer.'
+  attrs:
+    verified_at: '2026-09-09'
 - id: rule:blockers
   kind: rule
   name: Blockers
   provenance: taught
-  notes: 'Don''t manufacture blockers. Having the goal, the spec, and the context is not a blocker — keep
-    executing through the whole task (understand -> implement -> fix -> test -> doc) with senior judgment;
-    don''t stop to ask ''want me to continue?'' or add permission gates for reversible work that follows
-    from the request. A real blocker is narrow: a destructive or irreversible action, a genuine change
-    of scope, or missing information only the user can provide. When you actually hit one, name it plainly
-    and stop; otherwise proceed and report what you did.'
+  notes: 'Don''t manufacture blockers. Having the goal, the spec, and the context is not a
+    blocker — keep executing through the whole task (understand -> implement -> fix -> test
+    -> doc) with senior judgment; don''t stop to ask ''want me to continue?'' or add permission
+    gates for reversible work that follows from the request. A real blocker is narrow: a destructive
+    or irreversible action, a genuine change of scope, or missing information only the user
+    can provide. When you actually hit one, name it plainly and stop; otherwise proceed and
+    report what you did.'
   attrs:
     verified_at: '2026-07-16'
 - id: rule:bug-fixing
   kind: rule
   name: Bug fixing
   provenance: taught
-  notes: 'Given a bug report, just fix it — follow logs, errors, failing tests, and CI without asking
-    for hand-holding.
+  notes: 'Given a bug report, just fix it — follow logs, errors, failing tests, and CI without
+    asking for hand-holding.
 
     '
+- id: rule:channel-choice-never-fall-back
+  kind: rule
+  name: Channel choice — never fall back
+  provenance: taught
+  notes: 'Send a message on the channel the person actually uses; never substitute another
+    medium because a lookup came up empty. A miss in the Slack user directory does NOT mean
+    they are not on Slack: they may be in a private or Slack Connect/external channel that
+    public search cannot see. Search message history and ext channels, and ask which channel,
+    before reaching for email. Sending is irreversible, so settle the channel before the send,
+    not after.'
+  attrs:
+    verified_at: '2026-09-04'
 - id: rule:code-comments
   kind: rule
   name: Code comments
   provenance: taught
-  notes: 'State what the code does; do not narrate. For a small block, one line: what it does plus a terse
-    why. No arguing importance (''it matters because''), no investigation notes, no facts about other
-    files'' callers (they rot), no restating what the code already says, no justifying code by pointing
-    at behavior enforced elsewhere ("also rejected in preflight", "fails downstream"), and no references
-    to a previous implementation or alternative approach.'
+  notes: 'State what the code does; do not narrate. For a small block, one line: what it does
+    plus a terse why. No arguing importance (''it matters because''), no investigation notes,
+    no facts about other files'' callers (they rot), no restating what the code already says,
+    no justifying code by pointing at behavior enforced elsewhere ("also rejected in preflight",
+    "fails downstream"), and no references to a previous implementation or alternative approach.'
 - id: rule:code-quality
   kind: rule
   name: Code quality
   provenance: taught
-  notes: 'Understand the problem fully, design, THEN write — no write-and-see-if-it-works loops. Challenge
-    the first solution. NEVER suppress a linter (no NOLINT/disable comments); fix the underlying issue.
+  notes: 'Understand the problem fully, design, THEN write — no write-and-see-if-it-works
+    loops. Challenge the first solution. NEVER suppress a linter (no NOLINT/disable comments);
+    fix the underlying issue.
 
     '
 - id: rule:commit-style
   kind: rule
   name: Commit messages
   provenance: taught
-  notes: 'Single short conventional-commit title line (feat:/fix:/refactor: prefix + brief subject). No
-    body paragraphs; the "why" belongs in a PR description. No Claude/Co-Authored-By trailers.
+  notes: 'Single short conventional-commit title line (feat:/fix:/refactor: prefix + brief
+    subject). No body paragraphs; the "why" belongs in a PR description. No Claude/Co-Authored-By
+    trailers.
 
     '
 - id: rule:data-integrity
   kind: rule
   name: Data integrity
   provenance: taught
-  notes: 'Use database transactions for write operations touching related state (MongoDB: session.withTransaction())
-    — even single-document writes.
+  notes: 'Use database transactions for write operations touching related state (MongoDB:
+    session.withTransaction()) — even single-document writes.
 
     '
+- id: rule:external-static-pages-vercel
+  kind: rule
+  name: Pages for people outside the org go to Vercel
+  provenance: taught
+  notes: 'claude.ai artifacts cannot be shared outside the XRPLF org, so anything Ripple or
+    another external party must read is a plain static site: index.html plus vercel.json (`cleanUrls:
+    true`) in its own directory under XRPLF/static-sites, one directory per site, each with
+    its own Vercel project (the .vercel link is gitignored and stays local). Anything with
+    a toolchain - Next.js, a bundler, dependencies - gets its own XRPLF repo instead, as XRPLF/amm-curves
+    and XRPLF/xrpl-batch-debug do. Deploy from the site directory with the Vercel CLI on the
+    XRP Ledger Foundation team (slug xrp-ledger-foundation, CLI logged in as denis-9433):
+    `npx vercel link --yes --project <name>` then `npx vercel deploy --prod --yes`. The deploy
+    command is denied for Claude by the permission classifier: build the directory, then hand
+    Denis those two lines instead of retrying. Verify afterwards with curl on the production
+    *.vercel.app domain (200). Team projects show Vercel Authentication as all_except_custom_domains:
+    the production domain is public, only per-deployment URLs need login, so share the production
+    domain only. The Vercel connector file upload is not a substitute for multi- megabyte
+    sites.'
+  attrs:
+    applies_when: publishing a page, report, or site that someone outside the XRPLF org must
+      be able to open
+    verified_at: '2026-09-08'
 - id: rule:never-push
   kind: rule
   name: Git — never push
   provenance: taught
-  notes: 'NEVER git push or open PRs unless explicitly asked in that message; commit locally only. Don''t
-    batch up many tiny PRs — accumulate related work and let Denis decide when to push.
+  notes: 'NEVER git push or open PRs unless explicitly asked in that message; commit locally
+    only. Don''t batch up many tiny PRs — accumulate related work and let Denis decide when
+    to push.
 
     '
 - id: rule:no-fragmentation
   kind: rule
   name: No over-fragmentation
   provenance: taught
-  notes: 'Keep related changes together. Do not split a single feature/fix across multiple branches, PRs,
-    commits, or files without a real reason.
+  notes: 'Keep related changes together. Do not split a single feature/fix across multiple
+    branches, PRs, commits, or files without a real reason.
 
     '
+- id: rule:no-memory-files
+  kind: rule
+  name: No memory files — facts go to the atlas or the plan store
+  provenance: taught
+  notes: Do not write to ~/.claude/projects/*/memory or any MEMORY.md; Denis dropped the memory
+    store on 2026-09-06 because it duplicated CLAUDE.md and drifted. A durable fact about
+    how Denis works, an identity, a repo, a server, or a rule goes into the atlas (`python
+    -m athenah_ai.atlas teach`, or `teach --propose` when unsure) and is rendered into CLAUDE.md.
+    Project status, decisions, and next steps go into the plan store (xrpl-guides for XRPL
+    work). Repo-specific conventions go into that repo's own docs. If none of those fits,
+    the fact is not worth keeping.
+  attrs:
+    verified_at: '2026-09-08'
 - id: rule:plan-mode
   kind: rule
   name: Planning & execution
   provenance: taught
-  notes: 'Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions). NEVER create
-    tasks/ folders or todo/plan files inside project repos — plans and task lists go in the CENTRAL plan
-    store ONLY (see Plan Stores: ~/projects/xrplf/xrpl-guides for XRPL work — topic dir or its tasks/;
-    use the project''s mapped plan store otherwise). Write the plan there with checkable items and check
-    in before starting; mark items complete as you go. If something goes sideways, STOP and re-plan immediately.
-
-    '
-- id: rule:secrets-cleanup
-  kind: rule
-  name: Secrets hygiene — clean up after loading
-  provenance: taught
-  notes: 'After loading secret material (JSON secret files, API keys, tokens) during a task, clean up
-    when done: delete temp copies and override files (server /tmp scripts, scratchpad files, one-off JSON
-    dumps), never leave secrets in world-readable paths, print only key prefixes (never full values) in
-    logs/output, and prefer piping between secret stores over writing plaintext to disk. Temp secret files
-    that must exist briefly get 0600 perms and are removed the moment the canonical store is updated.'
-  attrs:
-    verified_at: 2026-08-07
-- id: rule:ssh-access
-  kind: rule
-  name: SSH — remote machines
-  provenance: taught
-  notes: 'All remote machines need an SSH key loaded into the agent — plain `ssh user@host` FAILS. Workflow:
-    (1) check access first with `ssh-add -l`; (2) if the key isn''t loaded, load it and chain in ONE bash
-    invocation (agent state does not persist between commands): `eval "$(ssh-agent -s)" && ssh-add --apple-use-keychain
-    ~/.ssh/xrpl-labs && ssh -i ~/.ssh/xrpl-labs -o IdentitiesOnly=yes <user>@<host> ''<cmd>''`. Nearly
-    every repo has an associated machine (~1:1). The machine→key/user/port map lives in `~/.claude/ssh-machines.md`
-    — consult it (plus Servers & Environments below, repo skills, ansible hosts.txt) before connecting;
-    if a machine isn''t mapped, ask which key it wants and add it there — never guess. macOS boxes: prefix
-    non-interactive remote commands with `export PATH=/opt/homebrew/bin:$PATH;`.
-
-    '
-  attrs:
-    applies_when: connecting to any remote machine (ssh/scp/rsync/ansible) or debugging a deployed service
-    verified_at: '2026-07-13'
-- id: rule:subagents
-  kind: rule
-  name: Subagent strategy
-  provenance: taught
-  notes: 'Use subagents liberally to keep the main context clean; when researching anything unfamiliar,
-    fan out 3+ agents in parallel, one task per agent.
-
-    '
-- id: rule:verification
-  kind: rule
-  name: Verification
-  provenance: taught
-  notes: 'Never mark a task complete without proving it works — run tests, check logs, diff behavior against
-    main. Ask "would a staff engineer approve this?"
+  notes: 'Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions).
+    NEVER create tasks/ folders or todo/plan files inside project repos — plans and task lists
+    go in the CENTRAL plan store ONLY (see Plan Stores: ~/projects/xrplf/xrpl-guides for XRPL
+    work — topic dir or its tasks/; use the project''s mapped plan store otherwise). Write
+    the plan there with checkable items and check in before starting; mark items complete
+    as you go. If something goes sideways, STOP and re-plan immediately.
 
     '
 - id: rule:real-identifiers-only
   kind: rule
   name: Real identifiers only — no coined metaphors
   provenance: taught
-  notes: 'In every technical explanation, message draft, or doc: every technical noun must be either a
-    real identifier from the code (sfAccountTxnID, AccountRoot, tefWRONG_PRIOR) or a plain English word
-    used literally. NEVER coin a metaphor or shorthand for a field, operation, check, or relationship
-    ("stamp", "slot", "pinned", "invisible to the chain", "follow-up tx", "has teeth"). If avoiding a
-    metaphor makes the sentence longer, write the longer literal sentence. Before sending any explanation,
-    scan every noun and verb against this rule. Denis has flagged this repeatedly; violations are the
-    single fastest way to lose his trust.'
+  notes: 'In every technical explanation, message draft, or doc: every technical noun must
+    be either a real identifier from the code (sfAccountTxnID, AccountRoot, tefWRONG_PRIOR)
+    or a plain English word used literally. NEVER coin a metaphor or shorthand for a field,
+    operation, check, or relationship ("stamp", "slot", "pinned", "invisible to the chain",
+    "follow-up tx", "has teeth"). If avoiding a metaphor makes the sentence longer, write
+    the longer literal sentence. Before sending any explanation, scan every noun and verb
+    against this rule. Denis has flagged this repeatedly; violations are the single fastest
+    way to lose his trust.'
   attrs:
-    verified_at: '2026-09-04'
     priority: first
-- id: rule:anchor-on-the-goal
-  kind: rule
-  name: Anchor on the goal
-  provenance: taught
-  notes: 'State the goal before you act, and serve THAT goal — not a pattern the task superficially resembles.
-    Before a substantive response or any fan-out of work, say in one line what Denis is actually trying
-    to achieve; if you can''t, ASK before working — don''t guess and grind. The most expensive failure
-    is spending real effort on the wrong frame: dressing up the deliverable as a risk, reviewing for problems
-    he never cares about, solving a generic version of a specific ask. A pen test''s job is to find and
-    map exposure — so mapping validator IPs is the deliverable, not a concern to flag; the thing that
-    looks like a red flag in another context is the whole point in this one. When you''re about to raise
-    a caveat, warning, or "for the record" note, check it against the goal first: if the goal wants that
-    outcome, the caveat is noise — cut it. Don''t manufacture concerns, disclosures, or ethical hand-wringing
-    around work Denis explicitly wants done. If you''re unsure whether something is actually an issue,
-    ASK "is this a problem for you?" — don''t assume it is and burn a response on it.'
-  attrs:
     verified_at: '2026-09-04'
-- id: rule:channel-choice-never-fall-back
+- id: rule:secrets-cleanup
   kind: rule
-  name: Channel choice — never fall back
+  name: Secrets hygiene — clean up after loading
   provenance: taught
-  notes: 'Send a message on the channel the person actually uses; never substitute another medium because
-    a lookup came up empty. A miss in the Slack user directory does NOT mean they are not on Slack: they
-    may be in a private or Slack Connect/external channel that public search cannot see. Search message
-    history and ext channels, and ask which channel, before reaching for email. Sending is irreversible,
-    so settle the channel before the send, not after.'
+  notes: 'After loading secret material (JSON secret files, API keys, tokens) during a task,
+    clean up when done: delete temp copies and override files (server /tmp scripts, scratchpad
+    files, one-off JSON dumps), never leave secrets in world-readable paths, print only key
+    prefixes (never full values) in logs/output, and prefer piping between secret stores over
+    writing plaintext to disk. Temp secret files that must exist briefly get 0600 perms and
+    are removed the moment the canonical store is updated.'
   attrs:
+    verified_at: 2026-08-07
+- id: rule:ssh-access
+  kind: rule
+  name: SSH — remote machines
+  provenance: taught
+  notes: 'All remote machines need an SSH key loaded into the agent — plain `ssh user@host`
+    FAILS. Workflow: (1) check access first with `ssh-add -l`; (2) if the key isn''t loaded,
+    load it and chain in ONE bash invocation (agent state does not persist between commands):
+    `eval "$(ssh-agent -s)" && ssh-add --apple-use-keychain ~/.ssh/xrpl-labs && ssh -i ~/.ssh/xrpl-labs
+    -o IdentitiesOnly=yes <user>@<host> ''<cmd>''`. Nearly every repo has an associated machine
+    (~1:1). The machine→key/user/port map lives in `~/.claude/ssh-machines.md` — consult it
+    (plus Servers & Environments below, repo skills, ansible hosts.txt) before connecting;
+    if a machine isn''t mapped, ask which key it wants and add it there — never guess. macOS
+    boxes: prefix non-interactive remote commands with `export PATH=/opt/homebrew/bin:$PATH;`.
+
+    '
+  attrs:
+    applies_when: connecting to any remote machine (ssh/scp/rsync/ansible) or debugging a
+      deployed service
+    verified_at: '2026-07-13'
+- id: rule:subagents
+  kind: rule
+  name: Subagent strategy
+  provenance: taught
+  notes: 'Use subagents liberally to keep the main context clean; when researching anything
+    unfamiliar, fan out 3+ agents in parallel, one task per agent.
+
+    '
+- id: rule:verification
+  kind: rule
+  name: Verification
+  provenance: taught
+  notes: 'Never mark a task complete without proving it works — run tests, check logs, diff
+    behavior against main. Ask "would a staff engineer approve this?"
+
+    '
+- id: rule:verify-before-stating
+  kind: rule
+  name: Verify before stating — no fabrication
+  provenance: taught
+  notes: 'Never state a fact about a live system (repo contents, counts, whether something
+    is empty, DNS or proxy state, what a host runs, whether a job ran) unless you can point
+    to the command output in THIS session that proves it, or you run the check first. Plan-store
+    notes, memory files, open checkboxes, and your own earlier summaries are hypotheses, never
+    evidence: an open checkbox means "unverified", a 404 on a directory means "no index",
+    not "empty". If a claim cannot be verified right now, write "unverified" or cut the sentence.
+    Denis (2026-09-04): "did you just make that up ... Can we please stop doing that? Fabricating
+    something out of thin air?" after two invented present-tense facts (private repos "empty"
+    while they held xrpld 3.4.0 b1..rc2; nexus.xrplf.org "not proxied" while my own dig and
+    cert check in the same session showed Cloudflare). Both reached Ripple engineers. This
+    rule ranks with Real identifiers only.'
+  attrs:
+    priority: first
     verified_at: '2026-09-04'
 - id: rule:xrplf-webapp-data-layer
   kind: rule
   name: xrplf-webapp — versioned-document data layer
   provenance: taught
-  notes: 'MongoDB only (PostgreSQL was removed 2026-07-07). Every mutable entity uses the versioned-document
-    pattern from shared/src/database/: the live document sits at a stable _id in <collection>; every update
-    first snapshots the pre-update state into <collection>_archive inside session.withTransaction() (versionedSave.ts),
-    chained by string refs refOld/refNew of the form "<collection>/<id>"; base fields active/deleted/createdTime/createdBy/updatedTime/updatedBy.
-    New repositories extend VersionedRepository, PlainRepository, or ContentRepository; indexes are declared
-    in indexes.ts (ensured at boot and by `mongo:setup`), never ad hoc. Documents are camelCase with epoch-ms
-    timestamps; snake_case Rows only at the API boundary via msToIso. Multi-entity writes are one withMongoTransaction
-    with a versionedSave per entity. Evidence documents (votes, payments, proofs, logs) are plain BaseDoc
-    with no chain. Vote handlers re-verify the voter''s credential (GA MEMBER:*, committee CMTE:<code>)
-    inside the ballot transaction. Dev DB: `docker compose -f docker-compose.mongo.yml up -d` (single-node
-    replica set; transactions need it), then mongo:setup, mongo:seed-dev, mongo:bootstrap-admin (the only
-    ROLE:ADMIN grant). Unit chain tests run on mongodb-memory-server.'
+  notes: 'MongoDB only (PostgreSQL was removed 2026-07-07). Every mutable entity uses the
+    versioned-document pattern from shared/src/database/: the live document sits at a stable
+    _id in <collection>; every update first snapshots the pre-update state into <collection>_archive
+    inside session.withTransaction() (versionedSave.ts), chained by string refs refOld/refNew
+    of the form "<collection>/<id>"; base fields active/deleted/createdTime/createdBy/updatedTime/updatedBy.
+    New repositories extend VersionedRepository, PlainRepository, or ContentRepository; indexes
+    are declared in indexes.ts (ensured at boot and by `mongo:setup`), never ad hoc. Documents
+    are camelCase with epoch-ms timestamps; snake_case Rows only at the API boundary via msToIso.
+    Multi-entity writes are one withMongoTransaction with a versionedSave per entity. Evidence
+    documents (votes, payments, proofs, logs) are plain BaseDoc with no chain. Vote handlers
+    re-verify the voter''s credential (GA MEMBER:*, committee CMTE:<code>) inside the ballot
+    transaction. Dev DB: `docker compose -f docker-compose.mongo.yml up -d` (single-node replica
+    set; transactions need it), then mongo:setup, mongo:seed-dev, mongo:bootstrap-admin (the
+    only ROLE:ADMIN grant). Unit chain tests run on mongodb-memory-server.'
   attrs:
-    applies_when: 'working in ~/projects/xrplf/xrplf-webapp (XRPLF/xrplf-webapp): backend, worker, or
-      shared data code'
+    applies_when: 'working in ~/projects/xrplf/xrplf-webapp (XRPLF/xrplf-webapp): backend,
+      worker, or shared data code'
     verified_at: '2026-09-06'
-- id: rule:external-static-pages-vercel
-  kind: rule
-  name: Pages for people outside the org go to Vercel
-  provenance: taught
-  notes: 'claude.ai artifacts cannot be shared outside the XRPLF org, so anything Ripple or another external party
-    must read is a plain static site: index.html plus vercel.json (`cleanUrls: true`) in its own directory under
-    XRPLF/static-sites, one directory per site, each with its own Vercel project (the .vercel link is gitignored
-    and stays local). Anything with a toolchain - Next.js, a bundler, dependencies - gets its own XRPLF repo
-    instead, as XRPLF/amm-curves and XRPLF/xrpl-batch-debug do. Deploy from the site directory with the Vercel
-    CLI on the XRP Ledger Foundation team (slug xrp-ledger-foundation, CLI logged in as denis-9433): `npx vercel
-    link --yes --project <name>` then `npx vercel deploy --prod --yes`. The deploy command is denied for Claude
-    by the permission classifier: build the directory, then hand Denis those two lines instead of retrying.
-    Verify afterwards with curl on the production *.vercel.app domain (200). Team projects show Vercel
-    Authentication as all_except_custom_domains: the production domain is public, only per-deployment URLs need
-    login, so share the production domain only. The Vercel connector file upload is not a substitute for multi-
-    megabyte sites.'
-  attrs:
-    applies_when: publishing a page, report, or site that someone outside the XRPLF org must be able to
-      open
-    verified_at: '2026-09-08'
-- id: rule:no-memory-files
-  kind: rule
-  name: No memory files — facts go to the atlas or the plan store
-  provenance: taught
-  notes: Do not write to ~/.claude/projects/*/memory or any MEMORY.md; Denis dropped the memory store
-    on 2026-09-06 because it duplicated CLAUDE.md and drifted. A durable fact about how Denis works, an
-    identity, a repo, a server, or a rule goes into the atlas (`python -m athenah_ai.atlas teach`, or
-    `teach --propose` when unsure) and is rendered into CLAUDE.md. Project status, decisions, and next
-    steps go into the plan store (xrpl-guides for XRPL work). Repo-specific conventions go into that repo's
-    own docs. If none of those fits, the fact is not worth keeping.
-  attrs:
-    verified_at: '2026-09-08'
 edges:
 - kind: applies_to
   src: rule:ssh-access
