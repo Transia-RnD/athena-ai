@@ -68,9 +68,17 @@ nodes:
   kind: repo
   name: XRPL-Technical-Explorer
   provenance: derived
+- id: repo:Transia-RnD/agent-core
+  kind: repo
+  name: agent-core
+  provenance: derived
 - id: repo:Transia-RnD/athenah-ai
   kind: repo
   name: athenah-ai
+  provenance: derived
+- id: repo:Transia-RnD/case
+  kind: repo
+  name: case
   provenance: derived
 - id: repo:Transia-RnD/inteligen
   kind: repo
@@ -99,10 +107,6 @@ nodes:
 - id: repo:Transia-RnD/orion-server-py
   kind: repo
   name: orion-server-py
-  provenance: derived
-- id: repo:Transia-RnD/quantum-static
-  kind: repo
-  name: quantum-static
   provenance: derived
 - id: repo:Transia-RnD/rippled
   kind: repo
@@ -135,6 +139,10 @@ nodes:
 - id: repo:Transia-RnD/thelab
   kind: repo
   name: thelab
+  provenance: derived
+- id: repo:Transia-RnD/xrpl-tally
+  kind: repo
+  name: xrpl-tally
   provenance: derived
 - id: repo:Transia-RnD/xrpl.js
   kind: repo
@@ -171,6 +179,10 @@ nodes:
 - id: repo:XRPLF/demo-amm-curves
   kind: repo
   name: demo-amm-curves
+  provenance: derived
+- id: repo:XRPLF/demo-quantum
+  kind: repo
+  name: demo-quantum
   provenance: derived
 - id: repo:XRPLF/ops-plans
   kind: repo
@@ -224,6 +236,10 @@ nodes:
   kind: repo
   name: xrpl.js
   provenance: derived
+- id: repo:XRPLF/xrpld-blackops
+  kind: repo
+  name: xrpld-blackops
+  provenance: derived
 - id: repo:XRPLF/xrpld-debug-stream
   kind: repo
   name: xrpld-debug-stream
@@ -244,6 +260,10 @@ nodes:
   kind: repo
   name: xrpld-publisher
   provenance: derived
+- id: repo:XRPLF/xrplf-devnet-node
+  kind: repo
+  name: xrplf-devnet-node
+  provenance: derived
 - id: repo:XRPLF/xrplf-distribution
   kind: repo
   name: xrplf-distribution
@@ -251,10 +271,6 @@ nodes:
 - id: repo:XRPLF/xrplf-release-notifier
   kind: repo
   name: xrplf-release-notifier
-  provenance: derived
-- id: repo:XRPLF/xrplf-unl-validator
-  kind: repo
-  name: xrplf-unl-validator
   provenance: derived
 - id: repo:XRPLF/xrplf-webapp
   kind: repo
@@ -318,7 +334,15 @@ edges:
   dst: org:transia-rnd
   provenance: derived
 - kind: owned_by
+  src: repo:Transia-RnD/agent-core
+  dst: org:transia-rnd
+  provenance: derived
+- kind: owned_by
   src: repo:Transia-RnD/athenah-ai
+  dst: org:transia-rnd
+  provenance: derived
+- kind: owned_by
+  src: repo:Transia-RnD/case
   dst: org:transia-rnd
   provenance: derived
 - kind: owned_by
@@ -347,10 +371,6 @@ edges:
   provenance: derived
 - kind: owned_by
   src: repo:Transia-RnD/orion-server-py
-  dst: org:transia-rnd
-  provenance: derived
-- kind: owned_by
-  src: repo:Transia-RnD/quantum-static
   dst: org:transia-rnd
   provenance: derived
 - kind: owned_by
@@ -383,6 +403,10 @@ edges:
   provenance: derived
 - kind: owned_by
   src: repo:Transia-RnD/thelab
+  dst: org:transia-rnd
+  provenance: derived
+- kind: owned_by
+  src: repo:Transia-RnD/xrpl-tally
   dst: org:transia-rnd
   provenance: derived
 - kind: owned_by
@@ -419,6 +443,10 @@ edges:
   provenance: derived
 - kind: owned_by
   src: repo:XRPLF/demo-amm-curves
+  dst: org:xrplf
+  provenance: derived
+- kind: owned_by
+  src: repo:XRPLF/demo-quantum
   dst: org:xrplf
   provenance: derived
 - kind: owned_by
@@ -474,6 +502,10 @@ edges:
   dst: org:xrplf
   provenance: derived
 - kind: owned_by
+  src: repo:XRPLF/xrpld-blackops
+  dst: org:xrplf
+  provenance: derived
+- kind: owned_by
   src: repo:XRPLF/xrpld-debug-stream
   dst: org:xrplf
   provenance: derived
@@ -494,15 +526,15 @@ edges:
   dst: org:xrplf
   provenance: derived
 - kind: owned_by
+  src: repo:XRPLF/xrplf-devnet-node
+  dst: org:xrplf
+  provenance: derived
+- kind: owned_by
   src: repo:XRPLF/xrplf-distribution
   dst: org:xrplf
   provenance: derived
 - kind: owned_by
   src: repo:XRPLF/xrplf-release-notifier
-  dst: org:xrplf
-  provenance: derived
-- kind: owned_by
-  src: repo:XRPLF/xrplf-unl-validator
   dst: org:xrplf
   provenance: derived
 - kind: owned_by

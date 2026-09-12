@@ -268,8 +268,7 @@ class AtlasConfig:
     sync_targets: str = (
         "claude-md:~/.claude/CLAUDE.md,"
         "rule-skills:~/.claude/skills,"
-        "atlas:~/.athenah/atlas/ATLAS.md,"
-        "atlas:~/projects/transia/sage-ai/.claude/knowledge/ATLAS.md"
+        "atlas:~/.athenah/atlas/ATLAS.md"
     )
 
     # HMAC secret for signing http-* sync pushes (X-Atlas-Signature header).

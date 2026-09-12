@@ -1,5 +1,53 @@
 # machine-owned; rewritten by `python -m athenah_ai.atlas scan` — do not hand-edit
 nodes:
+- id: plan:sandbox-dangell7/agent-core/plans/01-extract.md
+  kind: plan
+  name: Extract the shared modules into agent-core
+  provenance: derived
+  attrs:
+    boxes_done: 4
+    boxes_open: 1
+    path: ~/projects/xrplf/sandbox-dangell7/agent-core/plans/01-extract.md
+    status: Active
+    store: sandbox-dangell7
+    title: Extract the shared modules into agent-core
+    updated: '2026-09-12'
+- id: plan:sandbox-dangell7/agent-core/plans/02-runtime-and-split.md
+  kind: plan
+  name: Move the agent runtime into agent-core and split case into two agent repos
+  provenance: derived
+  attrs:
+    boxes_done: 0
+    boxes_open: 10
+    path: ~/projects/xrplf/sandbox-dangell7/agent-core/plans/02-runtime-and-split.md
+    status: Active
+    store: sandbox-dangell7
+    title: Move the agent runtime into agent-core and split case into two agent repos
+    updated: '2026-09-12'
+- id: plan:sandbox-dangell7/agent-kit/plans/agent-kit.md
+  kind: plan
+  name: Ship the conduct rules and skills to tars and case
+  provenance: derived
+  attrs:
+    boxes_done: 7
+    boxes_open: 6
+    path: ~/projects/xrplf/sandbox-dangell7/agent-kit/plans/agent-kit.md
+    status: Active
+    store: sandbox-dangell7
+    title: Ship the conduct rules and skills to tars and case
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/ai-operating-model/plans/claude-md-diet.md
+  kind: plan
+  name: 'Plan: shrink the global CLAUDE.md that atlas renders'
+  provenance: derived
+  attrs:
+    boxes_done: 9
+    boxes_open: 0
+    path: ~/projects/xrplf/sandbox-dangell7/ai-operating-model/plans/claude-md-diet.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Plan: shrink the global CLAUDE.md that atlas renders'
+    updated: '2026-09-12'
 - id: plan:sandbox-dangell7/ai-operating-model/plans/cma-parity.md
   kind: plan
   name: 'Plan: build the five cloud Managed Agents capabilities into tars'
@@ -22,6 +70,19 @@ nodes:
     store: sandbox-dangell7
     title: GitHub hardening runbook
     updated: '2026-09-09'
+- id: plan:sandbox-dangell7/ai-operating-model/plans/managed-agent-instances.md
+  kind: plan
+  name: 'Plan: named agent instances on the case runtime'
+  provenance: derived
+  attrs:
+    boxes_done: 11
+    boxes_open: 0
+    path: ~/projects/xrplf/sandbox-dangell7/ai-operating-model/plans/managed-agent-instances.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Plan: named agent instances on the case runtime'
+    updated: '2026-09-10 (both commits landed in transia/case: e1e5ada the instance split,
+      a9bdac4 the maintainer and the write gate)'
 - id: plan:sandbox-dangell7/ai-operating-model/plans/phase0-refactor.md
   kind: plan
   name: 'Phase 0: xrpl-guides refactor into sandbox-dangell7'
@@ -46,7 +107,7 @@ nodes:
     status: Active
     store: sandbox-dangell7
     title: 'Plan: Project Manager position, derived from the project & vendor pipeline'
-    updated: 2026-09-09 (C1 done)
+    updated: 2026-09-09 (C1 done, C2 runtime landed)
 - id: plan:sandbox-dangell7/ai-operating-model/plans/structured-outputs.md
   kind: plan
   name: 'Plan: schema-enforced output for the tars agent calls'
@@ -64,8 +125,8 @@ nodes:
   name: 'tars on denis-build: acting as dangell7 on GitHub'
   provenance: derived
   attrs:
-    boxes_done: 1
-    boxes_open: 8
+    boxes_done: 13
+    boxes_open: 1
     path: ~/projects/xrplf/sandbox-dangell7/ai-operating-model/plans/tars-github.md
     status: Active
     store: sandbox-dangell7
@@ -107,6 +168,20 @@ nodes:
     title: 'Plan 16 — Alphanet build/deploy: converge sentinel + loadtester into one network-ops
       pipeline'
     updated: '2026-09-08'
+- id: plan:sandbox-dangell7/alphanet/plans/rebuild-and-reconcile.md
+  kind: plan
+  name: 'Plan: rebuild alphanet on current develop and reconcile every amendment with its
+    spec'
+  provenance: derived
+  attrs:
+    boxes_done: 13
+    boxes_open: 33
+    path: ~/projects/xrplf/sandbox-dangell7/alphanet/plans/rebuild-and-reconcile.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Plan: rebuild alphanet on current develop and reconcile every amendment with its
+      spec'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/amendment-dashboard/plans/01-build.md
   kind: plan
   name: Amendment Devnet Dashboard — build
@@ -127,10 +202,10 @@ nodes:
     boxes_done: 16
     boxes_open: 1
     path: ~/projects/xrplf/sandbox-dangell7/amendment-dashboard/plans/02-redesign.md
-    status: Done
+    status: Parked
     store: sandbox-dangell7
     title: Amendment Dashboard — UX + theme redesign
-    updated: '2026-09-02'
+    updated: '2026-09-12'
 - id: plan:sandbox-dangell7/amendment-dashboard/plans/03-surface-model.md
   kind: plan
   name: Amendment Dashboard — surface model closure (review-1 backlog)
@@ -153,6 +228,18 @@ nodes:
     store: sandbox-dangell7
     title: Amendment Dashboard — surface-model review against xrpld 3.3.0
     updated: '2026-09-02'
+- id: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  kind: plan
+  name: Audit, build and test every open alphanet pull request
+  provenance: derived
+  attrs:
+    boxes_done: 0
+    boxes_open: 16
+    path: ~/projects/xrplf/sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+    status: Draft
+    store: sandbox-dangell7
+    title: Audit, build and test every open alphanet pull request
+    updated: '2026-09-12'
 - id: plan:sandbox-dangell7/amendment-portfolio/plans/protocol-menu-site.md
   kind: plan
   name: 'Plan: public protocol work menu site (xrpl-protocol-menu.vercel.app)'
@@ -165,18 +252,30 @@ nodes:
     store: sandbox-dangell7
     title: 'Plan: public protocol work menu site (xrpl-protocol-menu.vercel.app)'
     updated: '2026-09-08'
+- id: plan:sandbox-dangell7/amendment-portfolio/plans/spec-implementation-reconciliation.md
+  kind: plan
+  name: 'One spec, one implementation: reconciling the 2027 roadmap amendments'
+  provenance: derived
+  attrs:
+    boxes_done: 0
+    boxes_open: 13
+    path: ~/projects/xrplf/sandbox-dangell7/amendment-portfolio/plans/spec-implementation-reconciliation.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'One spec, one implementation: reconciling the 2027 roadmap amendments'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/amendment-portfolio/plans/status-board.md
   kind: plan
   name: Plan 1 — Amendment Status Board (Vet + Denis)
   provenance: derived
   attrs:
-    boxes_done: 8
-    boxes_open: 1
+    boxes_done: 14
+    boxes_open: 2
     path: ~/projects/xrplf/sandbox-dangell7/amendment-portfolio/plans/status-board.md
     status: Active
     store: sandbox-dangell7
     title: Plan 1 — Amendment Status Board (Vet + Denis)
-    updated: '2026-09-04'
+    updated: '2026-09-10'
 - id: plan:sandbox-dangell7/amm-curves/plans/perf.md
   kind: plan
   name: AMM Performance Plan — Direct Work
@@ -199,6 +298,38 @@ nodes:
     store: sandbox-dangell7
     title: xrpl-wasm-stdlib — smart AMM escrow examples
     updated: '2026-06-13'
+- id: plan:sandbox-dangell7/artifact-publishing/plans/vercel-cloudflare-publishing.md
+  kind: plan
+  name: 'Plan: publish skill with internal, public and gated tiers'
+  provenance: derived
+  attrs:
+    boxes_done: 0
+    boxes_open: 22
+    path: ~/projects/xrplf/sandbox-dangell7/artifact-publishing/plans/vercel-cloudflare-publishing.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Plan: publish skill with internal, public and gated tiers'
+    updated: '2026-09-11'
+- id: plan:sandbox-dangell7/artifact-publishing/specs/audience-tiers.md
+  kind: plan
+  name: 'Audience tiers for published pages: artifact, Vercel, Cloudflare Access'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/artifact-publishing/specs/audience-tiers.md
+    status: Draft
+    store: sandbox-dangell7
+    title: 'Audience tiers for published pages: artifact, Vercel, Cloudflare Access'
+    updated: '2026-09-11'
+- id: plan:sandbox-dangell7/beneficiary/reports/spec-vs-implementation.md
+  kind: plan
+  name: 'Beneficiary: the spec against the implementation'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/beneficiary/reports/spec-vs-implementation.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Beneficiary: the spec against the implementation'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/confidential-voting/plans/01-design.md
   kind: plan
   name: Plan 1 — Confidential Voting (homomorphic encrypted tally)
@@ -228,13 +359,13 @@ nodes:
   name: Credit Record Platform
   provenance: derived
   attrs:
-    boxes_done: 30
-    boxes_open: 8
+    boxes_done: 38
+    boxes_open: 11
     path: ~/projects/xrplf/sandbox-dangell7/credit-record/plans/platform-and-demo.md
     status: Active
     store: sandbox-dangell7
     title: Credit Record Platform
-    updated: '2026-09-08'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/credit-record/reports/report-2026-09-08-devnet-build.md
   kind: plan
   name: 'Tally: Devnet build report'
@@ -245,6 +376,16 @@ nodes:
     store: sandbox-dangell7
     title: 'Tally: Devnet build report'
     updated: '2026-09-08'
+- id: plan:sandbox-dangell7/credit-record/reports/report-2026-09-11-devnet-hosting.md
+  kind: plan
+  name: 'Tally: devnet hosting'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/credit-record/reports/report-2026-09-11-devnet-hosting.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Tally: devnet hosting'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/credit-record/specs/explorer-ux.md
   kind: plan
   name: 'Tally explorer: what each user needs to see'
@@ -279,6 +420,20 @@ nodes:
     store: sandbox-dangell7
     title: xrpl-dr-plan — 2026-08-01 peer-flood debrief + DR scenarios
     updated: '2026-08-04'
+- id: plan:sandbox-dangell7/firewall/plans/port-to-develop.md
+  kind: plan
+  name: Port the firewall branch onto current develop and adopt the counterparty signature
+    primitive
+  provenance: derived
+  attrs:
+    boxes_done: 16
+    boxes_open: 3
+    path: ~/projects/xrplf/sandbox-dangell7/firewall/plans/port-to-develop.md
+    status: Active
+    store: sandbox-dangell7
+    title: Port the firewall branch onto current develop and adopt the counterparty signature
+      primitive
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/manifest-gossip/plans/repro-and-fix.md
   kind: plan
   name: 3.2.1 manifest gossip regression — local repro + fix confirmation
@@ -296,13 +451,13 @@ nodes:
   name: MPTStructuredData amendment implementation
   provenance: derived
   attrs:
-    boxes_done: 24
+    boxes_done: 31
     boxes_open: 0
     path: ~/projects/xrplf/sandbox-dangell7/mpt-structured-data/plans/implementation.md
     status: Done
     store: sandbox-dangell7
     title: MPTStructuredData amendment implementation
-    updated: '2026-09-08'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/mpt-structured-data/specs/xls-mpt-structured-data.md
   kind: plan
   name: Structured Data for Multi-Purpose Tokens
@@ -312,7 +467,7 @@ nodes:
     status: Draft
     store: sandbox-dangell7
     title: Structured Data for Multi-Purpose Tokens
-    updated: '2026-08-05'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/network-mapper/plans/observatory.md
   kind: plan
   name: XRPL Overlay Observatory — passive network listener + topology mapper
@@ -394,6 +549,116 @@ nodes:
     store: sandbox-dangell7
     title: Plan 9 — Deterministic Ordered In-Memory Order-Book Index
     updated: '2026-09-08'
+- id: plan:sandbox-dangell7/pull-payments/plans/coupon-payments-implementation.md
+  kind: plan
+  name: Coupon Payments — xrpld Implementation Plan
+  provenance: derived
+  attrs:
+    boxes_done: 29
+    boxes_open: 0
+    path: ~/projects/xrplf/sandbox-dangell7/pull-payments/plans/coupon-payments-implementation.md
+    status: Active
+    store: sandbox-dangell7
+    title: Coupon Payments — xrpld Implementation Plan
+    updated: '2026-09-11'
+- id: plan:sandbox-dangell7/repo-manager/plans/01-skills.md
+  kind: plan
+  name: 'Plan 1: what each target declares, kept true by a locations check'
+  provenance: derived
+  attrs:
+    boxes_done: 7
+    boxes_open: 0
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/plans/01-skills.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Plan 1: what each target declares, kept true by a locations check'
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-manager/plans/02-position.md
+  kind: plan
+  name: 'Plan 2: the Ecosystem Maintainer position'
+  provenance: derived
+  attrs:
+    boxes_done: 0
+    boxes_open: 16
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/plans/02-position.md
+    status: Parked
+    store: sandbox-dangell7
+    title: 'Plan 2: the Ecosystem Maintainer position'
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-manager/plans/03-t1-pr-detection.md
+  kind: plan
+  name: 'Plan 3: T1 — detect a protocol surface change on a rippled pull request'
+  provenance: derived
+  attrs:
+    boxes_done: 13
+    boxes_open: 2
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/plans/03-t1-pr-detection.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Plan 3: T1 — detect a protocol surface change on a rippled pull request'
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-manager/plans/04-aima-build.md
+  kind: plan
+  name: 'Plan 4: build the AIMA — from a pipeline task to an accomplished goal'
+  provenance: derived
+  attrs:
+    boxes_done: 138
+    boxes_open: 20
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/plans/04-aima-build.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Plan 4: build the AIMA — from a pipeline task to an accomplished goal'
+    updated: '2026-09-12'
+- id: plan:sandbox-dangell7/repo-manager/reports/dry-runs-2026-09-10.md
+  kind: plan
+  name: 'Dry runs: the locations check, the five procedures, and one pass on xrpl-go'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/reports/dry-runs-2026-09-10.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Dry runs: the locations check, the five procedures, and one pass on xrpl-go'
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-manager/specs/aima.md
+  kind: plan
+  name: 'AIMA: accomplishing the parity pipeline with a Managed Agent'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/specs/aima.md
+    status: Draft
+    store: sandbox-dangell7
+    title: 'AIMA: accomplishing the parity pipeline with a Managed Agent'
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-manager/specs/pipeline.md
+  kind: plan
+  name: The ecosystem parity pipeline
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/specs/pipeline.md
+    status: Draft
+    store: sandbox-dangell7
+    title: The ecosystem parity pipeline
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-manager/specs/repo-manager-brief.md
+  kind: plan
+  name: The Repo Manager brief
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/repo-manager/specs/repo-manager-brief.md
+    status: Draft
+    store: sandbox-dangell7
+    title: The Repo Manager brief
+    updated: '2026-09-10'
+- id: plan:sandbox-dangell7/repo-market/reports/spec-vs-implementation.md
+  kind: plan
+  name: 'Repo: the spec against the implementation'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/repo-market/reports/spec-vs-implementation.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Repo: the spec against the implementation'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/reserve-debate/plans/blog-post.md
   kind: plan
   name: Reserves blog post
@@ -406,6 +671,18 @@ nodes:
     store: sandbox-dangell7
     title: Reserves blog post
     updated: '2026-09-08'
+- id: plan:sandbox-dangell7/rfq/plans/reconcile-spec-and-implementation.md
+  kind: plan
+  name: 'Reconcile OfferQualifiers: one spec, one implementation'
+  provenance: derived
+  attrs:
+    boxes_done: 13
+    boxes_open: 0
+    path: ~/projects/xrplf/sandbox-dangell7/rfq/plans/reconcile-spec-and-implementation.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Reconcile OfferQualifiers: one spec, one implementation'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/rfq/plans/tier1.md
   kind: plan
   name: Tier 1 Plan — Execution Qualifiers + Market-Order Clarity
@@ -430,6 +707,28 @@ nodes:
     store: sandbox-dangell7
     title: Signature Roles — LoanSet × Sponsor × Batch × multisign test matrix
     updated: '2026-09-02'
+- id: plan:sandbox-dangell7/smart-vault/plans/vault-continuous-accrual.md
+  kind: plan
+  name: 'Vault Continuous Accrual: spec and implementation'
+  provenance: derived
+  attrs:
+    boxes_done: 3
+    boxes_open: 18
+    path: ~/projects/xrplf/sandbox-dangell7/smart-vault/plans/vault-continuous-accrual.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Vault Continuous Accrual: spec and implementation'
+    updated: '2026-09-11'
+- id: plan:sandbox-dangell7/smart-vault/specs/xls-vault-continuous-accrual.md
+  kind: plan
+  name: 'XLS-XXXX: Vault Continuous Accrual'
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/smart-vault/specs/xls-vault-continuous-accrual.md
+    status: Draft
+    store: sandbox-dangell7
+    title: 'XLS-XXXX: Vault Continuous Accrual'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/staging-validator-ops/plans/17-staging-ops-build.md
   kind: plan
   name: plan-17 — Custom ops build on the XRPLF staging validator (+ XDGM metrics site)
@@ -450,10 +749,32 @@ nodes:
     boxes_done: 24
     boxes_open: 1
     path: ~/projects/xrplf/sandbox-dangell7/status-dashboards/plans/json-backed-audit-skills.md
-    status: Done
+    status: Parked
     store: sandbox-dangell7
     title: JSON-backed dashboards and weekly audit skills
-    updated: '2026-09-09'
+    updated: '2026-09-12'
+- id: plan:sandbox-dangell7/subscriptions/plans/port-to-develop.md
+  kind: plan
+  name: Port dangell7/subscriptions (dc8a689a20) onto develop (c7adb215ed)
+  provenance: derived
+  attrs:
+    path: ~/projects/xrplf/sandbox-dangell7/subscriptions/plans/port-to-develop.md
+    status: Done
+    store: sandbox-dangell7
+    title: Port dangell7/subscriptions (dc8a689a20) onto develop (c7adb215ed)
+    updated: '2026-09-11'
+- id: plan:sandbox-dangell7/subscriptions/plans/reconcile-spec-and-implementation.md
+  kind: plan
+  name: 'Reconcile XLS-78: one spec, one implementation'
+  provenance: derived
+  attrs:
+    boxes_done: 34
+    boxes_open: 1
+    path: ~/projects/xrplf/sandbox-dangell7/subscriptions/plans/reconcile-spec-and-implementation.md
+    status: Done
+    store: sandbox-dangell7
+    title: 'Reconcile XLS-78: one spec, one implementation'
+    updated: '2026-09-11'
 - id: plan:sandbox-dangell7/unl-multisig/plans/implementation.md
   kind: plan
   name: UNL Multisig — Implementation Plan
@@ -512,18 +833,18 @@ nodes:
     updated: '2026-09-07'
 - id: plan:sandbox-dangell7/xls-impact-studies/plans/generator.md
   kind: plan
-  name: Impact study from the XLS — stage-1 ledger-impact projection, computed from the spec
+  name: Impact study from the XLS — stage-2 ledger-impact projection, computed from the spec
     alone
   provenance: derived
   attrs:
-    boxes_done: 47
-    boxes_open: 14
+    boxes_done: 50
+    boxes_open: 15
     path: ~/projects/xrplf/sandbox-dangell7/xls-impact-studies/plans/generator.md
     status: Active
     store: sandbox-dangell7
-    title: Impact study from the XLS — stage-1 ledger-impact projection, computed from the
+    title: Impact study from the XLS — stage-2 ledger-impact projection, computed from the
       spec alone
-    updated: '2026-09-06'
+    updated: '2026-09-10'
 - id: plan:sandbox-dangell7/xrpl-studio/plans/toolkit.md
   kind: plan
   name: XRPL Studio — definitions-driven toolkit
@@ -704,10 +1025,10 @@ nodes:
     boxes_done: 7
     boxes_open: 0
     path: ~/projects/xrplf/sandbox-dangell7/xrpld-performance/plans/18-consensus-priority-lane.md
-    status: Active
+    status: Done
     store: sandbox-dangell7
     title: Plan 18 — Consensus priority lane in the per-peer send queue
-    updated: '2026-09-02'
+    updated: '2026-09-12'
 - id: plan:sandbox-dangell7/xrpld-performance/plans/blog-capacity-campaign.md
   kind: plan
   name: Capacity campaign blog post
@@ -768,6 +1089,18 @@ nodes:
     store: sandbox-dangell7
     title: VL sequence format YYYYMMDDNN
     updated: '2026-09-09'
+- id: plan:sandbox-dangell7/xrplf-devnet-node/plans/node-repo.md
+  kind: plan
+  name: 'Devnet node repo: rename, reset, monitor'
+  provenance: derived
+  attrs:
+    boxes_done: 18
+    boxes_open: 3
+    path: ~/projects/xrplf/sandbox-dangell7/xrplf-devnet-node/plans/node-repo.md
+    status: Active
+    store: sandbox-dangell7
+    title: 'Devnet node repo: rename, reset, monitor'
+    updated: '2026-09-10'
 - id: plan:sandbox-dangell7/xrplf-distribution/plans/hardening.md
   kind: plan
   name: XRPLF ops maintenance — distribution + UNL validator
@@ -792,6 +1125,18 @@ nodes:
     store: sandbox-dangell7
     title: Documentation parity check (xrplf-release-notifier)
     updated: '2026-09-08'
+- id: plan:sandbox-dangell7/xrplf-release-notifier/plans/in-progress-pr-detection.md
+  kind: plan
+  name: In-progress-PR detection for the parity legs
+  provenance: derived
+  attrs:
+    boxes_done: 8
+    boxes_open: 1
+    path: ~/projects/xrplf/sandbox-dangell7/xrplf-release-notifier/plans/in-progress-pr-detection.md
+    status: Active
+    store: sandbox-dangell7
+    title: In-progress-PR detection for the parity legs
+    updated: '2026-09-10'
 - id: plan:sandbox-dangell7/xrplf-release-notifier/plans/scheduler.md
   kind: plan
   name: Release Notifier — declarative scheduler + recurring reports
@@ -830,6 +1175,50 @@ nodes:
     updated: '2026-08-12'
 edges:
 - kind: governed_by
+  src: checkout:~/projects/transia/agent-core
+  dst: plan:sandbox-dangell7/agent-core/plans/01-extract.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/agent-core
+  dst: plan:sandbox-dangell7/agent-core/plans/02-runtime-and-split.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/athenah-ai
+  dst: plan:sandbox-dangell7/ai-operating-model/plans/claude-md-diet.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/agent-core/plans/01-extract.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/agent-core/plans/02-runtime-and-split.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/agent-kit/plans/agent-kit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/ai-operating-model/plans/managed-agent-instances.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/repo-manager/plans/04-aima-build.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/repo-manager/reports/dry-runs-2026-09-10.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/repo-manager/specs/aima.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/case
+  dst: plan:sandbox-dangell7/repo-manager/specs/repo-manager-brief.md
+  provenance: derived
+- kind: governed_by
   src: checkout:~/projects/transia/inteligen
   dst: plan:sandbox-dangell7/xrpld-performance/plans/00-throughput-index.md
   provenance: derived
@@ -846,6 +1235,18 @@ edges:
   dst: plan:sandbox-dangell7/alphanet/plans/network-ops-convergence.md
   provenance: derived
 - kind: governed_by
+  src: checkout:~/projects/transia/sentinel-ai
+  dst: plan:sandbox-dangell7/alphanet/plans/rebuild-and-reconcile.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/tars
+  dst: plan:sandbox-dangell7/agent-core/plans/01-extract.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/tars
+  dst: plan:sandbox-dangell7/agent-kit/plans/agent-kit.md
+  provenance: derived
+- kind: governed_by
   src: checkout:~/projects/transia/tars
   dst: plan:sandbox-dangell7/ai-operating-model/plans/cma-parity.md
   provenance: derived
@@ -860,6 +1261,10 @@ edges:
 - kind: governed_by
   src: checkout:~/projects/transia/tars
   dst: plan:sandbox-dangell7/ai-operating-model/specs/positions.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/tars
+  dst: plan:sandbox-dangell7/repo-manager/plans/02-position.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/transia/thehub-faucet
@@ -906,12 +1311,28 @@ edges:
   dst: plan:sandbox-dangell7/amendment-dashboard/reports/review-1-surface-gaps-3.3.0.md
   provenance: derived
 - kind: governed_by
-  src: checkout:~/projects/xrplf/quantum-static
+  src: checkout:~/projects/xrplf/demo-amm-curves
+  dst: plan:sandbox-dangell7/alphanet/plans/domain-migration.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/demo-quantum
   dst: plan:sandbox-dangell7/alphanet/plans/domain-migration.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/sandbox-dangell7
   dst: plan:sandbox-dangell7/ai-operating-model/plans/phase0-refactor.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/static-sites
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/protocol-menu-site.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/static-sites
+  dst: plan:sandbox-dangell7/artifact-publishing/plans/vercel-cloudflare-publishing.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/static-sites
+  dst: plan:sandbox-dangell7/artifact-publishing/specs/audience-tiers.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/unl
@@ -960,6 +1381,10 @@ edges:
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpl-wasm-stdlib
   dst: plan:sandbox-dangell7/amm-curves/plans/wasm-smart-amm.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpl.js
+  dst: plan:sandbox-dangell7/mpt-structured-data/plans/implementation.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld
@@ -1014,8 +1439,28 @@ edges:
   dst: plan:sandbox-dangell7/xrpld-performance/plans/03-batch-sig-verify.md
   provenance: derived
 - kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-beneficiary
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-beneficiary
+  dst: plan:sandbox-dangell7/beneficiary/reports/spec-vs-implementation.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-coupon
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-coupon
+  dst: plan:sandbox-dangell7/pull-payments/plans/coupon-payments-implementation.md
+  provenance: derived
+- kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-debug-stream
   dst: plan:sandbox-dangell7/xrpld-debug-stream/plans/02-batch-results.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-firewall
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-lab
@@ -1042,6 +1487,14 @@ edges:
   dst: plan:sandbox-dangell7/xrpld-performance/plans/14-tree-cache-ram-scaling.md
   provenance: derived
 - kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-offer-qualifiers
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-offer-qualifiers
+  dst: plan:sandbox-dangell7/rfq/plans/reconcile-spec-and-implementation.md
+  provenance: derived
+- kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-online-delete
   dst: plan:sandbox-dangell7/online-delete/plans/pr5531.md
   provenance: derived
@@ -1052,6 +1505,22 @@ edges:
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-online-delete
   dst: plan:sandbox-dangell7/online-delete/reports/pr5531-audit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-online-delete-baseline
+  dst: plan:sandbox-dangell7/alphanet/plans/rebuild-and-reconcile.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-online-delete-baseline
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/spec-implementation-reconciliation.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-online-delete-baseline
+  dst: plan:sandbox-dangell7/repo-manager/specs/aima.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-online-delete-baseline
+  dst: plan:sandbox-dangell7/repo-manager/specs/pipeline.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-parallel-consensus
@@ -1114,20 +1583,32 @@ edges:
   dst: plan:sandbox-dangell7/xrpld-publisher/plans/vl-sequence-format.md
   provenance: derived
 - kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-repo-market
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-repo-market
+  dst: plan:sandbox-dangell7/repo-market/reports/spec-vs-implementation.md
+  provenance: derived
+- kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-sig-roles
   dst: plan:sandbox-dangell7/signature-roles/plans/test-matrix.md
   provenance: derived
 - kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-structured-data
-  dst: plan:sandbox-dangell7/mpt-structured-data/plans/implementation.md
+  src: checkout:~/projects/xrplf/xrpld-subscriptions
+  dst: plan:sandbox-dangell7/subscriptions/plans/port-to-develop.md
   provenance: derived
 - kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-structured-data
-  dst: plan:sandbox-dangell7/mpt-structured-data/specs/xls-mpt-structured-data.md
+  src: checkout:~/projects/xrplf/xrpld-subscriptions
+  dst: plan:sandbox-dangell7/subscriptions/plans/reconcile-spec-and-implementation.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-timeseries
   dst: plan:sandbox-dangell7/dex-timeseries/specs/spec.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-token-issuance
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-top-of-book
@@ -1135,11 +1616,23 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrpld-transia
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-transia
   dst: plan:sandbox-dangell7/confidential-voting/plans/02-implementation.md
   provenance: derived
 - kind: governed_by
-  src: checkout:~/projects/xrplf/xrpld-transia-rfq
-  dst: plan:sandbox-dangell7/rfq/plans/tier1.md
+  src: checkout:~/projects/xrplf/xrpld-vault-accrual
+  dst: plan:sandbox-dangell7/smart-vault/plans/vault-continuous-accrual.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrpld-vault-accrual
+  dst: plan:sandbox-dangell7/smart-vault/specs/xls-vault-continuous-accrual.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrplf-devnet-node
+  dst: plan:sandbox-dangell7/xrplf-devnet-node/plans/node-repo.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-distribution
@@ -1151,11 +1644,23 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
-  dst: plan:sandbox-dangell7/validator-ranking/specs/metrics.md
+  dst: plan:sandbox-dangell7/repo-manager/plans/01-skills.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
-  dst: plan:sandbox-dangell7/xls-impact-studies/plans/generator.md
+  dst: plan:sandbox-dangell7/repo-manager/plans/02-position.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/repo-manager/specs/aima.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/repo-manager/specs/pipeline.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/xrplf/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/validator-ranking/specs/metrics.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-release-notifier
@@ -1178,36 +1683,48 @@ edges:
   dst: plan:sandbox-dangell7/xrplf-release-notifier/plans/xls-parity.md
   provenance: derived
 - kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/network-mapper/plans/observatory.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/staging-validator-ops/plans/17-staging-ops-build.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/xrpld-debug-stream/plans/01-devnet.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/xrpld-debug-stream/plans/02-batch-results.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/xrpld-performance/reports/validation-relay-loss-mainnet.md
-  provenance: derived
-- kind: governed_by
-  src: checkout:~/projects/xrplf/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/xrplf-distribution/plans/hardening.md
-  provenance: derived
-- kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-webapp
   dst: plan:sandbox-dangell7/alphanet/plans/domain-migration.md
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/xrplf/xrplf-webapp
   dst: plan:sandbox-dangell7/confidential-voting/plans/01-design.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/XRPL-Standards
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/spec-implementation-reconciliation.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/XRPL-Standards
+  dst: plan:sandbox-dangell7/subscriptions/plans/reconcile-spec-and-implementation.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/alphanet/plans/rebuild-and-reconcile.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/alphanet-pr-audit.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/amendment-portfolio/plans/spec-implementation-reconciliation.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/firewall/plans/port-to-develop.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/mpt-structured-data/plans/implementation.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/mpt-structured-data/specs/xls-mpt-structured-data.md
+  provenance: derived
+- kind: governed_by
+  src: repo:Transia-RnD/rippled
+  dst: plan:sandbox-dangell7/subscriptions/plans/reconcile-spec-and-implementation.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
@@ -1220,10 +1737,6 @@ edges:
 - kind: governed_by
   src: repo:XRPLF/rippled
   dst: plan:sandbox-dangell7/validator-ranking/specs/metrics.md
-  provenance: derived
-- kind: governed_by
-  src: repo:XRPLF/rippled
-  dst: plan:sandbox-dangell7/xls-impact-studies/plans/generator.md
   provenance: derived
 - kind: governed_by
   src: repo:XRPLF/rippled
@@ -1250,10 +1763,30 @@ edges:
   dst: plan:sandbox-dangell7/network-mapper/plans/observatory.md
   provenance: derived
 - kind: governed_by
+  src: repo:XRPLF/xrpld-blackops
+  dst: plan:sandbox-dangell7/ai-operating-model/plans/hardening.md
+  provenance: derived
+- kind: governed_by
   src: repo:XRPLF/xrpld-private
   dst: plan:sandbox-dangell7/ai-operating-model/plans/hardening.md
   provenance: derived
 - kind: governed_by
-  src: repo:XRPLF/xrplf-unl-validator
-  dst: plan:sandbox-dangell7/network-mapper/plans/observatory.md
+  src: repo:XRPLF/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/repo-manager/plans/03-t1-pr-detection.md
+  provenance: derived
+- kind: governed_by
+  src: repo:XRPLF/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/repo-manager/plans/04-aima-build.md
+  provenance: derived
+- kind: governed_by
+  src: repo:XRPLF/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/repo-manager/reports/dry-runs-2026-09-10.md
+  provenance: derived
+- kind: governed_by
+  src: repo:XRPLF/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/repo-manager/specs/repo-manager-brief.md
+  provenance: derived
+- kind: governed_by
+  src: repo:XRPLF/xrplf-release-notifier
+  dst: plan:sandbox-dangell7/xls-impact-studies/plans/generator.md
   provenance: derived
