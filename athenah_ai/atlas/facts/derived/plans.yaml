@@ -557,10 +557,10 @@ nodes:
     boxes_done: 29
     boxes_open: 0
     path: ~/projects/xrplf/sandbox-dangell7/pull-payments/plans/coupon-payments-implementation.md
-    status: Active
+    status: Done
     store: sandbox-dangell7
     title: Coupon Payments — xrpld Implementation Plan
-    updated: '2026-09-11'
+    updated: '2026-09-12'
 - id: plan:sandbox-dangell7/repo-manager/plans/01-skills.md
   kind: plan
   name: 'Plan 1: what each target declares, kept true by a locations check'
@@ -768,13 +768,13 @@ nodes:
   name: 'Reconcile XLS-78: one spec, one implementation'
   provenance: derived
   attrs:
-    boxes_done: 34
-    boxes_open: 1
+    boxes_done: 35
+    boxes_open: 0
     path: ~/projects/xrplf/sandbox-dangell7/subscriptions/plans/reconcile-spec-and-implementation.md
     status: Done
     store: sandbox-dangell7
     title: 'Reconcile XLS-78: one spec, one implementation'
-    updated: '2026-09-11'
+    updated: '2026-09-12'
 - id: plan:sandbox-dangell7/unl-multisig/plans/implementation.md
   kind: plan
   name: UNL Multisig — Implementation Plan
@@ -1180,6 +1180,10 @@ edges:
   provenance: derived
 - kind: governed_by
   src: checkout:~/projects/transia/agent-core
+  dst: plan:sandbox-dangell7/agent-core/plans/02-runtime-and-split.md
+  provenance: derived
+- kind: governed_by
+  src: checkout:~/projects/transia/agent-project-manager
   dst: plan:sandbox-dangell7/agent-core/plans/02-runtime-and-split.md
   provenance: derived
 - kind: governed_by

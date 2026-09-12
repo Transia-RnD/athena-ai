@@ -75,6 +75,15 @@ nodes:
     last_seen: '2026-09-12'
     path: ~/projects/transia/agent-core
     remote: https://github.com/Transia-RnD/agent-core.git
+- id: checkout:~/projects/transia/agent-project-manager
+  kind: checkout
+  name: agent-project-manager
+  provenance: derived
+  attrs:
+    branch: main
+    last_seen: '2026-09-12'
+    path: ~/projects/transia/agent-project-manager
+    remote: https://github.com/Transia-RnD/agent-project-manager.git
 - id: checkout:~/projects/transia/ai-bootstrap
   kind: checkout
   name: ai-bootstrap
@@ -1262,6 +1271,10 @@ edges:
 - kind: checkout_of
   src: checkout:~/projects/transia/agent-core
   dst: repo:Transia-RnD/agent-core
+  provenance: derived
+- kind: checkout_of
+  src: checkout:~/projects/transia/agent-project-manager
+  dst: repo:Transia-RnD/agent-project-manager
   provenance: derived
 - kind: checkout_of
   src: checkout:~/projects/transia/ai-bootstrap

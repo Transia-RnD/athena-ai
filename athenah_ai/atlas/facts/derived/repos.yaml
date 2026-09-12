@@ -72,6 +72,10 @@ nodes:
   kind: repo
   name: agent-core
   provenance: derived
+- id: repo:Transia-RnD/agent-project-manager
+  kind: repo
+  name: agent-project-manager
+  provenance: derived
 - id: repo:Transia-RnD/athenah-ai
   kind: repo
   name: athenah-ai
@@ -335,6 +339,10 @@ edges:
   provenance: derived
 - kind: owned_by
   src: repo:Transia-RnD/agent-core
+  dst: org:transia-rnd
+  provenance: derived
+- kind: owned_by
+  src: repo:Transia-RnD/agent-project-manager
   dst: org:transia-rnd
   provenance: derived
 - kind: owned_by
