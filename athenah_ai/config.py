@@ -259,12 +259,15 @@ class AtlasConfig:
     stale_after_days: int = 90
 
     # Comma-separated sync targets, each "<format>:<path>" where format is
-    # "atlas", "claude-md", "agents-md", or an "http-" prefixed variant.
-    # File formats write the rendered markdown to <path>; the http-* formats
-    # POST it to the URL in <path>. `sync` (and auto-sync after teach/scan on
-    # the default facts dir) re-renders every target.
+    # "atlas", "claude-md", "agents-md", an "http-" prefixed variant, or
+    # "rule-skills". File formats write the rendered markdown to <path>; the
+    # http-* formats POST it to the URL in <path>; rule-skills writes one
+    # rule-<slug> skill directory per conditional rule under <path>. `sync`
+    # (and auto-sync after teach/scan on the default facts dir) re-renders
+    # every target.
     sync_targets: str = (
         "claude-md:~/.claude/CLAUDE.md,"
+        "rule-skills:~/.claude/skills,"
         "atlas:~/.athenah/atlas/ATLAS.md,"
         "atlas:~/projects/transia/sage-ai/.claude/knowledge/ATLAS.md"
     )

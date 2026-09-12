@@ -24,13 +24,13 @@ nodes:
   provenance: taught
   notes: 'When you need something from Denis, isolate it: ONE question at a time, with just
     enough context to answer it, and nothing else in the message. Never bundle two or three
-    asks, and never bury them at the end of a long report expecting him to find them. Denis
-    (2026-09-09): ''if you have questions then isolate them dont give me 10 paragraphs and
-    expect me to read. 1 single question with context at a time''. Prefer the AskUserQuestion
-    tool for a real choice so the ask is a prompt, not prose he has to mine. This does not
-    license asking more often: the Blockers rule still stands, so do the reversible work first
-    and ask only what genuinely only he can answer.'
+    asks, and never bury them at the end of a long report expecting him to find them. Prefer
+    the AskUserQuestion tool for a real choice so the ask is a prompt, not prose he has to
+    mine. This does not license asking more often: the Blockers rule still stands, so do the
+    reversible work first and ask only what genuinely only he can answer.'
   attrs:
+    evidence: 'Denis (2026-09-09): ''if you have questions then isolate them dont give me
+      10 paragraphs and expect me to read. 1 single question with context at a time''.'
     verified_at: '2026-09-09'
 - id: rule:blockers
   kind: rule
@@ -100,28 +100,44 @@ nodes:
     session.withTransaction()) — even single-document writes.
 
     '
-- id: rule:external-static-pages-vercel
+- id: rule:design-specs-unconstrained
   kind: rule
-  name: Pages for people outside the org go to Vercel
-  provenance: taught
-  notes: 'claude.ai artifacts cannot be shared outside the XRPLF org, so anything Ripple or
-    another external party must read is a plain static site: index.html plus vercel.json (`cleanUrls:
-    true`) in its own directory under XRPLF/static-sites, one directory per site, each with
-    its own Vercel project (the .vercel link is gitignored and stays local). Anything with
-    a toolchain - Next.js, a bundler, dependencies - gets its own XRPLF repo instead, as XRPLF/amm-curves
-    and XRPLF/xrpl-batch-debug do. Deploy from the site directory with the Vercel CLI on the
-    XRP Ledger Foundation team (slug xrp-ledger-foundation, CLI logged in as denis-9433):
-    `npx vercel link --yes --project <name>` then `npx vercel deploy --prod --yes`. The deploy
-    command is denied for Claude by the permission classifier: build the directory, then hand
-    Denis those two lines instead of retrying. Verify afterwards with curl on the production
-    *.vercel.app domain (200). Team projects show Vercel Authentication as all_except_custom_domains:
-    the production domain is public, only per-deployment URLs need login, so share the production
-    domain only. The Vercel connector file upload is not a substitute for multi- megabyte
-    sites.'
+  name: Design specs for the right protocol, not for what has shipped
+  provenance: proposed
+  notes: When Denis asks for a spec or design, design the correct protocol as if building
+    from scratch. Do not narrow the design to what xrpld has shipped, what an amendment already
+    gated, or what Mainnet has enabled; state that context in one section, then design what
+    is right.
   attrs:
-    applies_when: publishing a page, report, or site that someone outside the XRPLF org must
-      be able to open
-    verified_at: '2026-09-08'
+    evidence: 'Denis (2026-09-11), on a Vault Continuous Accrual spec that had been scoped
+      down to fit LendingProtocolV1_1: ''were building we dont care whats available. Stop
+      constraining yourself like that.'''
+    verified_at: '2026-09-11'
+- id: rule:google-docs-editing
+  kind: rule
+  name: Google Docs and Drive files — edit René's shared doc in place
+  provenance: taught
+  notes: 'A link René shares is a native Google Doc (mimeType application/vnd.google-apps.document,
+    URL docs.google.com/document/d/<id>), not a .docx. Edit it directly in the same document;
+    do not download it as .docx and re-upload, and do not write suggestions or tracked changes.
+    Denis wants the edits applied so René opens the same link and sees the edited text (Denis,
+    2026-09-11). The claude.ai Google Drive connector can read the doc (get_file_metadata,
+    read_file_content, download_file_content) but cannot write content back: update_file changes
+    only title and parent, and create_file makes a new file. The write path is the Google
+    Docs API documents.batchUpdate on the doc id with a token from `gcloud auth print-access-token`
+    for denis@xrpl.foundation; that login must have been done once with `gcloud auth login
+    denis@xrpl.foundation --enable-gdrive-access` (gcloud 583 has no --scopes flag on auth
+    login; the Drive scope is accepted by the Docs API). Before the first write, test a documents.get
+    read with the token; if Google reports the Docs API disabled for gcloud''s client project,
+    add the header x-goog-user-project with one of Denis''s GCP projects. A real .docx stored
+    in Drive (URL drive.google.com/file/d/<id>) is different: python-docx is installed locally,
+    edit the bytes and write them back to the same file id with the Drive v3 upload endpoint
+    (uploadType=media), never as a new file. Google Drive for Desktop is not installed on
+    this Mac.'
+  attrs:
+    applies_when: asked to edit, correct, or review a Google Doc, Google Drive link, or .docx
+      that someone shared with Denis
+    verified_at: 2026-09-11
 - id: rule:never-push
   kind: rule
   name: Git — never push
@@ -147,8 +163,8 @@ nodes:
     store on 2026-09-06 because it duplicated CLAUDE.md and drifted. A durable fact about
     how Denis works, an identity, a repo, a server, or a rule goes into the atlas (`python
     -m athenah_ai.atlas teach`, or `teach --propose` when unsure) and is rendered into CLAUDE.md.
-    Project status, decisions, and next steps go into the plan store (sandbox-dangell7 for XRPL
-    work). Repo-specific conventions go into that repo's own docs. If none of those fits,
+    Project status, decisions, and next steps go into the plan store (sandbox-dangell7 for
+    XRPL work). Repo-specific conventions go into that repo's own docs. If none of those fits,
     the fact is not worth keeping.
   attrs:
     verified_at: '2026-09-08'
@@ -158,9 +174,9 @@ nodes:
   provenance: taught
   notes: 'Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions).
     NEVER create tasks/ folders or todo/plan files inside project repos — plans and task lists
-    go in the CENTRAL plan store ONLY (see Plan Stores: ~/projects/xrplf/sandbox-dangell7 for XRPL
-    work — topic dir or its tasks/; use the project''s mapped plan store otherwise). Write
-    the plan there with checkable items and check in before starting; mark items complete
+    go in the CENTRAL plan store ONLY (see Plan Stores: ~/projects/xrplf/sandbox-dangell7
+    for XRPL work — topic dir or its tasks/; use the project''s mapped plan store otherwise).
+    Write the plan there with checkable items and check in before starting; mark items complete
     as you go. If something goes sideways, STOP and re-plan immediately.
 
     '
@@ -179,6 +195,22 @@ nodes:
   attrs:
     priority: first
     verified_at: '2026-09-04'
+- id: rule:replace-dont-accumulate
+  kind: rule
+  name: Replace, never add a second mechanism beside the first
+  provenance: proposed
+  notes: 'When a mechanism for the job already exists, extend it or delete and replace it.
+    Never leave two paths doing the same job. When a design is called fragmented or too complex,
+    the response is a DELETION - name the files that go - not an addition. And resolve the
+    blocking unknown BEFORE writing: if you cannot verify what the new code depends on (a
+    credential, an endpoint, a contract), stop and get that answer; writing the new path while
+    leaving the old one ''to be safe'' is exactly the accumulation this forbids.'
+  attrs:
+    evidence: 'Denis (2026-09-09), after a tars session ended with 30 hand-written tool wrappers
+      and a whole-server attach path standing side by side: ''see how fucking fragmented this
+      is'', ''JUST USE ALL THE FUCKING TOOLS'', ''This thing is now a cluster fuck''. He notes
+      the pattern repeats in every repo.'
+    verified_at: '2026-09-09'
 - id: rule:secrets-cleanup
   kind: rule
   name: Secrets hygiene — clean up after loading
@@ -235,13 +267,13 @@ nodes:
     to the command output in THIS session that proves it, or you run the check first. Plan-store
     notes, memory files, open checkboxes, and your own earlier summaries are hypotheses, never
     evidence: an open checkbox means "unverified", a 404 on a directory means "no index",
-    not "empty". If a claim cannot be verified right now, write "unverified" or cut the sentence.
-    Denis (2026-09-04): "did you just make that up ... Can we please stop doing that? Fabricating
-    something out of thin air?" after two invented present-tense facts (private repos "empty"
-    while they held xrpld 3.4.0 b1..rc2; nexus.xrplf.org "not proxied" while my own dig and
-    cert check in the same session showed Cloudflare). Both reached Ripple engineers. This
-    rule ranks with Real identifiers only.'
+    not "empty". If a claim cannot be verified right now, write "unverified" or cut the sentence.'
   attrs:
+    evidence: 'Denis (2026-09-04): "did you just make that up ... Can we please stop doing
+      that? Fabricating something out of thin air?" after two invented present-tense facts
+      (private repos "empty" while they held xrpld 3.4.0 b1..rc2; nexus.xrplf.org "not proxied"
+      while my own dig and cert check in the same session showed Cloudflare). Both reached
+      Ripple engineers. This rule ranks with Real identifiers only.'
     priority: first
     verified_at: '2026-09-04'
 - id: rule:xrplf-webapp-data-layer

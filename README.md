@@ -148,6 +148,7 @@ python -m athenah_ai.atlas scan                 # rescan ~/projects checkouts
 python -m athenah_ai.atlas context --cwd .      # scoped bootstrap for a dir
 python -m athenah_ai.atlas render               # write full ATLAS.md
 python -m athenah_ai.atlas render --claude-md   # emit generated CLAUDE.md
+python -m athenah_ai.atlas render --skills-dir ~/.claude/skills   # one rule-<slug> skill per conditional rule
 python -m athenah_ai.atlas teach --edge can_write identity:github/x org:y
 python -m athenah_ai.atlas why identity:github/x   # provenance of any fact
 python -m athenah_ai.atlas sync                    # re-render all consumers

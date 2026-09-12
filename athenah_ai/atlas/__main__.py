@@ -25,6 +25,7 @@ import hashlib
 import hmac
 import json
 import os
+import shutil
 import sys
 from typing import Optional
 
@@ -32,10 +33,13 @@ import yaml
 
 from athenah_ai.atlas.graph import AtlasGraph
 from athenah_ai.atlas.render import (
+    RULE_SKILL_MARKER,
+    RULE_SKILL_PREFIX,
     render_agents_md,
     render_atlas,
     render_claude_md,
     render_context,
+    render_rule_skills,
     stale_since,
 )
 from athenah_ai.atlas.scanner import AtlasScanner
@@ -121,6 +125,39 @@ def _post_target(url: str, markdown: str) -> None:
         print(f"WARNING: atlas push to {url} failed: {err}", file=sys.stderr)
 
 
+def _write_rule_skills(graph, root: str) -> int:
+    """Write one skill directory per conditional rule under ``root``.
+
+    A ``rule-*`` directory whose SKILL.md carries the generated marker but
+    matches no current rule is removed, so a deleted rule leaves no skill.
+
+    Args:
+        graph: The atlas graph.
+        root: Skills directory, ``~`` expanded.
+
+    Returns:
+        Number of skills written.
+    """
+    root = os.path.expanduser(root)
+    skills = render_rule_skills(graph)
+    if os.path.isdir(root):
+        for name in os.listdir(root):
+            if not name.startswith(RULE_SKILL_PREFIX) or name in skills:
+                continue
+            path = os.path.join(root, name, "SKILL.md")
+            if not os.path.isfile(path):
+                continue
+            with open(path) as f:
+                generated = RULE_SKILL_MARKER in f.read()
+            if generated:
+                shutil.rmtree(os.path.join(root, name))
+    for name, text in skills.items():
+        os.makedirs(os.path.join(root, name), exist_ok=True)
+        with open(os.path.join(root, name, "SKILL.md"), "w") as f:
+            f.write(text)
+    return len(skills)
+
+
 def _sync_targets(args: argparse.Namespace) -> int:
     from athenah_ai.config import config
 
@@ -134,13 +171,16 @@ def _sync_targets(args: argparse.Namespace) -> int:
         "http-agents-md": render_agents_md,
     }
     for fmt, _ in targets:
-        if fmt not in renderers:
+        if fmt not in renderers and fmt != "rule-skills":
             print(f"ERROR: unknown sync target format '{fmt}'",
                   file=sys.stderr)
             return 1
     graph = _graph(args)
     stale_days = config.atlas.stale_after_days
     for fmt, out in targets:
+        if fmt == "rule-skills":
+            _write_rule_skills(graph, out)
+            continue
         rendered = renderers[fmt](graph, stale_after_days=stale_days)
         if fmt.startswith("http-"):
             _post_target(out, rendered)
@@ -330,6 +370,11 @@ def cmd_render(args: argparse.Namespace) -> int:
 
     graph = _graph(args)
     stale_days = config.atlas.stale_after_days
+    if args.skills_dir:
+        count = _write_rule_skills(graph, args.skills_dir)
+        print(f"wrote {count} rule skills under {args.skills_dir}")
+        if not (args.claude_md or args.agents_md or args.out):
+            return 0
     if args.claude_md or args.agents_md:
         renderer = render_claude_md if args.claude_md else render_agents_md
         text = renderer(graph, stale_after_days=stale_days)
@@ -467,12 +512,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_context)
 
     p = sub.add_parser(
-        "render", help="write ATLAS.md / emit CLAUDE.md or AGENTS.md"
+        "render",
+        help="write ATLAS.md / emit CLAUDE.md or AGENTS.md / write rule skills",
     )
     p.add_argument("--out", default=None)
     group = p.add_mutually_exclusive_group()
     group.add_argument("--claude-md", action="store_true")
     group.add_argument("--agents-md", action="store_true")
+    p.add_argument(
+        "--skills-dir", default=None,
+        help="write one rule-<slug> skill per conditional rule here",
+    )
     p.set_defaults(func=cmd_render)
 
     p = sub.add_parser("show", help="print one node and its neighbors")

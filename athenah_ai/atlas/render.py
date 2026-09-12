@@ -5,6 +5,8 @@ Four products:
 * ``render_atlas``     — the full ATLAS.md ("init into my life").
 * ``render_context``   — scoped bootstrap for one working directory.
 * ``render_claude_md`` — the generated global CLAUDE.md for Claude Code.
+* ``render_rule_skills`` — one SKILL.md per conditional rule, loaded by
+  Claude Code only when the rule's trigger matches.
 * ``render_agents_md`` — the same body for the AGENTS.md convention.
 
 No LLM involved; every line is traceable to a fact, and rendering the same
@@ -18,7 +20,7 @@ first).
 """
 
 import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from athenah_ai.atlas.graph import AtlasContext, AtlasGraph
 from athenah_ai.atlas.schema import NODE_KINDS, Node
@@ -177,21 +179,26 @@ def _repo_map(graph: AtlasGraph, lines: List[str]) -> None:
     lines.append("")
 
 
+def _attr_suffix(node: Node) -> str:
+    attrs = ", ".join(
+        f"{k}={v}" for k, v in sorted(node.attrs.items())
+        if k != "verified_at"
+    )
+    return f" [{attrs}]" if attrs else ""
+
+
 def _servers(
-    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date,
+    notes: bool = True,
 ) -> None:
     lines.append("## Servers & Environments")
     lines.append("")
     for kind in ("server", "service", "environment"):
         for node in graph.find(kind):
-            attrs = ", ".join(
-                f"{k}={v}" for k, v in sorted(node.attrs.items())
-                if k != "verified_at"
-            )
             lines.append(
-                f"- {_title(node)}{_note_suffix(node.notes)}"
-                f"{_stale_suffix(node, cutoff)}"
-                f"{' [' + attrs + ']' if attrs else ''}"
+                f"- {_title(node)}"
+                f"{_note_suffix(node.notes) if notes else ''}"
+                f"{_stale_suffix(node, cutoff)}{_attr_suffix(node)}"
             )
             for src in graph._in(node.id, "deploys_to"):
                 lines.append(f"  - `{src.id}` deploys here")
@@ -212,18 +219,35 @@ def _workflows(
     lines.append("")
 
 
-def _rule_line(node: Node, cutoff: datetime.date) -> str:
+def _evidence(node: Node) -> str:
+    return " ".join(str(node.attrs.get("evidence", "")).split())
+
+
+def _evidence_suffix(node: Node, evidence: bool) -> str:
+    text = _evidence(node) if evidence else ""
+    return f"\n  - evidence: {text}" if text else ""
+
+
+def _rule_line(
+    node: Node, cutoff: datetime.date, evidence: bool = True
+) -> str:
     return (
         f"- **{node.name}**{_note_suffix(node.notes)}"
-        f"{_stale_suffix(node, cutoff)}"
+        f"{_stale_suffix(node, cutoff)}{_evidence_suffix(node, evidence)}"
     )
 
 
-def _conditional_rule_line(node: Node, cutoff: datetime.date) -> str:
-    when = " ".join(str(node.attrs.get("applies_when", "")).split())
+def _applies_when(node: Node) -> str:
+    return " ".join(str(node.attrs.get("applies_when", "")).split())
+
+
+def _conditional_rule_line(
+    node: Node, cutoff: datetime.date, evidence: bool = True
+) -> str:
     return (
-        f"- **{node.name}** — _when: {when}_"
+        f"- **{node.name}** — _when: {_applies_when(node)}_"
         f"{_note_suffix(node.notes)}{_stale_suffix(node, cutoff)}"
+        f"{_evidence_suffix(node, evidence)}"
     )
 
 
@@ -232,20 +256,29 @@ def _rules(
     lines: List[str],
     cutoff: datetime.date,
     heading: str = "##",
+    evidence: bool = True,
+    conditional: bool = True,
 ) -> None:
     rules = graph.find("rule")
     core = [n for n in rules if not is_conditional(n)]
     # attrs.priority == "first" pins a rule to the top; id order within each group.
     core.sort(key=lambda n: 0 if n.attrs.get("priority") == "first" else 1)
-    conditional = [n for n in rules if is_conditional(n)]
+    conditional_rules = [n for n in rules if is_conditional(n)]
 
     lines.append(f"{heading} Rules")
     lines.append("")
     for node in core:
-        lines.append(_rule_line(node, cutoff))
+        lines.append(_rule_line(node, cutoff, evidence))
     lines.append("")
 
-    if conditional:
+    if conditional_rules and not conditional:
+        lines.append(
+            f"Task-scoped rules are the skills named `{RULE_SKILL_PREFIX}*`; "
+            "each description states its trigger, so the rule loads only "
+            "when that trigger matches."
+        )
+        lines.append("")
+    elif conditional_rules:
         lines.append(f"{heading} Conditional Rules")
         lines.append("")
         lines.append(
@@ -254,20 +287,22 @@ def _rules(
             "where you are working."
         )
         lines.append("")
-        for node in conditional:
-            lines.append(_conditional_rule_line(node, cutoff))
+        for node in conditional_rules:
+            lines.append(_conditional_rule_line(node, cutoff, evidence))
         lines.append("")
 
 
 def _plan_stores(
-    graph: AtlasGraph, lines: List[str], cutoff: datetime.date
+    graph: AtlasGraph, lines: List[str], cutoff: datetime.date,
+    notes: bool = True,
 ) -> None:
     lines.append("## Plan Stores")
     lines.append("")
     for node in graph.find("plan_store"):
         lines.append(
-            f"- {_title(node)}{_note_suffix(node.notes)}"
-            f"{_stale_suffix(node, cutoff)}"
+            f"- {_title(node)}"
+            f"{_note_suffix(node.notes) if notes else ''}"
+            f"{_stale_suffix(node, cutoff)}{_attr_suffix(node)}"
         )
         for src in graph._in(node.id, "plans_in"):
             lines.append(f"  - `{src.id}` plans here")
@@ -456,7 +491,8 @@ def render_context(
 def _agent_context_body(
     graph: AtlasGraph, lines: List[str], cutoff: datetime.date
 ) -> None:
-    _rules(graph, lines, cutoff, heading="#")
+    _rules(graph, lines, cutoff, heading="#", evidence=False,
+           conditional=False)
     lines += ["# Identities", ""]
     for kind in ("person", "identity"):
         for node in graph.find(kind):
@@ -469,10 +505,19 @@ def _agent_context_body(
                     f"  - `{cap.kind}` → `{cap.dst}`"
                     f"{_note_suffix(cap.notes)}"
                 )
-    lines += ["", "# World Map", ""]
-    _repo_map(graph, lines)
-    _servers(graph, lines, cutoff)
-    _plan_stores(graph, lines, cutoff)
+    lines += [
+        "",
+        "# World Map",
+        "",
+        "Directory location does NOT imply GitHub org. Before assuming a "
+        "checkout's repository, org, branch or governing plan, run "
+        "`python -m athenah_ai.atlas context --cwd .`; the SessionStart "
+        "hook prints it for the current directory. The full repository "
+        "table is in ATLAS.md (`render`).",
+        "",
+    ]
+    _servers(graph, lines, cutoff, notes=False)
+    _plan_stores(graph, lines, cutoff, notes=False)
     lines += [
         "# Atlas",
         "",
@@ -487,7 +532,9 @@ def _agent_context_body(
         "Other queries: `show <id>`, `why <src> [dst]`, `scan`, "
         "`validate`. Teach it new facts with `teach`; suggest facts you "
         "discovered with `teach --propose` (they stay out of renders "
-        "until a human accepts them via `review`).",
+        "until a human accepts them via `review`). Server notes, the "
+        "repository table and the evidence behind each rule are in "
+        "ATLAS.md and `show <id>`.",
         "",
     ]
 
@@ -514,7 +561,8 @@ def render_claude_md(
         "<!-- AUTO-GENERATED by atlas (athenah-ai). Do not hand-edit: "
         "teach facts via `python -m athenah_ai.atlas teach ...` or edit "
         "the YAML under athenah_ai/atlas/facts/, then regenerate with "
-        "`python -m athenah_ai.atlas render --claude-md`. -->",
+        "`python -m athenah_ai.atlas render --claude-md --skills-dir "
+        "~/.claude/skills`. -->",
         "",
     ]
     _agent_context_body(graph, lines, cutoff)
@@ -548,3 +596,62 @@ def render_agents_md(
     ]
     _agent_context_body(graph, lines, cutoff)
     return "\n".join(lines).rstrip() + "\n"
+
+
+RULE_SKILL_PREFIX = "rule-"
+RULE_SKILL_MARKER = "AUTO-GENERATED by atlas (athenah-ai)"
+
+
+def rule_skill_name(node: Node) -> str:
+    """Return the skill directory name for a conditional rule.
+
+    Args:
+        node: A rule node.
+
+    Returns:
+        ``rule-<slug>`` where ``<slug>`` is the node id after ``rule:``.
+    """
+    return RULE_SKILL_PREFIX + node.id.split(":", 1)[1]
+
+
+def render_rule_skills(graph: AtlasGraph) -> Dict[str, str]:
+    """Render every conditional rule as a Claude Code skill.
+
+    The description carries the trigger, so Claude Code lists only that
+    line until the trigger matches and the body is loaded.
+
+    Args:
+        graph: The atlas graph.
+
+    Returns:
+        Mapping of skill directory name to SKILL.md text.
+    """
+    graph = graph.without_provenance("proposed")
+    skills: Dict[str, str] = {}
+    for node in graph.find("rule"):
+        if not is_conditional(node):
+            continue
+        name = rule_skill_name(node)
+        description = " ".join(
+            f"{node.name}. Applies when {_applies_when(node)}.".split()
+        )
+        lines = [
+            "---",
+            f"name: {name}",
+            f"description: {description}",
+            "user-invocable: false",
+            "---",
+            f"<!-- {RULE_SKILL_MARKER}. Do not hand-edit: teach the rule "
+            f"`{node.id}` via `python -m athenah_ai.atlas teach ...` or "
+            "edit the YAML under athenah_ai/atlas/facts/, then regenerate "
+            "with `python -m athenah_ai.atlas render --skills-dir "
+            "~/.claude/skills`. -->",
+            "",
+            f"# {node.name}",
+            "",
+            " ".join(node.notes.split()),
+        ]
+        if _evidence(node):
+            lines += ["", f"Evidence: {_evidence(node)}"]
+        skills[name] = "\n".join(lines) + "\n"
+    return skills
