@@ -1,4 +1,18 @@
 nodes:
+- id: rule:agent-repo-docs
+  kind: rule
+  name: Agent repos carry their own plans
+  provenance: taught
+  notes: 'An agent repository on agent-core (agent-sdk-manager, agent-project-manager) carries
+    its own plans, specs, reports and evidence under docs/, in the plan-store buckets, and
+    is the source of truth for that agent''s pipeline: Denis, 2026-09-12, for one source of
+    truth. The sandbox plan store keeps only projects with no repository of their own. Do
+    not open or update a plan for such an agent in sandbox-dangell7; read and write docs/
+    in the agent repo, and put the atlas repos: frontmatter on those plans.'
+  attrs:
+    applies_when: planning, reporting status or reading specs for an agent repository built
+      on Transia-RnD/agent-core
+    verified_at: 2026-09-12
 - id: rule:anchor-on-the-goal
   kind: rule
   name: Anchor on the goal
@@ -74,6 +88,18 @@ nodes:
     fix the underlying issue.
 
     '
+- id: rule:commands-absolute-paths
+  kind: rule
+  name: Commands for Denis — never assume the working directory
+  provenance: taught
+  notes: 'Every command handed to Denis to run is self-contained: it starts with cd to the
+    absolute path of the repo or directory it needs (cd /Users/infinityworks/projects/xrplf/<repo>
+    && ...), or names absolute paths in every argument. Never a bare make, git, npm or script
+    invocation that only works from a particular directory, and never a tilde or relative
+    path in a runbook or a hand-off. He runs commands from wherever his terminal happens to
+    be.'
+  attrs:
+    verified_at: '2026-09-12'
 - id: rule:commit-style
   kind: rule
   name: Commit messages
@@ -131,13 +157,16 @@ nodes:
     verified_at: 2026-09-11
 - id: rule:never-push
   kind: rule
-  name: Git — never push
+  name: Git — push only when asked
   provenance: taught
-  notes: 'NEVER git push or open PRs unless explicitly asked in that message; commit locally
-    only. Don''t batch up many tiny PRs — accumulate related work and let Denis decide when
-    to push.
-
-    '
+  notes: Push, and open PRs, only when Denis has asked for it in the conversation; an approval
+    earlier in the same session covers follow-up commits to that repo and branch, so there
+    is no need to re-ask per message. Without such an ask, commit locally and hand him the
+    push command. Do not batch up many tiny PRs; accumulate related work and let Denis decide
+    when it goes. No hook enforces this (the push check was removed from claude-md-rules.py
+    on 2026-09-12 at his request); it is judgment.
+  attrs:
+    verified_at: '2026-09-12'
 - id: rule:no-fragmentation
   kind: rule
   name: No over-fragmentation
@@ -167,6 +196,16 @@ nodes:
     for XRPL work, the project's mapped store otherwise); never a tasks/ folder or a todo/plan
     file inside a project repo. Write checkable items, check in before starting, tick them
     as you go. If something goes sideways, stop and re-plan.
+- id: rule:pr-template
+  kind: rule
+  name: Pull requests — always the repo's template
+  provenance: taught
+  notes: When opening or editing a PR in any repo, the body is the repo's own pull request
+    template (.github/PULL_REQUEST_TEMPLATE.md or the templates directory), filled in section
+    by section. Never write a free-form PR description of your own, even a good one; Denis
+    reviews and merges against the template's sections and a custom body has to be redone.
+  attrs:
+    verified_at: '2026-09-12'
 - id: rule:real-identifiers-only
   kind: rule
   name: Real identifiers only — no coined metaphors
@@ -260,6 +299,18 @@ nodes:
       Ripple engineers. This rule ranks with Real identifiers only.'
     priority: first
     verified_at: '2026-09-04'
+- id: rule:xrpld-work-in-a-clone
+  kind: rule
+  name: xrpld work happens in a dedicated clone, never in ~/projects/xrplf/xrpld
+  provenance: taught
+  notes: 'Never build, rebase, merge or test xrpld in /Users/infinityworks/projects/xrplf/xrpld:
+    it carries Denis''s own dirty tree and stashes and is not a workspace for agents. Work
+    in a purpose-named clone instead, either an existing topic checkout under ~/projects/xrplf/xrpld-<topic>
+    or a fresh clone in the session scratchpad, and keep exactly one clone per task. Delete
+    a transient clone as soon as its work is pushed; several abandoned partial-merge clones
+    at 230 MB each accumulated on 2026-09-12 before this was noticed.'
+  attrs:
+    verified_at: '2026-09-12'
 - id: rule:xrplf-webapp-data-layer
   kind: rule
   name: xrplf-webapp — versioned-document data layer
@@ -283,6 +334,25 @@ nodes:
       worker, or shared data code'
     verified_at: '2026-09-06'
 edges:
+- kind: applies_to
+  src: rule:agent-repo-docs
+  dst: repo:Transia-RnD/agent-project-manager
+  provenance: taught
+  attrs:
+    verified_at: '2026-09-12'
+- kind: applies_to
+  src: rule:agent-repo-docs
+  dst: repo:Transia-RnD/agent-sdk-manager
+  provenance: taught
+  attrs:
+    verified_at: '2026-09-12'
+- kind: applies_to
+  src: rule:agent-repo-docs
+  dst: repo:Transia-RnD/agent-xrpld-manager
+  provenance: taught
+  notes: Third agent on agent-core; its plans live under docs/ in the repo.
+  attrs:
+    verified_at: '2026-09-14'
 - kind: applies_to
   src: rule:ssh-access
   dst: environment:gcp-perfnet

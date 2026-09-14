@@ -4,20 +4,12 @@ nodes:
   name: dangell7
   provenance: taught
   notes: Primary GitHub account (human). Author of PRs, reviews, issues.
-- id: identity:github/dangell8
-  kind: identity
-  name: dangell8
-  provenance: taught
-  notes: 'Service account for automated/bot code writes. PAT auth + GPG signing via local
-    git (git_push.py pattern) so every bot commit is GitHub-Verified. NOT the GitHub App.
-
-    '
 - id: identity:github/sentinel-app
   kind: identity
   name: Sentinel GitHub App
   provenance: taught
   notes: 'GitHub App used by sentinel-ai. Read, comment, and checks ONLY — deliberately has
-    no contents:write. All code writes go through dangell8 instead.
+    no contents:write. All code writes go through dangell7 instead.
 
     '
 - id: person:denis
@@ -48,18 +40,11 @@ edges:
   src: identity:github/dangell7
   dst: org:transia-rnd
   provenance: taught
-  notes: Human account; normal development pushes when Denis asks.
-- kind: can_write
-  src: identity:github/dangell8
-  dst: org:transia-rnd
-  provenance: taught
-  notes: 'PAT + GPG-signed local git commits (verified-bot-commits workflow). Used for ALL
-    automated code writes incl. Transia-RnD branches/PRs.
+  notes: 'The only identity that writes, human and automated alike (Denis, 2026-09-13):
+    development pushes when Denis asks, and every push, commit and reply the agent-core agents
+    and sentinel-ai make. GPG-signed local git commits so each one shows as Verified.
 
     '
-  attrs:
-    auth: PAT
-    gpg_verified: true
 - kind: member_of
   src: identity:github/dangell7
   dst: org:xrplf

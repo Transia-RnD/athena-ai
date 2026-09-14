@@ -44,7 +44,7 @@ nodes:
   name: sentinel
   provenance: taught
   notes: 'Sentinel production box. SSH port 1988 with key ~/.ssh/xrpl-labs; project at /opt/sentinel-ai.
-    Run processes as user ''sentinel'', not root. The server can push code (dangell8); the
+    Run processes as user ''sentinel'', not root. The server can push code (as dangell7); the
     local Mac cannot push for the pipeline.
 
     '

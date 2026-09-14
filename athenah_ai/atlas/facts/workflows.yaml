@@ -54,7 +54,7 @@ nodes:
   kind: workflow
   name: verified-bot-commits
   provenance: taught
-  notes: 'Pattern for pipeline commits: dangell8 + local git commit + GPG sign + push. Never
+  notes: 'Pattern for pipeline commits: dangell7 + local git commit + GPG sign + push. Never
     api_commit_changes or GitHub App commits. Stage-1 branch sync is fine; every bot commit
     must show as Verified.
 
