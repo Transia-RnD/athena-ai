@@ -1,4 +1,20 @@
 nodes:
+- id: rule:agent-github-identity
+  kind: rule
+  name: Agents write to GitHub as a new bot identity
+  provenance: taught
+  notes: 'Denis, 2026-09-14: when an agent on agent-core needs a GitHub identity to push or
+    open pull requests, a new bot identity is created for it. dangell8 is dropped and is not
+    to be referenced; the Sentinel GitHub App is not reused. dangell7 stays the human account.
+    Which form the new identity takes (a machine account with a token, or a GitHub App) is
+    decided when it is created. Exception (Denis, 2026-09-14): agent-xrpld-manager pushes
+    to dangell7''s own pull request branches and answers review threads on them as dangell7,
+    because a merge of develop into his branch and a reply on his own pull request are his
+    acts; that agent holds a dangell7 token and no bot identity.'
+  attrs:
+    applies_when: choosing or describing the GitHub identity an agent pushes, comments or
+      opens pull requests as
+    verified_at: 2026-09-14
 - id: rule:agent-repo-docs
   kind: rule
   name: Agent repos carry their own plans
@@ -334,6 +350,18 @@ nodes:
       worker, or shared data code'
     verified_at: '2026-09-06'
 edges:
+- kind: applies_to
+  src: rule:agent-github-identity
+  dst: repo:Transia-RnD/agent-project-manager
+  provenance: taught
+  attrs:
+    verified_at: '2026-09-14'
+- kind: applies_to
+  src: rule:agent-github-identity
+  dst: repo:Transia-RnD/agent-sdk-manager
+  provenance: taught
+  attrs:
+    verified_at: '2026-09-14'
 - kind: applies_to
   src: rule:agent-repo-docs
   dst: repo:Transia-RnD/agent-project-manager
